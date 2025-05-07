@@ -1,9 +1,20 @@
-import { useState } from 'react'
-
-import './App.css'
+import { useEffect, useState } from 'react';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from './firebase-config';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+  const docRef = doc(db, "user", "nBpqvRYV40vWok0GaoLS")
+  
+  const getData = async () => {
+    const docSnap = await getDoc(docRef);
+    console.log(docSnap.data());
+  }
+
+  useEffect(() => {
+    getData();
+  }, [])
 
   return (
     <>
