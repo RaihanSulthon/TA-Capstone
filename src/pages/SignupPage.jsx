@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import TextField from "../components/forms/TextField";
 import Button from "../components/forms/Button";
 import Toast from "../components/ui/Toast";
-import { registerUser } from "../services/authService";
-import { useAuth } from "../contexts/Authcontexts";
+import { registerUser } from "../services/AuthService";
+import { useAuth } from "../contexts/AuthContexts";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -105,15 +105,12 @@ const SignupPage = () => {
     const error = validateField(name, value);
     
     setFormErrors({ ...formErrors, [name]: error });
-    
-    // Show toast for password validation
-    if (name === "password" && error) {
-      setToast({ message: error, type: "warning" });
-    }
-    
-    // Show toast for confirmPassword validation
-    if (name === "confirmPassword" && error) {
-      setToast({ message: error, type: "warning" });
+
+    if(name === "password" && error && name !== "confirmPassword"){
+      setToast({
+        message: error,
+        type: "warning"
+      });
     }
   };
 

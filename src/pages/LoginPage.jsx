@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import TextField from "../components/forms/TextField";
 import Button from "../components/forms/Button";
 import Toast from "../components/ui/Toast";
-import { loginUser } from "../services/authService";
-import { useAuth } from "../contexts/Authcontexts";
+import { loginUser } from "../services/AuthService";
+import { useAuth } from "../contexts/AuthContexts";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -155,7 +155,7 @@ const LoginPage = () => {
           onBlur={handleBlur}
           error={formErrors.email}
           required
-          placeholder="Enter your Telkom University email"
+          placeholder="Enter your Email"
         />
         
         <TextField

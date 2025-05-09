@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.jsx
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/Authcontexts";
+import { useAuth } from "../contexts/AuthContexts";
 import { db } from "../firebase-config";
 import { doc, getDoc } from "firebase/firestore";
 
