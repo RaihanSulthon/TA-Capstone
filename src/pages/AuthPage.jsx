@@ -17,6 +17,7 @@ const AuthPage = () => {
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [isAnimating, setIsAnimating] = useState(false);
+  const initialLoginMode = location.state?.initialTab !== "signup";
   
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -55,6 +56,12 @@ const AuthPage = () => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  useEffect(()=> {
+    if(location.state?.initialTab === "signup"){
+      setIsLoginMode(false);
+    }
+  },[location.state])
 
   // Toggle between login and signup
   const toggleAuthMode = () => {
@@ -314,14 +321,34 @@ const AuthPage = () => {
     }
   };
 
-  return (
+  return(
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full p-6 mt-5 bg-white rounded-lg shadow-md">
+      <div className="max-w-md w-full p-6 mt-5 bg-white rounded-lg shadow-md relative">
+        {/* Back Button */}
+        <button 
+        onClick={() => navigate('/')}
+        className="absolute p-1 rounded-full border border-gray-300 shadow-sm bg-white hover:bg-blue-500 transition-all duration-300 group"
+        aria-label="Back to home"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-6 w-6 text-blue-500 group-hover:text-white transition-colors duration-300" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+          />
+        </svg>
+      </button>
         {/* Form header */}
-        <h2 className="text-2xl font-bold text-center mb-6">
-          {isLoginMode ? "Log In" : "Create an Account"}
+        <h2 className="text-3xl font-bold text-center mb-6">
+          {isLoginMode ? "Login" : "Create an Account"}
         </h2>
-  
         <div className="flex border-b mb-6">
           <button
             className={`w-1/2 py-2 text-center transition-colors duration-300 ${
@@ -502,8 +529,7 @@ const AuthPage = () => {
         </div>
       </div>
     </div>
-  );
-  
+  )
 };
 
 export default AuthPage;

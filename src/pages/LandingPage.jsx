@@ -9,6 +9,7 @@ const LandingPage = () => {
   const { isAuthenticated } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Refs for each section
   const homeRef = useRef(null);
@@ -25,46 +26,57 @@ const LandingPage = () => {
     });
   };
 
-  // Update active section based on scroll position
+  // Update useEffect untuk scroll event
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 100; // Adding offset
-
+      const scrollPosition = window.scrollY;
+      
+      // Set isScrolled to true if scrolled more than 10px, false otherwise
+      setIsScrolled(scrollPosition > 10);
+      
       // Check which section is in view
       if (
         homeRef.current &&
-        scrollPosition >= homeRef.current.offsetTop &&
-        scrollPosition < featuresRef.current.offsetTop
+        scrollPosition + 100 >= homeRef.current.offsetTop &&
+        scrollPosition + 100 < featuresRef.current.offsetTop
       ) {
         setActiveSection("home");
       } else if (
         featuresRef.current &&
-        scrollPosition >= featuresRef.current.offsetTop &&
-        scrollPosition < aboutRef.current.offsetTop
+        scrollPosition + 100 >= featuresRef.current.offsetTop &&
+        scrollPosition + 100 < aboutRef.current.offsetTop
       ) {
         setActiveSection("features");
       } else if (
         aboutRef.current &&
-        scrollPosition >= aboutRef.current.offsetTop &&
-        scrollPosition < contactRef.current.offsetTop
+        scrollPosition + 100 >= aboutRef.current.offsetTop &&
+        scrollPosition + 100 < contactRef.current.offsetTop
       ) {
         setActiveSection("about");
       } else if (
         contactRef.current &&
-        scrollPosition >= contactRef.current.offsetTop
+        scrollPosition + 100 >= contactRef.current.offsetTop
       ) {
         setActiveSection("contact");
       }
     };
 
     window.addEventListener("scroll", handleScroll);
+    
+    // Call handleScroll initially to set correct state
+    handleScroll();
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div className="min-h-screen">
       {/* Fixed Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md py-3">
+      <nav className={`fixed top-0 left-0 right-0 z-[1000] py-3 transition-all duration-200 ${
+        isScrolled
+        ? 'bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]'
+        : 'bg-blue-600 text-white'
+        }`}>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             {/* Logo */}
@@ -73,7 +85,7 @@ const LandingPage = () => {
               onClick={() => scrollToSection(homeRef)}
             >
               <svg
-                className="w-8 h-8 text-blue-600"
+                className={`w-8 h-8 ${isScrolled ? `text-blue-600`: `text-white`}`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -84,50 +96,56 @@ const LandingPage = () => {
                   clipRule="evenodd"
                 ></path>
               </svg>
-              <span className="ml-2 text-xl font-bold text-gray-800">
-                My Capstone App
-              </span>
+              <span className={`ml-2 text-xl font-bold transition-colors duration-300 ${
+                isScrolled ? "text-gray-800" : "text-white"
+                }`}>
+                  My Capstone App
+                  </span>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <button
                 onClick={() => scrollToSection(homeRef)}
-                className={`font-medium transition-colors duration-300 ${
-                  activeSection === "home"
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
-                }`}
+                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
+                  isScrolled 
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    : 'text-white hover:bg-white/10'
+                } ${activeSection === "home" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                `}
               >
                 Home
               </button>
               <button
                 onClick={() => scrollToSection(featuresRef)}
-                className={`font-medium transition-colors duration-300 ${
-                  activeSection === "features"
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
-                }`}
+                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
+                  isScrolled 
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    : 'text-white hover:bg-white/10'
+                } ${activeSection === "features" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                `}
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection(aboutRef)}
-                className={`font-medium transition-colors duration-300 ${
-                  activeSection === "about"
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
-                }`}
+                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
+                  isScrolled 
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    : 'text-white hover:bg-white/10'
+                } ${activeSection === "about" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                `}
               >
                 About
               </button>
               <button
                 onClick={() => scrollToSection(contactRef)}
-                className={`font-medium transition-colors duration-300 ${
-                  activeSection === "contact"
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
-                }`}
+                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
+                  isScrolled 
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    : 'text-white hover:bg-white/10'
+                } ${activeSection === "contact" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                `}
               >
                 Contact
               </button>
@@ -138,7 +156,11 @@ const LandingPage = () => {
               {isAuthenticated ? (
                 <Button
                   onClick={() => navigate("/app/dashboard")}
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-5 py-2 rounded-lg transition-colors duration-300"
+                  className={`transition-all duration-300 px-5 py-2 rounded-lg ${
+                    isScrolled
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  }`}
                 >
                   Dashboard
                 </Button>
@@ -165,10 +187,10 @@ const LandingPage = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-gray-800"
+              className="md:hidden"
             >
               <svg
-                className="w-6 h-6"
+                className={`w-6 h-6 ${isScrolled ? 'text-gray-800' : 'text-white'}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
