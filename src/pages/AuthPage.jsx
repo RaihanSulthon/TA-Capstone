@@ -17,6 +17,7 @@ const AuthPage = () => {
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "error" });
   const [isAnimating, setIsAnimating] = useState(false);
+  const initialLoginMode = location.state?.initialTab !== "signup";
   
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -55,6 +56,12 @@ const AuthPage = () => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  useEffect(()=> {
+    if(location.state?.initialTab === "signup"){
+      setIsLoginMode(false);
+    }
+  },[location.state])
 
   // Toggle between login and signup
   const toggleAuthMode = () => {
@@ -314,200 +321,215 @@ const AuthPage = () => {
     }
   };
 
-  return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      {/* Form header */}
-      <h2 className="text-2xl font-bold text-center mb-6">
-        {isLoginMode ? "Log In" : "Create an Account"}
-      </h2>
-
-      <div className="flex border-b mb-6">
-        <button
-          className={`w-1/2 py-2 text-center transition-colors duration-300 ${
-            isLoginMode
-              ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => !isLoginMode && toggleAuthMode()}
-          type="button"
-          disabled={isAnimating}
-        >
-          Login
-        </button>
-        <button
-          className={`w-1/2 py-2 text-center transition-colors duration-300 ${
-            !isLoginMode
-              ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => isLoginMode && toggleAuthMode()}
-          type="button"
-          disabled={isAnimating}
-        >
-          Sign Up
-        </button>
-      </div>
-      
-      {/* Toast notifications */}
-      {toast.message && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast({ message: "", type: "error" })} 
-        />
-      )}
-      
-      {/* Main error display */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-      
-      {/* Form container with animation */}
-      <div 
-        className={`transform transition-all duration-300 ease-in-out ${
-          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        }`}
+  return(
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="max-w-md w-full p-6 mt-5 bg-white rounded-lg shadow-md relative">
+        {/* Back Button */}
+        <button 
+        onClick={() => navigate('/')}
+        className="absolute p-1 rounded-full border border-gray-300 shadow-sm bg-white hover:bg-blue-500 transition-all duration-300 group"
+        aria-label="Back to home"
       >
-        {/* Conditional rendering based on isLoginMode */}
-        {isLoginMode ? (
-          // Login Form
-          <form onSubmit={handleLoginSubmit} noValidate>
-            <TextField
-              label="Email"
-              type="email"
-              name="email"
-              value={loginData.email}
-              onChange={handleLoginChange}
-              onBlur={handleLoginBlur}
-              error={loginErrors.email}
-              required
-              placeholder="Enter your email"
-            />
-            
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              value={loginData.password}
-              onChange={handleLoginChange}
-              onBlur={handleLoginBlur}
-              error={loginErrors.password}
-              required
-              placeholder="Enter your password"
-            />
-            
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4"
-            >
-              {loading ? "Logging In..." : "Log In"}
-            </Button>
-          </form>
-        ) : (
-          // Signup Form
-          <form onSubmit={handleSignupSubmit} noValidate>
-            <TextField
-              label="Full Name"
-              name="name"
-              value={signupData.name}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.name}
-              required
-              maxLength={50}
-              placeholder="Enter your full name"
-            />
-            
-            <TextField
-              label="Email"
-              type="email"
-              name="email"
-              value={signupData.email}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.email}
-              required
-              placeholder="yourname@student.telkomuniversity.ac.id"
-            />
-            
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              value={signupData.password}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.password}
-              required
-              placeholder="Min. 6 characters"
-            />
-            
-            <TextField
-              label="Confirm Password"
-              type="password"
-              name="confirmPassword"
-              value={signupData.confirmPassword}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.confirmPassword}
-              required
-              placeholder="Re-enter your password"
-            />
-            
-            <div className="mt-2 mb-4 text-sm text-gray-600">
-              <ul className="list-disc list-inside">
-                <li>Password must be at least 6 characters</li>
-                <li>Email must be a valid Telkom University email</li>
-              </ul>
-            </div>
-            
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4"
-            >
-              {loading ? "Creating Account..." : "Sign Up"}
-            </Button>
-          </form>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-6 w-6 text-blue-500 group-hover:text-white transition-colors duration-300" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+          />
+        </svg>
+      </button>
+        {/* Form header */}
+        <h2 className="text-3xl font-bold text-center mb-6">
+          {isLoginMode ? "Login" : "Create an Account"}
+        </h2>
+        <div className="flex border-b mb-6">
+          <button
+            className={`w-1/2 py-2 text-center transition-colors duration-300 ${
+              isLoginMode
+                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => !isLoginMode && toggleAuthMode()}
+            type="button"
+            disabled={isAnimating}
+          >
+            Login
+          </button>
+          <button
+            className={`w-1/2 py-2 text-center transition-colors duration-300 ${
+              !isLoginMode
+                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => isLoginMode && toggleAuthMode()}
+            type="button"
+            disabled={isAnimating}
+          >
+            Sign Up
+          </button>
+        </div>
+  
+        {/* Toast notifications */}
+        {toast.message && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => setToast({ message: "", type: "error" })} 
+          />
         )}
-      </div>
-      
-      {/* Conditional rendering based on isLoginMode */}
-      
-      
-      {/* Toggle button */}
-      <div className="text-center mt-4">
-        {isLoginMode ? (
-          <p>
-            Don't have an account?{" "}
-            <button
-              onClick={toggleAuthMode}
-              className="text-blue-500 hover:underline transition-colors duration-300"
-              type="button"
-              disabled={isAnimating}
-            >
-              Sign Up
-            </button>
-          </p>
-        ) : (
-          <p>
-            Already have an account?{" "}
-            <button
-              onClick={toggleAuthMode}
-              className="text-blue-500 hover:underline transition-colors duration-300"
-              type="button"
-              disabled={isAnimating}
-            >
-              Log In
-            </button>
-          </p>
+  
+        {/* Main error display */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
         )}
+  
+        {/* Form container with animation */}
+        <div 
+          className={`transform transition-all duration-300 ease-in-out ${
+            isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
+          {isLoginMode ? (
+            <form onSubmit={handleLoginSubmit} noValidate>
+              <TextField
+                label="Email"
+                type="email"
+                name="email"
+                value={loginData.email}
+                onChange={handleLoginChange}
+                onBlur={handleLoginBlur}
+                error={loginErrors.email}
+                required
+                placeholder="Enter your email"
+              />
+  
+              <TextField
+                label="Password"
+                type="password"
+                name="password"
+                value={loginData.password}
+                onChange={handleLoginChange}
+                onBlur={handleLoginBlur}
+                error={loginErrors.password}
+                required
+                placeholder="Enter your password"
+              />
+  
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4"
+              >
+                {loading ? "Logging In..." : "Log In"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleSignupSubmit} noValidate>
+              <TextField
+                label="Full Name"
+                name="name"
+                value={signupData.name}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.name}
+                required
+                maxLength={50}
+                placeholder="Enter your full name"
+              />
+  
+              <TextField
+                label="Email"
+                type="email"
+                name="email"
+                value={signupData.email}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.email}
+                required
+                placeholder="yourname@student.telkomuniversity.ac.id"
+              />
+  
+              <TextField
+                label="Password"
+                type="password"
+                name="password"
+                value={signupData.password}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.password}
+                required
+                placeholder="Min. 6 characters"
+              />
+  
+              <TextField
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={signupData.confirmPassword}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.confirmPassword}
+                required
+                placeholder="Re-enter your password"
+              />
+  
+              <div className="mt-2 mb-4 text-sm text-gray-600">
+                <ul className="list-disc list-inside">
+                  <li>Password must be at least 6 characters</li>
+                  <li>Email must be a valid Telkom University email</li>
+                </ul>
+              </div>
+  
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4"
+              >
+                {loading ? "Creating Account..." : "Sign Up"}
+              </Button>
+            </form>
+          )}
+        </div>
+  
+        <div className="text-center mt-4">
+          {isLoginMode ? (
+            <p>
+              Don't have an account?{" "}
+              <button
+                onClick={toggleAuthMode}
+                className="text-blue-500 hover:underline transition-colors duration-300"
+                type="button"
+                disabled={isAnimating}
+              >
+                Sign Up
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{" "}
+              <button
+                onClick={toggleAuthMode}
+                className="text-blue-500 hover:underline transition-colors duration-300"
+                type="button"
+                disabled={isAnimating}
+              >
+                Log In
+              </button>
+            </p>
+          )}
+        </div>
       </div>
     </div>
-  );
+  )
 };
 
 export default AuthPage;

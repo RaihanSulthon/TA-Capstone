@@ -2,13 +2,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContexts";
 import MainLayout from "./layouts/MainLayout";
-import LandingLayout from "./layouts/LandingLayout";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
-import AboutPage from "./pages/AboutPage";
-import FeaturesPage from "./pages/FeaturesPage";
-import ContactPage from "./pages/ContactPage";
 import "./App.css";
 
 // Protected route component
@@ -31,13 +27,8 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Landing Routes */}
-          <Route element={<LandingLayout />}>
-            <Route index element={<LandingPage />} />
-            <Route path="about" element={<AboutPage />} />
-            <Route path="features" element={<FeaturesPage />} />
-            <Route path="contact" element={<ContactPage />} />
-          </Route>
+          {/* Landing Page */}
+          <Route path="/" element={<LandingPage />} />
           
           {/* Auth Route */}
           <Route path="auth" element={<AuthPage />} />
