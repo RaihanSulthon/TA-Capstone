@@ -24,7 +24,7 @@ export const registerUser = async (email, password, userData) => {
         if (!isValidTelkomEmail(email)) {
             return { 
                 success: false, 
-                error: "Email must be from Telkom University (@student.telkomuniversity.ac.id for students, @telkomuniversity.ac.id for lecturers)" 
+                error: "Email must contain (@student.telkomuniversity.ac.id or @telkomuniversity.ac.id)" 
             };
         }
         
