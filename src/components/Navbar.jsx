@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/Authcontexts";
+import { useAuth } from "../contexts/AuthContexts";
 
 const Navbar = () => {
   const { currentUser, logout, isAuthenticated } = useAuth();
@@ -16,14 +16,14 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="text-xl font-bold text-blue-600">
-            My Capstone App
+            Helpdesk MVP App
           </Link>
           
           <div className="flex items-center">
             {isAuthenticated ? (
               <>
                 <span className="mr-4 text-gray-700">
-                  Hello, {currentUser?.email}
+                  Hello, {currentUser?.email?.split('@')[0]}
                 </span>
                 <Link 
                   to="/dashboard" 
@@ -33,7 +33,7 @@ const Navbar = () => {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-gray-700 hover:text-blue-600"
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                 >
                   Logout
                 </button>
@@ -42,13 +42,13 @@ const Navbar = () => {
               <>
                 <Link 
                   to="/login" 
-                  className="mr-4 text-gray-700 hover:text-blue-600"
+                  className="text-gray-700 hover:text-blue-600 px-4 py-2"
                 >
                   Login
                 </Link>
                 <Link 
                   to="/signup"
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
                 >
                   Sign Up
                 </Link>
