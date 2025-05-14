@@ -315,199 +315,195 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      {/* Form header */}
-      <h2 className="text-2xl font-bold text-center mb-6">
-        {isLoginMode ? "Log In" : "Create an Account"}
-      </h2>
-
-      <div className="flex border-b mb-6">
-        <button
-          className={`w-1/2 py-2 text-center transition-colors duration-300 ${
-            isLoginMode
-              ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => !isLoginMode && toggleAuthMode()}
-          type="button"
-          disabled={isAnimating}
-        >
-          Login
-        </button>
-        <button
-          className={`w-1/2 py-2 text-center transition-colors duration-300 ${
-            !isLoginMode
-              ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => isLoginMode && toggleAuthMode()}
-          type="button"
-          disabled={isAnimating}
-        >
-          Sign Up
-        </button>
-      </div>
-      
-      {/* Toast notifications */}
-      {toast.message && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast({ message: "", type: "error" })} 
-        />
-      )}
-      
-      {/* Main error display */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="max-w-md w-full p-6 mt-5 bg-white rounded-lg shadow-md">
+        {/* Form header */}
+        <h2 className="text-2xl font-bold text-center mb-6">
+          {isLoginMode ? "Log In" : "Create an Account"}
+        </h2>
+  
+        <div className="flex border-b mb-6">
+          <button
+            className={`w-1/2 py-2 text-center transition-colors duration-300 ${
+              isLoginMode
+                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => !isLoginMode && toggleAuthMode()}
+            type="button"
+            disabled={isAnimating}
+          >
+            Login
+          </button>
+          <button
+            className={`w-1/2 py-2 text-center transition-colors duration-300 ${
+              !isLoginMode
+                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => isLoginMode && toggleAuthMode()}
+            type="button"
+            disabled={isAnimating}
+          >
+            Sign Up
+          </button>
         </div>
-      )}
-      
-      {/* Form container with animation */}
-      <div 
-        className={`transform transition-all duration-300 ease-in-out ${
-          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        }`}
-      >
-        {/* Conditional rendering based on isLoginMode */}
-        {isLoginMode ? (
-          // Login Form
-          <form onSubmit={handleLoginSubmit} noValidate>
-            <TextField
-              label="Email"
-              type="email"
-              name="email"
-              value={loginData.email}
-              onChange={handleLoginChange}
-              onBlur={handleLoginBlur}
-              error={loginErrors.email}
-              required
-              placeholder="Enter your email"
-            />
-            
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              value={loginData.password}
-              onChange={handleLoginChange}
-              onBlur={handleLoginBlur}
-              error={loginErrors.password}
-              required
-              placeholder="Enter your password"
-            />
-            
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4"
-            >
-              {loading ? "Logging In..." : "Log In"}
-            </Button>
-          </form>
-        ) : (
-          // Signup Form
-          <form onSubmit={handleSignupSubmit} noValidate>
-            <TextField
-              label="Full Name"
-              name="name"
-              value={signupData.name}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.name}
-              required
-              maxLength={50}
-              placeholder="Enter your full name"
-            />
-            
-            <TextField
-              label="Email"
-              type="email"
-              name="email"
-              value={signupData.email}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.email}
-              required
-              placeholder="yourname@student.telkomuniversity.ac.id"
-            />
-            
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              value={signupData.password}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.password}
-              required
-              placeholder="Min. 6 characters"
-            />
-            
-            <TextField
-              label="Confirm Password"
-              type="password"
-              name="confirmPassword"
-              value={signupData.confirmPassword}
-              onChange={handleSignupChange}
-              onBlur={handleSignupBlur}
-              error={signupErrors.confirmPassword}
-              required
-              placeholder="Re-enter your password"
-            />
-            
-            <div className="mt-2 mb-4 text-sm text-gray-600">
-              <ul className="list-disc list-inside">
-                <li>Password must be at least 6 characters</li>
-                <li>Email must be a valid Telkom University email</li>
-              </ul>
-            </div>
-            
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4"
-            >
-              {loading ? "Creating Account..." : "Sign Up"}
-            </Button>
-          </form>
+  
+        {/* Toast notifications */}
+        {toast.message && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => setToast({ message: "", type: "error" })} 
+          />
         )}
-      </div>
-      
-      {/* Conditional rendering based on isLoginMode */}
-      
-      
-      {/* Toggle button */}
-      <div className="text-center mt-4">
-        {isLoginMode ? (
-          <p>
-            Don't have an account?{" "}
-            <button
-              onClick={toggleAuthMode}
-              className="text-blue-500 hover:underline transition-colors duration-300"
-              type="button"
-              disabled={isAnimating}
-            >
-              Sign Up
-            </button>
-          </p>
-        ) : (
-          <p>
-            Already have an account?{" "}
-            <button
-              onClick={toggleAuthMode}
-              className="text-blue-500 hover:underline transition-colors duration-300"
-              type="button"
-              disabled={isAnimating}
-            >
-              Log In
-            </button>
-          </p>
+  
+        {/* Main error display */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
         )}
+  
+        {/* Form container with animation */}
+        <div 
+          className={`transform transition-all duration-300 ease-in-out ${
+            isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
+          {isLoginMode ? (
+            <form onSubmit={handleLoginSubmit} noValidate>
+              <TextField
+                label="Email"
+                type="email"
+                name="email"
+                value={loginData.email}
+                onChange={handleLoginChange}
+                onBlur={handleLoginBlur}
+                error={loginErrors.email}
+                required
+                placeholder="Enter your email"
+              />
+  
+              <TextField
+                label="Password"
+                type="password"
+                name="password"
+                value={loginData.password}
+                onChange={handleLoginChange}
+                onBlur={handleLoginBlur}
+                error={loginErrors.password}
+                required
+                placeholder="Enter your password"
+              />
+  
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4"
+              >
+                {loading ? "Logging In..." : "Log In"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleSignupSubmit} noValidate>
+              <TextField
+                label="Full Name"
+                name="name"
+                value={signupData.name}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.name}
+                required
+                maxLength={50}
+                placeholder="Enter your full name"
+              />
+  
+              <TextField
+                label="Email"
+                type="email"
+                name="email"
+                value={signupData.email}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.email}
+                required
+                placeholder="yourname@student.telkomuniversity.ac.id"
+              />
+  
+              <TextField
+                label="Password"
+                type="password"
+                name="password"
+                value={signupData.password}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.password}
+                required
+                placeholder="Min. 6 characters"
+              />
+  
+              <TextField
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={signupData.confirmPassword}
+                onChange={handleSignupChange}
+                onBlur={handleSignupBlur}
+                error={signupErrors.confirmPassword}
+                required
+                placeholder="Re-enter your password"
+              />
+  
+              <div className="mt-2 mb-4 text-sm text-gray-600">
+                <ul className="list-disc list-inside">
+                  <li>Password must be at least 6 characters</li>
+                  <li>Email must be a valid Telkom University email</li>
+                </ul>
+              </div>
+  
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4"
+              >
+                {loading ? "Creating Account..." : "Sign Up"}
+              </Button>
+            </form>
+          )}
+        </div>
+  
+        <div className="text-center mt-4">
+          {isLoginMode ? (
+            <p>
+              Don't have an account?{" "}
+              <button
+                onClick={toggleAuthMode}
+                className="text-blue-500 hover:underline transition-colors duration-300"
+                type="button"
+                disabled={isAnimating}
+              >
+                Sign Up
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{" "}
+              <button
+                onClick={toggleAuthMode}
+                className="text-blue-500 hover:underline transition-colors duration-300"
+                type="button"
+                disabled={isAnimating}
+              >
+                Log In
+              </button>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
+  
 };
 
 export default AuthPage;
