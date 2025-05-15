@@ -1,4 +1,3 @@
-// src/pages/DashboardPage.jsx
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContexts";
 import { db } from "../firebase-config";
@@ -11,14 +10,51 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!currentUser) return;
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
       
+      // Coba ambil dari localStorage dulu untuk menghindari tampilan kosong saat loading
+      const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
+      if (cachedUserData) {
+        try {
+          const parsedData = JSON.parse(cachedUserData);
+          setUserData(parsedData);
+          
+          // Konversi string ISO date kembali ke Date object untuk format tanggal
+          if (parsedData.createdAt && typeof parsedData.createdAt === 'string') {
+            parsedData.createdAt = {
+              toDate: () => new Date(parsedData.createdAt)
+            };
+            setUserData(parsedData);
+          }
+          
+          // Tidak set loading=false di sini agar tetap mengambil data segar
+        } catch (e) {
+          console.error("Error parsing cached user data in Dashboard:", e);
+        }
+      }
+
       try {
+        // Ambil data segar dari Firestore
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userDocRef);
         
         if (userDoc.exists()) {
-          setUserData(userDoc.data());
+          const freshUserData = userDoc.data();
+          setUserData(freshUserData);
+          
+          // Simpan ke localStorage untuk penggunaan selanjutnya
+          const userDataToCache = { ...freshUserData };
+          if (userDataToCache.createdAt && typeof userDataToCache.createdAt.toDate === 'function') {
+            userDataToCache.createdAt = userDataToCache.createdAt.toDate().toISOString();
+          }
+          
+          localStorage.setItem(
+            `userData_${currentUser.uid}`, 
+            JSON.stringify(userDataToCache)
+          );
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -30,15 +66,37 @@ const DashboardPage = () => {
     fetchUserData();
   }, [currentUser]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  // Fungsi untuk format tanggal dari userData
+  const formatCreatedDate = () => {
+    if (!userData?.createdAt) return "N/A";
+    
+    try {
+      // Handle format dari Firestore Timestamp
+      if (typeof userData.createdAt.toDate === 'function') {
+        return userData.createdAt.toDate().toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+      
+      // Handle format dari localStorage (string ISO)
+      if (typeof userData.createdAt === 'string') {
+        return new Date(userData.createdAt).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+      
+      return "N/A";
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return "N/A";
+    }
+  };
 
-  // Get user type from email
+  // Get user type from email or role
   const getUserType = () => {
     if (!userData) return "Unknown";
     
@@ -46,16 +104,26 @@ const DashboardPage = () => {
       return userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
     }
     
-    if (userData.email.endsWith("@student.telkomuniversity.ac.id")) {
-      return "Student";
-    } else if (userData.email.endsWith("@telkomuniversity.ac.id")) {
-      return "Lecturer";
-    } else if (userData.email === "admin@capstone.ac.id") {
-      return "Administrator";
+    if (userData.email) {
+      if (userData.email.endsWith("@student.telkomuniversity.ac.id")) {
+        return "Student";
+      } else if (userData.email.endsWith("@telkomuniversity.ac.id")) {
+        return "Lecturer";
+      } else if (userData.email === "admin@capstone.ac.id") {
+        return "Administrator";
+      }
     }
     
     return "User";
   };
+
+  if (loading && !userData) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -85,7 +153,7 @@ const DashboardPage = () => {
             
             <div>
               <p className="text-gray-600 text-sm">Email</p>
-              <p className="font-medium">{currentUser?.email}</p>
+              <p className="font-medium">{currentUser?.email || userData?.email || "Not available"}</p>
             </div>
             
             <div>
@@ -96,11 +164,7 @@ const DashboardPage = () => {
             <div>
               <p className="text-gray-600 text-sm">Registered On</p>
               <p className="font-medium">
-                {userData?.createdAt?.toDate().toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
+                {formatCreatedDate()}
               </p>
             </div>
           </div>

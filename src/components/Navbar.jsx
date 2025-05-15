@@ -1,14 +1,110 @@
-// src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
+import { useState, useEffect } from "react";
+import { db } from "../firebase-config";
+import { doc, getDoc } from "firebase/firestore";
 
 const Navbar = () => {
   const { currentUser, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!currentUser) {
+        setIsLoading(false);
+        return;
+      }
+      
+      // Coba ambil dari localStorage dulu untuk mengurangi flickering
+      const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
+      if (cachedUserData) {
+        try {
+          const parsedData = JSON.parse(cachedUserData);
+          setUserData(parsedData);
+          // Tetap set isLoading=false agar UI responsif
+          setIsLoading(false);
+        } catch (e) {
+          console.error("Error parsing cached user data:", e);
+        }
+      }
+
+      try {
+        // Tetap ambil data segar dari Firestore
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const freshUserData = userDoc.data();
+          setUserData(freshUserData);
+          
+          // Simpan ke localStorage untuk penggunaan selanjutnya
+          // Konversi tanggal jika ada
+          const userDataToCache = { ...freshUserData };
+          if (userDataToCache.createdAt && typeof userDataToCache.createdAt.toDate === 'function') {
+            userDataToCache.createdAt = userDataToCache.createdAt.toDate().toISOString();
+          }
+          
+          localStorage.setItem(
+            `userData_${currentUser.uid}`, 
+            JSON.stringify(userDataToCache)
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+    
+    // Cleanup function untuk kasus unmount
+    return () => {
+      // Bisa ditambahkan cleanup jika diperlukan
+    };
+  }, [currentUser]);
 
   const handleLogout = async () => {
+    // Hapus userData dari localStorage saat logout
+    if (currentUser?.uid) {
+      localStorage.removeItem(`userData_${currentUser.uid}`);
+    }
+    
     await logout();
-    navigate("/login");
+    navigate("/");
+  };
+
+  const getUserDisplayName = () => {
+    // Fungsi ini dibuat lebih robust
+    // Prioritas: userData dari state -> localStorage -> currentUser properties
+    
+    if (userData?.name) {
+      return userData.name;
+    }
+    
+    // Jika userData tidak ada di state, coba dari localStorage
+    if (currentUser?.uid) {
+      try {
+        const cachedData = localStorage.getItem(`userData_${currentUser.uid}`);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          if (parsed?.name) {
+            return parsed.name;
+          }
+        }
+      } catch (e) {
+        console.error("Error reading from localStorage:", e);
+      }
+    }
+    
+    // Fallback ke properti currentUser
+    if (currentUser?.displayName) return currentUser.displayName;
+    if (currentUser?.fullName) return currentUser.fullName;
+    
+    // Jika masih tidak ada, gunakan email atau placeholder
+    return currentUser?.email?.split('@')[0] || "User";
   };
 
   return (
@@ -23,10 +119,15 @@ const Navbar = () => {
             {isAuthenticated ? (
               <>
                 <span className="mr-4 text-gray-700">
-                  Hello, {currentUser?.email?.split('@')[0]}
+                  Hello, {isLoading ? (
+                    // Skeleton loader selama loading
+                    <span className="inline-block w-20 h-4 bg-gray-200 animate-pulse rounded"></span>
+                  ) : (
+                    getUserDisplayName()
+                  )}
                 </span>
                 <Link 
-                  to="/dashboard" 
+                  to="/app/dashboard" 
                   className="mr-4 text-gray-700 hover:text-blue-600"
                 >
                   Dashboard
@@ -41,13 +142,16 @@ const Navbar = () => {
             ) : (
               <>
                 <Link 
-                  to="/login" 
+                  to="/auth" 
                   className="text-gray-700 hover:text-blue-600 px-4 py-2"
                 >
                   Login
                 </Link>
                 <Link 
-                  to="/signup"
+                  to={{
+                    pathname: "/auth",
+                    state: { initialTab: "signup" }
+                  }}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
                 >
                   Sign Up
