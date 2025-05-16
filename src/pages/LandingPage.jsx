@@ -156,11 +156,7 @@ const LandingPage = () => {
               {isAuthenticated ? (
                 <Button
                   onClick={() => navigate("/app/dashboard")}
-                  className={`transition-all duration-300 px-5 py-2 rounded-lg ${
-                    isScrolled
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                  }`}
+                  className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 rounded-lg font-semibold transition-colors duration-300"
                 >
                   Dashboard
                 </Button>

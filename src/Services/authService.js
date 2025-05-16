@@ -7,6 +7,7 @@ import {
 
 import {doc, setDoc} from "firebase/firestore";
 import { auth, db } from "../firebase-config";
+import { use } from "react";
 
 // Untuk validasi email telkom
 const isValidTelkomEmail = (email) => {
@@ -70,13 +71,28 @@ export const registerUser = async (email, password, userData) => {
 
 //Login User
 export const loginUser = async (email, password) => {
-    try{
-        const userCredential = await signInWithEmailAndPassword(auth,email,password);
-        return{success: true, user: userCredential.user};
-    }catch(error){
-        return{success: false, error: error.message};
+  try{
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return {success: true, user: userCredential.user};
+  }catch(error){
+    console.error("Login error: ", error.code, error.message);
+    let errorMessage = "Login gagal. Silahkan coba lagi";
+
+    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      errorMessage = "Email atau password yang Anda masukkan salah.";
+    } else if (error.code === 'auth/user-disabled') {
+        errorMessage = "Akun Anda telah dinonaktifkan. Silakan hubungi administrator.";
+    } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Terlalu banyak percobaan login. Silakan coba lagi nanti.";
+    } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Format email tidak valid.";
+    } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = "Gagal terhubung ke server. Periksa koneksi internet Anda.";
     }
-};
+    
+    return {success: false, error: errorMessage, code: error.code};
+  }
+}
 
 //Logout User
 export const logoutUser = async ()=> {

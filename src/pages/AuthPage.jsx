@@ -238,24 +238,35 @@ const AuthPage = () => {
     
     if (!validateLoginForm()) {
       setToast({ 
-        message: "Incorrect Username or Password",
+        message: "Incorrect Email or Password",
         type: "error"
       });
       return;
     }
-
+  
     setLoading(true);
     try {
       const { email, password } = loginData;
       const result = await loginUser(email, password);
-
+  
       if (result.success) {
+        // Tambahkan log untuk debugging
+        console.log("Login successful, user object:", result.user);
+        
+        // Set user di context
+        setCurrentUser(result.user);
+        
+        // Tampilkan pesan sukses
         setToast({
           message: "Login successful!",
           type: "success"
         });
-        setCurrentUser(result.user);
-        navigate("/dashboard");
+        
+        // PERBAIKAN: Menggunakan path yang benar berdasarkan App.jsx
+        setTimeout(() => {
+          console.log("Navigating to app/dashboard...");
+          navigate("/app/dashboard", { replace: true });
+        }, 500);
       } else {
         setError(result.error);
         setToast({
@@ -270,56 +281,61 @@ const AuthPage = () => {
         message: errorMsg,
         type: "error"
       });
-      console.error(error);
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   // Handle signup submission
   const handleSignupSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    
-    if (!validateSignupForm()) {
-      setToast({ 
-        message: "Please fix the errors in the form",
-        type: "error"
-      });
-      return;
-    }
+  e.preventDefault();
+  setError("");
+  
+  if (!validateSignupForm()) {
+    setToast({ 
+      message: "Please fix the errors in the form",
+      type: "error"
+    });
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const { name, email, password } = signupData;
-      const result = await registerUser(email, password, { name });
+  setLoading(true);
+  try {
+    const { name, email, password } = signupData;
+    const result = await registerUser(email, password, { name });
 
-      if (result.success) {
-        setToast({
-          message: "Account created successfully!",
-          type: "success"
-        });
-        setCurrentUser(result.user);
-        navigate("/dashboard");
-      } else {
-        setError(result.error);
-        setToast({
-          message: result.error,
-          type: "error"
-        });
-      }
-    } catch (error) {
-      const errorMsg = "Failed to create an account. Please try again.";
-      setError(errorMsg);
+    if (result.success) {
       setToast({
-        message: errorMsg,
+        message: "Account created successfully!",
+        type: "success"
+      });
+      setCurrentUser(result.user);
+      
+      // PERBAIKAN: Path yang benar untuk signup juga
+      setTimeout(() => {
+        console.log("Account created, navigating to app/dashboard...");
+        navigate("/app/dashboard", { replace: true });
+      }, 500);
+    } else {
+      setError(result.error);
+      setToast({
+        message: result.error,
         type: "error"
       });
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    const errorMsg = "Failed to create an account. Please try again.";
+    setError(errorMsg);
+    setToast({
+      message: errorMsg,
+      type: "error"
+    });
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return(
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
