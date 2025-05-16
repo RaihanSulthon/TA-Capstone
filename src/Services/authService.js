@@ -14,7 +14,7 @@ const isValidTelkomEmail = (email) => {
     return (
       email.endsWith("@student.telkomuniversity.ac.id") || 
       email.endsWith("@telkomuniversity.ac.id") ||
-      email === "admin@capstone.ac.id"
+      email.endsWith("@adminhelpdesk.ac.id")
     );
   };
 
@@ -42,7 +42,7 @@ export const registerUser = async (email, password, userData) => {
         let role = "student";
         if (email.endsWith("@telkomuniversity.ac.id")) {
           role = "lecturer";
-        } else if (email === "admin@capstone.ac.id") {
+        } else if (email.endsWith("@adminhelpdesk.ac.id")) {
           role = "admin";
         }
 

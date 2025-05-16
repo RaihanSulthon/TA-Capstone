@@ -1,3 +1,4 @@
+// src/components/ProtectedRoute.jsx (updated)
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 
@@ -12,14 +13,13 @@ const ProtectedRoute = ({ children }) => {
     );
   }
   
-  // Tambahkan log untuk debugging
-  console.log("ProtectedRoute: isAuthenticated =", isAuthenticated);
-  
+  // Redirect to auth page if not authenticated
   if (!isAuthenticated) {
     console.log("User not authenticated, redirecting to /auth");
     return <Navigate to="/auth" replace />;
   }
   
+  // If authenticated, render children
   return children;
 };
 

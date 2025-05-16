@@ -134,7 +134,7 @@ const AuthPage = () => {
         }
         break;
         
-      case "email":
+        case "email":
         if (!value) {
           error = "Email is required";
         } else if (!/\S+@\S+\.\S+/.test(value)) {
@@ -142,9 +142,9 @@ const AuthPage = () => {
         } else if (
           !value.endsWith("@student.telkomuniversity.ac.id") && 
           !value.endsWith("@telkomuniversity.ac.id") &&
-          value !== "admin@capstone.ac.id"
+          !value.endsWith("@adminhelpdesk.ac.id")
         ) {
-          error = "Email must contain (@student.telkomuniversity.ac.id or @telkomuniversity.ac.id)";
+          error = "Email must contain (@student.telkomuniversity.ac.id, @telkomuniversity.ac.id, or @adminhelpdesk.ac.id)";
         }
         break;
         

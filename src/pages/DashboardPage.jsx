@@ -109,7 +109,7 @@ const DashboardPage = () => {
         return "Student";
       } else if (userData.email.endsWith("@telkomuniversity.ac.id")) {
         return "Lecturer";
-      } else if (userData.email === "admin@capstone.ac.id") {
+      } else if (userData.email.endsWith("@adminhelpdesk.ac.id")) {
         return "Administrator";
       }
     }
