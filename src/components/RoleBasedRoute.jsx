@@ -1,4 +1,4 @@
-// src/components/RoleBasedRoute.jsx
+// src/components/RoleBasedRoute.jsx - Fixed to handle disposisi role correctly
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 
@@ -25,18 +25,14 @@ const RoleBasedRoute = ({
         );
     }
 
-    // Kalau belum authenticated, redirect ke auth page
+    // If not authenticated, redirect to auth page
     if(!isAuthenticated){
         console.log("User not authenticated, redirecting to /auth");
         return <Navigate to="/auth" replace/>
     }
 
-    // Convert "lecturer" to "disposisi" in allowedRoles if present
-    const updatedAllowedRoles = allowedRoles.map(role => 
-        role === "lecturer" ? "disposisi" : role
-    );
-
-    if(updatedAllowedRoles.length > 0 && !updatedAllowedRoles.includes(userRole)){
+    // Check if the user's role is in the allowed roles
+    if(allowedRoles.length > 0 && !allowedRoles.includes(userRole)){
         console.log(`User role (${userRole}) not allowed, redirecting to ${fallbackPath}`);
         return <Navigate to={fallbackPath} replace/>
     }

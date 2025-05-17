@@ -1,4 +1,4 @@
-// src/pages/UserManagementPage.jsx
+// src/pages/admin/UserManagementPage.jsx - Fixed to properly handle disposisi role
 import { useState, useEffect } from "react";
 import { db } from "../../firebase-config";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -62,7 +62,14 @@ const UserManagementPage = () => {
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = filterRole === "all" || user.role === filterRole;
+    // Update filter logic to handle only disposisi role
+    let matchesRole = filterRole === "all";
+    
+    if (filterRole === "disposisi") {
+      matchesRole = user.role === "disposisi";
+    } else if (filterRole === "student" || filterRole === "admin") {
+      matchesRole = user.role === filterRole;
+    }
     
     return matchesSearch && matchesRole;
   });
@@ -221,6 +228,16 @@ const UserManagementPage = () => {
     }
   };
 
+  // Get role display name
+  const getRoleDisplayName = (role) => {
+    switch(role) {
+      case 'admin': return 'Admin';
+      case 'disposisi': return 'Disposisi';
+      case 'student': return 'Student';
+      default: return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
+    }
+  };
+
   // Edit User Modal Content
   const editUserModalContent = (
     <form onSubmit={handleUpdateUser}>
@@ -249,7 +266,7 @@ const UserManagementPage = () => {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="student">Student</option>
-          <option value="lecturer">Lecturer</option>
+          <option value="disposisi">Disposisi</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -295,6 +312,23 @@ const UserManagementPage = () => {
       </div>
     </>
   );
+
+  // Get user count by role
+  const getUserCounts = () => {
+    const studentCount = users.filter(user => user.role === 'student').length;
+    // Count only disposisi roles
+    const disposisiCount = users.filter(user => user.role === 'disposisi').length;
+    const adminCount = users.filter(user => user.role === 'admin').length;
+    
+    return {
+      students: studentCount,
+      disposisi: disposisiCount,
+      admins: adminCount
+    };
+  };
+
+  // Get user counts for display
+  const userCounts = getUserCounts();
 
   if (loading) {
     return (
@@ -347,7 +381,7 @@ const UserManagementPage = () => {
               >
                 <option value="all">All Roles</option>
                 <option value="student">Students</option>
-                <option value="lecturer">Lecturers</option>
+                <option value="disposisi">Disposisi</option>
                 <option value="admin">Admins</option>
               </select>
             </div>
@@ -373,19 +407,19 @@ const UserManagementPage = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Students</p>
           <p className="text-2xl font-bold text-green-600">
-            {users.filter(user => user.role === 'student').length}
+            {userCounts.students}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Lecturers</p>
+          <p className="text-sm text-gray-500">Disposisi</p>
           <p className="text-2xl font-bold text-purple-600">
-            {users.filter(user => user.role === 'lecturer').length}
+            {userCounts.disposisi}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Admins</p>
           <p className="text-2xl font-bold text-red-600">
-            {users.filter(user => user.role === 'admin').length}
+            {userCounts.admins}
           </p>
         </div>
       </div>
@@ -426,9 +460,9 @@ const UserManagementPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                          user.role === 'lecturer' ? 'bg-purple-100 text-purple-800' : 
+                          user.role === 'disposisi' ? 'bg-purple-100 text-purple-800' : 
                           'bg-green-100 text-green-800'}`}>
-                        {user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || "User"}
+                        {getRoleDisplayName(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

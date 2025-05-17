@@ -1,3 +1,4 @@
+// src/services/authService.js - Fixed to set role correctly
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -7,7 +8,6 @@ import {
 
 import {doc, setDoc} from "firebase/firestore";
 import { auth, db } from "../firebase-config";
-import { use } from "react";
 
 // Untuk validasi email telkom
 const isValidTelkomEmail = (email) => {
@@ -39,9 +39,10 @@ export const registerUser = async (email, password, userData) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Set role consistently as 'disposisi' (not 'lecturer')
       let role = "student";
       if (email.endsWith("@telkomuniversity.ac.id")) {
-        role = "disposisi";
+        role = "disposisi"; // Always use 'disposisi' instead of 'lecturer'
       } else if (email.endsWith("@adminhelpdesk.ac.id")) {
         role = "admin";
       }

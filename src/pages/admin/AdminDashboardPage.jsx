@@ -1,4 +1,4 @@
-// src/pages/AdminDashboardPage.jsx
+// src/pages/admin/AdminDashboardPage.jsx - Fixed to properly handle disposisi role
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContexts";
 import { db } from "../../firebase-config";
@@ -12,7 +12,7 @@ const AdminDashboardPage = () => {
   const [userStats, setUserStats] = useState({
     total: 0,
     students: 0,
-    lecturers: 0
+    disposisi: 0 // Changed from lecturers to disposisi
   });
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +56,7 @@ const AdminDashboardPage = () => {
         const statsQuery = await getDocs(collection(db, "users"));
         let totalUsers = 0;
         let studentCount = 0;
-        let lecturerCount = 0;
+        let disposisiCount = 0;
         
         statsQuery.forEach((doc) => {
           const userData = doc.data();
@@ -64,15 +64,16 @@ const AdminDashboardPage = () => {
           
           if (userData.role === "student") {
             studentCount++;
-          } else if (userData.role === "lecturer") {
-            lecturerCount++;
+          } else if (userData.role === "disposisi") {
+            // Count only disposisi role
+            disposisiCount++;
           }
         });
         
         setUserStats({
           total: totalUsers,
           students: studentCount,
-          lecturers: lecturerCount
+          disposisi: disposisiCount
         });
         
       } catch (error) {
@@ -111,6 +112,12 @@ const AdminDashboardPage = () => {
       console.error("Error formatting date:", e);
       return "N/A";
     }
+  };
+
+  // Get proper role display name
+  const getRoleDisplayName = (role) => {
+    if (role === "disposisi") return "Disposisi";
+    return role.charAt(0).toUpperCase() + role.slice(1);
   };
 
   if (loading) {
@@ -174,8 +181,8 @@ const AdminDashboardPage = () => {
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Lecturers</h3>
-          <p className="text-3xl font-bold text-purple-600">{userStats.lecturers}</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Disposisi</h3>
+          <p className="text-3xl font-bold text-purple-600">{userStats.disposisi}</p>
         </div>
       </div>
       
@@ -222,9 +229,9 @@ const AdminDashboardPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                          user.role === 'lecturer' ? 'bg-purple-100 text-purple-800' : 
+                          user.role === 'disposisi' ? 'bg-purple-100 text-purple-800' : 
                           'bg-green-100 text-green-800'}`}>
-                        {user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || "User"}
+                        {getRoleDisplayName(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
