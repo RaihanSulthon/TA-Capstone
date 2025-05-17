@@ -1,9 +1,9 @@
 // src/pages/UserManagementPage.jsx
 import { useState, useEffect } from "react";
-import { db } from "../firebase-config";
+import { db } from "../../firebase-config";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import Modal from "../components/Modal";
-import Toast from "../components/ui/Toast";
+import Modal from "../../components/Modal";
+import Toast from "../../components/Toast";
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);

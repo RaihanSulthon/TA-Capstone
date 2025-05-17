@@ -1,7 +1,7 @@
 // src/pages/AdminDashboardPage.jsx
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContexts";
-import { db } from "../firebase-config";
+import { useAuth } from "../../contexts/AuthContexts";
+import { db } from "../../firebase-config";
 import { doc, getDoc, collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { Link } from "react-router-dom";
 

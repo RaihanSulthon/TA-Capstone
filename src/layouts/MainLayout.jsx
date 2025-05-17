@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 import Navbar from "../components/Navbar";
-import NavbarAdmin from "../components/NavbarAdmin";
+import NavbarAdmin from "../components/admin/NavbarAdmin";
 
 const MainLayout = () => {
   const { userRole, isAdmin } = useAuth();

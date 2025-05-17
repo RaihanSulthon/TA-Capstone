@@ -2,12 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContexts";
 import MainLayout from "./layouts/MainLayout";
 import LandingPage from "./pages/LandingPage";
-import AuthPage from "./pages/AuthPage";
+import AuthPage from "./pages/auth/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleBasedRoute from "./components/RoleBasedRoute";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
-import UserManagementPage from "./pages/UserManagementPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import UserManagementPage from "./pages/admin/UserManagementPage";
 import AccessDeniedPage from "./pages/AccessDeniedPage";
 import "./App.css";
 

@@ -1,8 +1,8 @@
 // src/components/NavbarAdmin.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../../contexts/AuthContexts";
 import { useState } from "react";
-import Modal from "./Modal";
+import Modal from "../Modal";
 
 const NavbarAdmin = () => {
   const { currentUser, logout, isAdmin } = useAuth();
