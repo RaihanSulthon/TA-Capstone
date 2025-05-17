@@ -1,15 +1,15 @@
-
-// src/pages/student/StudentTicketsPage.jsx
+// src/pages/student/StudentTicketsPage.jsx - Updated with listener cleanup
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
 import { db } from "../../firebase-config";
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
 
 const StudentTicketsPage = () => {
   const { currentUser, userRole } = useAuth();
+  const { addListener } = useFirestoreListeners();
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,14 +103,39 @@ const StudentTicketsPage = () => {
           orderBy("createdAt", "desc")
         );
         
-        const ticketsSnapshot = await getDocs(ticketsQuery);
-        const ticketList = ticketsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        // Use onSnapshot instead of getDocs for real-time updates
+        const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+          const ticketList = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          
+          setTickets(ticketList);
+          setLoading(false);
+        }, (error) => {
+          console.error("Error in tickets listener:", error);
+          // Fall back to regular query if listener fails
+          getDocs(ticketsQuery).then((snapshot) => {
+            const ticketList = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            
+            setTickets(ticketList);
+            setLoading(false);
+          }).catch(err => {
+            console.error("Fallback error:", err);
+            setToast({
+              message: "Gagal mengambil data tiket. Silakan coba lagi nanti.",
+              type: "error"
+            });
+            setLoading(false);
+          });
+        });
         
-        setTickets(ticketList);
-        setLoading(false);
+        // Register the listener for cleanup
+        addListener(unsubscribe);
+        
       } catch (error) {
         console.error("Error fetching tickets:", error);
         setToast({
@@ -122,7 +147,7 @@ const StudentTicketsPage = () => {
     };
     
     fetchTickets();
-  }, [currentUser, userRole, navigate]);
+  }, [currentUser, userRole, navigate, addListener]);
   
   // Filter tickets
   const filteredTickets = tickets.filter(ticket => {

@@ -1,14 +1,16 @@
-// src/pages/lecturer/LecturerTicketsPage.jsx
+
+// src/pages/lecturer/DisposisiTicketsPage.jsx - Updated with listener cleanup
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
 import { db } from "../../firebase-config";
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
 
-const LecturerTicketsPage = () => {
+const DisposisiTicketsPage = () => {
   const { currentUser, userRole } = useAuth();
+  const { addListener } = useFirestoreListeners();
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,35 +92,68 @@ const LecturerTicketsPage = () => {
   // Fetch tickets
   useEffect(() => {
     const fetchTickets = async () => {
-      if (userRole !== "lecturer" || !currentUser) {
+      if (userRole !== "disposisi" || !currentUser) {
         navigate("/access-denied");
         return;
       }
       
       try {
-        // Fetch tickets assigned to this lecturer
+        // Fetch tickets assigned to this disposisi
         const ticketsQuery = query(
           collection(db, "tickets"),
           where("assignedTo", "==", currentUser.uid),
           orderBy("createdAt", "desc")
         );
         
-        const ticketsSnapshot = await getDocs(ticketsQuery);
-        const ticketList = ticketsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        // Use onSnapshot for real-time updates
+        const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+          const ticketList = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          
+          setTickets(ticketList);
+          
+          // Count unread notifications (new tickets)
+          const newTicketsCount = ticketList.filter(ticket => 
+            ticket.status === "new" && 
+            !ticket.readByDisposisi
+          ).length;
+          
+          setNotificationsCount(newTicketsCount);
+          setLoading(false);
+        }, (error) => {
+          console.error("Error in tickets listener:", error);
+          // Fallback to one-time get if listener fails
+          getDocs(ticketsQuery).then((querySnapshot) => {
+            const ticketList = querySnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            
+            setTickets(ticketList);
+            
+            // Count unread notifications (new tickets)
+            const newTicketsCount = ticketList.filter(ticket => 
+              ticket.status === "new" && 
+              !ticket.readByDisposisi
+            ).length;
+            
+            setNotificationsCount(newTicketsCount);
+            setLoading(false);
+          }).catch(err => {
+            console.error("Fallback error:", err);
+            setToast({
+              message: "Gagal mengambil data tiket. Silakan coba lagi nanti.",
+              type: "error"
+            });
+            setLoading(false);
+          });
+        });
         
-        setTickets(ticketList);
+        // Register the listener for cleanup
+        addListener(unsubscribe);
         
-        // Count unread notifications (new tickets)
-        const newTicketsCount = ticketList.filter(ticket => 
-          ticket.status === "new" && 
-          !ticket.readByLecturer
-        ).length;
-        
-        setNotificationsCount(newTicketsCount);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching tickets:", error);
         setToast({
@@ -130,7 +165,7 @@ const LecturerTicketsPage = () => {
     };
     
     fetchTickets();
-  }, [currentUser, userRole, navigate]);
+  }, [currentUser, userRole, navigate, addListener]);
   
   // Filter tickets
   const filteredTickets = tickets.filter(ticket => {
@@ -323,7 +358,7 @@ const LecturerTicketsPage = () => {
               ) : (
                 filteredTickets.map((ticket) => {
                   const statusBadge = getStatusBadge(ticket.status);
-                  const isNew = ticket.status === "new" && !ticket.readByLecturer;
+                  const isNew = ticket.status === "new" && !ticket.readByDisposisi;
                   
                   return (
                     <tr key={ticket.id} className={`hover:bg-gray-50 ${isNew ? "bg-blue-50" : ""}`}>
@@ -381,4 +416,4 @@ const LecturerTicketsPage = () => {
   );
 };
 
-export default LecturerTicketsPage;
+export default DisposisiTicketsPage;

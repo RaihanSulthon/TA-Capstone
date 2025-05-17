@@ -1,13 +1,14 @@
-// src/components/NotificationsSystem.jsx
-import { useState, useEffect } from 'react';
+// src/components/NotificationsSystem.jsx - Fix maximum update depth
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContexts';
+import { useAuth, useFirestoreListeners } from '../contexts/AuthContexts';
 import { db } from '../firebase-config';
-import { collection, query, where, onSnapshot, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, limit, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Modal from './Modal';
 
 const NotificationsSystem = () => {
   const { currentUser, userRole } = useAuth();
+  const { addListener } = useFirestoreListeners();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -53,9 +54,16 @@ const NotificationsSystem = () => {
     }
   };
   
+  // Update unread count - use useCallback to prevent recreation on every render
+  const updateUnreadCount = useCallback((notifsList) => {
+    const count = notifsList.filter(n => !n.read).length;
+    setUnreadCount(count);
+  }, []);
+  
   // Listen for notifications
   useEffect(() => {
-    if (!currentUser) return;
+    // Don't start a listener if no user is authenticated
+    if (!currentUser || !userRole) return;
     
     let notificationsQuery;
     
@@ -67,8 +75,8 @@ const NotificationsSystem = () => {
         orderBy('createdAt', 'desc'),
         limit(10)
       );
-    } else if (userRole === 'lecturer') {
-      // Lecturer notifications: assigned tickets and status changes
+    } else if (userRole === 'disposisi') {
+      // Disposisi notifications: assigned tickets and status changes
       notificationsQuery = query(
         collection(db, 'notifications'),
         where('recipientId', '==', currentUser.uid),
@@ -83,10 +91,12 @@ const NotificationsSystem = () => {
         orderBy('createdAt', 'desc'),
         limit(10)
       );
+    } else {
+      // No valid role, return early
+      return;
     }
     
-    if (!notificationsQuery) return;
-    
+    // Register the listener 
     const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
       const notificationsList = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -94,11 +104,18 @@ const NotificationsSystem = () => {
       }));
       
       setNotifications(notificationsList);
-      setUnreadCount(notificationsList.filter(n => !n.read).length);
+      // Update unread count once when we get notifications
+      updateUnreadCount(notificationsList);
+    }, (error) => {
+      // Handle error silently - this is likely to fail on logout which is expected
+      console.error("Notifications listener error:", error);
     });
     
-    return () => unsubscribe();
-  }, [currentUser, userRole]);
+    // Register the listener for cleanup
+    addListener(unsubscribe);
+    
+    // No return cleanup here as we're using the AuthContext cleanup mechanism
+  }, [currentUser, userRole, addListener, updateUnreadCount]);
   
   // Mark notification as read
   const markAsRead = async (notificationId) => {
@@ -107,6 +124,18 @@ const NotificationsSystem = () => {
       await updateDoc(notificationRef, {
         read: true
       });
+      
+      // Update local state to reflect the read notification
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, read: true } 
+            : notification
+        )
+      );
+      
+      // Update unread count without using a separate useEffect
+      setUnreadCount(prevCount => Math.max(0, prevCount - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -114,23 +143,76 @@ const NotificationsSystem = () => {
   
   // Mark all as read
   const markAllAsRead = async () => {
+    if (unreadCount === 0) return;
+
     try {
-      const promises = notifications
-        .filter(n => !n.read)
-        .map(n => {
-          const notificationRef = doc(db, 'notifications', n.id);
-          return updateDoc(notificationRef, { read: true });
-        });
+      const unreadNotifications = notifications.filter(n => !n.read);
+      const promises = unreadNotifications.map(n => {
+        const notificationRef = doc(db, 'notifications', n.id);
+        return updateDoc(notificationRef, { read: true });
+      });
       
       await Promise.all(promises);
+      
+      // Update local state
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => ({ ...notification, read: true }))
+      );
+      
+      // Set unread count to 0 directly
+      setUnreadCount(0);
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
   };
   
+  // Clear individual notification
+  const clearNotification = async (notificationId, e) => {
+    e.stopPropagation(); // Prevent triggering the parent click handler
+    
+    try {
+      const notificationRef = doc(db, 'notifications', notificationId);
+      await deleteDoc(notificationRef);
+      
+      // Update local state
+      const updatedNotifications = notifications.filter(n => n.id !== notificationId);
+      setNotifications(updatedNotifications);
+      
+      // Update unread count if needed
+      const wasUnread = notifications.find(n => n.id === notificationId && !n.read);
+      if (wasUnread) {
+        setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+  
+  // Clear all notifications
+  const clearAllNotifications = async () => {
+    if (!notifications.length) return;
+    
+    try {
+      const promises = notifications.map(n => {
+        const notificationRef = doc(db, 'notifications', n.id);
+        return deleteDoc(notificationRef);
+      });
+      
+      await Promise.all(promises);
+      
+      // Update local state
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+    }
+  };
+  
   // Handle notification click
   const handleNotificationClick = async (notification) => {
-    await markAsRead(notification.id);
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
     
     if (notification.ticketId) {
       navigate(`/app/tickets/${notification.ticketId}`);
@@ -175,10 +257,12 @@ const NotificationsSystem = () => {
               {notifications.map(notification => (
                 <div 
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                  className={`p-4 hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''} relative`}
                 >
-                  <div className="flex">
+                  <div 
+                    className="flex cursor-pointer"
+                    onClick={() => handleNotificationClick(notification)}
+                  >
                     <div className={`flex-shrink-0 w-2 ${!notification.read ? 'bg-blue-500' : 'bg-transparent'} mr-3 rounded-full`}></div>
                     <div className="flex-1">
                       <div className="flex justify-between">
@@ -194,19 +278,37 @@ const NotificationsSystem = () => {
                       </p>
                     </div>
                   </div>
+                  {/* Clear button for individual notification */}
+                  <button
+                    onClick={(e) => clearNotification(notification.id, e)}
+                    className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+                    title="Hapus notifikasi"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
         
-        {notifications.length > 0 && unreadCount > 0 && (
-          <div className="mt-4 flex justify-end">
+        {notifications.length > 0 && (
+          <div className="mt-4 flex justify-between">
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Tandai semua sudah dibaca
+              </button>
+            )}
             <button
-              onClick={markAllAsRead}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              onClick={clearAllNotifications}
+              className="text-sm text-red-600 hover:text-red-800 ml-auto"
             >
-              Tandai semua sudah dibaca
+              Hapus semua notifikasi
             </button>
           </div>
         )}

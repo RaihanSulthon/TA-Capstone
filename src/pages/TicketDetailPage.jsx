@@ -1,11 +1,24 @@
+// src/pages/TicketDetailPage.jsx
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../contexts/AuthContexts";
 import { db } from "../firebase-config";
-import { doc, getDoc, updateDoc, arrayUnion, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  arrayUnion, 
+  onSnapshot, 
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs 
+} from "firebase/firestore";
 import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import Button from "../components/forms/Button";
+
 
 const TicketDetailPage = () => {
   const { ticketId } = useParams();
@@ -17,10 +30,11 @@ const TicketDetailPage = () => {
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
-  const [lecturers, setLecturers] = useState([]);
-  const [selectedLecturer, setSelectedLecturer] = useState("");
+  const [disposisiStaff, setDisposisiStaff] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [loadingStaff, setLoadingStaff] = useState(false); // Added missing state variable
 
   // Format timestamp
   const formatDate = (timestamp) => {
@@ -147,8 +161,8 @@ const TicketDetailPage = () => {
     // Admin can always view tickets
     if (userRole === "admin") return true;
     
-    // Lecturer can view if assigned to them
-    if (userRole === "lecturer" && ticket.assignedTo === currentUser.uid) return true;
+    // Disposisi can view if assigned to them
+    if (userRole === "disposisi" && ticket.assignedTo === currentUser.uid) return true;
     
     // Student can view if they created the ticket
     if (userRole === "student" && ticket.userId === currentUser.uid) return true;
@@ -184,33 +198,47 @@ const TicketDetailPage = () => {
     fetchTicket();
   }, [ticketId]);
 
-  // Fetch lecturers for assignment
+  // Fetch disposisi staff for assignment
   useEffect(() => {
-    const fetchLecturers = async () => {
+    const fetchDisposisiStaff = async () => {
       if (userRole !== "admin") return;
       
       try {
-        // In a real application, you would fetch lecturers from Firestore
-        // For this example, we'll use dummy data
-        // TODO: Replace with actual Firestore query
-        setLecturers([
-          { id: "lecturer1", name: "Dr. Ahmad Firdaus", email: "ahmad@telkomuniversity.ac.id" },
-          { id: "lecturer2", name: "Dr. Siti Rahma", email: "siti@telkomuniversity.ac.id" },
-          { id: "lecturer3", name: "Prof. Budi Santoso", email: "budi@telkomuniversity.ac.id" }
-        ]);
+        setLoadingStaff(true); // Add loading state
+        
+        // Fetch actual disposisi staff from Firestore
+        const staffQuery = query(
+          collection(db, "users"),
+          where("role", "==", "disposisi")
+        );
+        
+        const staffSnapshot = await getDocs(staffQuery);
+        const staffData = staffSnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name || "No Name",
+          email: doc.data().email,
+          ...doc.data()
+        }));
+        
+        console.log("Fetched disposisi staff:", staffData);
+        setDisposisiStaff(staffData);
       } catch (error) {
-        console.error("Error fetching lecturers:", error);
+        console.error("Error fetching disposisi staff:", error);
+        // Fallback to empty array if there's an error
+        setDisposisiStaff([]);
+      } finally {
+        setLoadingStaff(false); // Set loading to false when done
       }
     };
     
-    fetchLecturers();
+    fetchDisposisiStaff();
   }, [userRole]);
 
-  // Handle assign ticket to lecturer
+  // Handle assign ticket to disposisi staff
   const handleAssignTicket = async () => {
-    if (!selectedLecturer) {
+    if (!selectedStaff) {
       setToast({
-        message: "Silakan pilih dosen terlebih dahulu",
+        message: "Silakan pilih staff disposisi terlebih dahulu",
         type: "error"
       });
       return;
@@ -223,13 +251,13 @@ const TicketDetailPage = () => {
       // Update ticket in Firestore
       const ticketRef = doc(db, "tickets", ticketId);
       
-      // Find selected lecturer data
-      const lecturer = lecturers.find(l => l.id === selectedLecturer);
+      // Find selected disposisi staff data
+      const staff = disposisiStaff.find(s => s.id === selectedStaff);
       
       await updateDoc(ticketRef, {
-        assignedTo: selectedLecturer,
-        assignedToName: lecturer?.name || "Unknown",
-        assignedToEmail: lecturer?.email || "Unknown",
+        assignedTo: selectedStaff,
+        assignedToName: staff?.name || "Unknown",
+        assignedToEmail: staff?.email || "Unknown",
         status: "in_progress",
         updatedAt: serverTimestamp(),
         // Add assignment to history
@@ -237,17 +265,17 @@ const TicketDetailPage = () => {
           action: "assigned",
           assignedBy: currentUser.uid,
           assignedByName: currentUser.displayName || currentUser.email,
-          assignedTo: selectedLecturer,
-          assignedToName: lecturer?.name || "Unknown",
+          assignedTo: selectedStaff,
+          assignedToName: staff?.name || "Unknown",
           timestamp: new Date()
         })
       });
       
-      // Send notification to assigned lecturer
+      // Send notification to assigned disposisi staff
       await notifyTicketAssignment(
         ticket,
-        selectedLecturer,
-        lecturer?.name || "Unknown",
+        selectedStaff,
+        staff?.name || "Unknown",
         currentUser.uid,
         currentUser.displayName || currentUser.email
       );
@@ -381,6 +409,11 @@ const TicketDetailPage = () => {
     }
   };
 
+  // Handle go back
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -396,7 +429,7 @@ const TicketDetailPage = () => {
           <p>{error}</p>
         </div>
         <Button
-          onClick={() => navigate(-1)}
+          onClick={handleGoBack}
           className="mt-4"
         >
           Kembali
@@ -412,7 +445,7 @@ const TicketDetailPage = () => {
           <p>Tiket tidak ditemukan</p>
         </div>
         <Button
-          onClick={() => navigate(-1)}
+          onClick={handleGoBack}
           className="mt-4"
         >
           Kembali
@@ -429,7 +462,7 @@ const TicketDetailPage = () => {
           <p>Anda tidak memiliki akses untuk melihat tiket ini</p>
         </div>
         <Button
-          onClick={() => navigate(-1)}
+          onClick={handleGoBack}
           className="mt-4"
         >
           Kembali
@@ -451,27 +484,41 @@ const TicketDetailPage = () => {
         />
       )}
       
-      {/* Ticket header */}
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">{ticket.judul}</h1>
-          <div className="flex items-center text-gray-600 text-sm">
-            <span>Ticket #{ticket.id.substring(0, 8)}</span>
-            <span className="mx-2">•</span>
-            <span>Dibuat pada {formatDate(ticket.createdAt)}</span>
-            <span className="mx-2">•</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}>
-              {statusBadge.label}
-            </span>
-          </div>
-        </div>
-        
-        <Button
-          onClick={() => navigate(-1)}
-          className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+      {/* Back button and title in one line */}
+      <div className="flex items-center mb-6">
+        <button 
+          onClick={handleGoBack}
+          className="mr-3 rounded-full w-10 h-10 flex items-center justify-center border border-blue-300 text-blue-500 hover:bg-blue-50 transition-all duration-300"
+          aria-label="Back"
         >
-          Kembali
-        </Button>
+          <svg 
+            className="h-5 w-5" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+            />
+          </svg>
+        </button>
+        <h1 className="text-2xl font-bold">{ticket.judul}</h1>
+      </div>
+
+      {/* Ticket info line */}
+      <div className="mb-6">
+        <div className="flex items-center text-gray-600 text-sm">
+          <span>Ticket #{ticket.id.substring(0, 8)}</span>
+          <span className="mx-2">•</span>
+          <span>Dibuat pada {formatDate(ticket.createdAt)}</span>
+          <span className="mx-2">•</span>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}>
+            {statusBadge.label}
+          </span>
+        </div>
       </div>
       
       {/* Main content */}
@@ -575,7 +622,7 @@ const TicketDetailPage = () => {
                           <p className="text-sm font-medium">{item.createdByName || "Unknown"}</p>
                           <p className="text-xs text-gray-500">{formatDate(item.timestamp)}</p>
                         </div>
-                        <p className="text-sm text-gray-600">{item.createdByRole === "admin" ? "Admin" : item.createdByRole === "lecturer" ? "Dosen" : "Mahasiswa"}</p>
+                        <p className="text-sm text-gray-600">{item.createdByRole === "admin" ? "Admin" : item.createdByRole === "disposisi" ? "Disposisi" : "Mahasiswa"}</p>
                       </div>
                     </div>
                     <div className="pl-9 text-sm text-gray-700">
@@ -595,18 +642,18 @@ const TicketDetailPage = () => {
           <h3 className="font-medium mb-4">Tindakan</h3>
           
           <div className="flex flex-wrap gap-3">
-            {/* Admin can assign tickets to lecturers */}
+            {/* Admin can assign tickets to disposisi staff */}
             {userRole === "admin" && ticket.status === "new" && (
               <Button
                 onClick={() => setIsAssignModalOpen(true)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                Disposisi ke Dosen
+                Disposisi ke Staff
               </Button>
             )}
             
-            {/* Admin and Lecturer can change status */}
-            {(userRole === "admin" || (userRole === "lecturer" && ticket.assignedTo === currentUser.uid)) && (
+            {/* Admin and Disposisi can change status */}
+            {(userRole === "admin" || (userRole === "disposisi" && ticket.assignedTo === currentUser.uid)) && (
               <>
                 {ticket.status === "new" && (
                   <Button
@@ -640,8 +687,8 @@ const TicketDetailPage = () => {
               </>
             )}
             
-            {/* Admin and Lecturer can give feedback */}
-            {(userRole === "admin" || (userRole === "lecturer" && ticket.assignedTo === currentUser.uid)) && (
+            {/* Admin and Disposisi can give feedback */}
+            {(userRole === "admin" || (userRole === "disposisi" && ticket.assignedTo === currentUser.uid)) && (
               <Button
                 onClick={() => setIsFeedbackModalOpen(true)}
                 className="bg-purple-600 hover:bg-purple-700"
@@ -657,25 +704,38 @@ const TicketDetailPage = () => {
       <Modal
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
-        title="Disposisi Tiket ke Dosen"
+        title="Disposisi Tiket ke Staff"
         size="md"
       >
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-medium mb-2">
-            Pilih Dosen
+            Pilih Staff Disposisi
           </label>
-          <select
-            value={selectedLecturer}
-            onChange={(e) => setSelectedLecturer(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">-- Pilih Dosen --</option>
-            {lecturers.map(lecturer => (
-              <option key={lecturer.id} value={lecturer.id}>
-                {lecturer.name} ({lecturer.email})
-              </option>
-            ))}
-          </select>
+          
+          {loadingStaff ? (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            disposisiStaff.length > 0 ? (
+              <select
+                value={selectedStaff}
+                onChange={(e) => setSelectedStaff(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Pilih Staff Disposisi --</option>
+                {disposisiStaff.map(staff => (
+                  <option key={staff.id} value={staff.id}>
+                    {staff.name || staff.email} ({staff.email})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="py-2 text-yellow-600">
+                Tidak ada staff disposisi yang tersedia. Silakan tambahkan pengguna dengan role disposisi terlebih dahulu.
+              </div>
+            )
+          )}
         </div>
         
         <div className="flex justify-end space-x-3 mt-6">
@@ -687,6 +747,7 @@ const TicketDetailPage = () => {
           </Button>
           <Button
             onClick={handleAssignTicket}
+            disabled={!selectedStaff || loadingStaff}
           >
             Disposisi
           </Button>

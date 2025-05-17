@@ -1,4 +1,4 @@
-// Modified App.jsx with ticketing system routes
+// Modified App.jsx with updated routes
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContexts";
 import MainLayout from "./layouts/MainLayout";
@@ -15,7 +15,7 @@ import AccessDeniedPage from "./pages/AccessDeniedPage";
 import FormKeluhanMahasiswaPage from "./pages/FormKeluhanMahasiswaPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import TicketManagementPage from "./pages/admin/TicketManagementPage";
-import LecturerTicketsPage from "./pages/lecturer/LecturerTicketsPage";
+import DisposisiTicketsPage from "./pages/lecturer/DisposisiTicketsPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 
 import "./App.css";
@@ -60,12 +60,12 @@ function App() {
               }
             />
 
-            {/* Ticket System Routes - Lecturer */}
+            {/* Ticket System Routes - Disposisi (formerly Lecturer) */}
             <Route
               path="lecturer-tickets"
               element={
-                <RoleBasedRoute allowedRoles={["lecturer"]} fallbackPath="/access-denied">
-                  <LecturerTicketsPage />
+                <RoleBasedRoute allowedRoles={["disposisi"]} fallbackPath="/access-denied">
+                  <DisposisiTicketsPage />
                 </RoleBasedRoute>
               }
             />

@@ -1,4 +1,4 @@
-// src/layouts/MainLayout.jsx - Updated with Ticketing System navigation
+// src/layouts/MainLayout.jsx
 import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
@@ -75,8 +75,8 @@ const MainLayout = () => {
                     </>
                   )}
                   
-                  {/* Lecturer Specific Navigation */}
-                  {userRole === "lecturer" && (
+                  {/* Disposisi Specific Navigation */}
+                  {userRole === "disposisi" && (
                     <>
                       <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
                         Helpdesk

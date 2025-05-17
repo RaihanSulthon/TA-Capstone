@@ -1,4 +1,4 @@
-// src/components/Navbar.jsx (updated with notifications)
+// src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 import { useState } from "react";
@@ -40,7 +40,7 @@ const Navbar = () => {
     switch (userRole) {
       case 'admin':
         return 'bg-red-100 text-red-800';
-      case 'lecturer':
+      case 'disposisi':
         return 'bg-purple-100 text-purple-800';
       case 'student':
       default:
@@ -123,7 +123,7 @@ const Navbar = () => {
                     </Link>
                   )}
                   
-                  {userRole === 'lecturer' && (
+                  {userRole === 'disposisi' && (
                     <Link 
                       to="/app/lecturer-tickets" 
                       className="mr-4 text-gray-700 hover:text-blue-600"
