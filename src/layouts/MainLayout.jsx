@@ -1,4 +1,4 @@
-// src/layouts/MainLayout.jsx
+// src/layouts/MainLayout.jsx - Updated with Ticketing System navigation
 import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
@@ -45,6 +45,54 @@ const MainLayout = () => {
                   >
                     Dashboard
                   </Link>
+                  
+                  {/* Student Specific Navigation */}
+                  {userRole === "student" && (
+                    <>
+                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                        Helpdesk
+                      </div>
+                      <Link
+                        to="/app/submit-ticket"
+                        className={`block px-4 py-2 rounded-md mb-1 ${
+                          isActive('/app/submit-ticket')
+                            ? 'bg-blue-100 text-blue-700 font-medium'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Buat Tiket Baru
+                      </Link>
+                      <Link
+                        to="/app/my-tickets"
+                        className={`block px-4 py-2 rounded-md mb-1 ${
+                          isActive('/app/my-tickets')
+                            ? 'bg-blue-100 text-blue-700 font-medium'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Tiket Saya
+                      </Link>
+                    </>
+                  )}
+                  
+                  {/* Lecturer Specific Navigation */}
+                  {userRole === "lecturer" && (
+                    <>
+                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                        Helpdesk
+                      </div>
+                      <Link
+                        to="/app/lecturer-tickets"
+                        className={`block px-4 py-2 rounded-md mb-1 ${
+                          isActive('/app/lecturer-tickets')
+                            ? 'bg-blue-100 text-blue-700 font-medium'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Kelola Tiket
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
               
@@ -70,6 +118,21 @@ const MainLayout = () => {
                     }`}
                   >
                     Manage Users
+                  </Link>
+                  
+                  {/* Admin Ticket Management */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                    Helpdesk
+                  </div>
+                  <Link
+                    to="/admin/tickets"
+                    className={`block px-4 py-2 rounded-md mb-1 ${
+                      isActive('/admin/tickets')
+                        ? 'bg-blue-100 text-blue-700 font-medium'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Manajemen Tiket
                   </Link>
                 </>
               )}

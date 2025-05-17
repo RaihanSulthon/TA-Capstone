@@ -1,8 +1,9 @@
-// src/components/Navbar.jsx (updated)
+// src/components/Navbar.jsx (updated with notifications)
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 import { useState } from "react";
 import Modal from "./Modal";
+import NotificationsSystem from "./NotificationsSystem";
 
 const Navbar = () => {
   const { currentUser, logout, isAuthenticated, userRole, isAdmin } = useAuth();
@@ -100,12 +101,36 @@ const Navbar = () => {
                     )}
                   </div>
                   
+                  {/* Add Notifications System */}
+                  <div className="mr-6">
+                    <NotificationsSystem />
+                  </div>
+                  
                   <Link 
                     to="/app/dashboard" 
                     className="mr-4 text-gray-700 hover:text-blue-600"
                   >
                     Dashboard
                   </Link>
+                  
+                  {/* Role-specific Links */}
+                  {userRole === 'student' && (
+                    <Link 
+                      to="/app/my-tickets" 
+                      className="mr-4 text-gray-700 hover:text-blue-600"
+                    >
+                      Tiket Saya
+                    </Link>
+                  )}
+                  
+                  {userRole === 'lecturer' && (
+                    <Link 
+                      to="/app/lecturer-tickets" 
+                      className="mr-4 text-gray-700 hover:text-blue-600"
+                    >
+                      Kelola Tiket
+                    </Link>
+                  )}
                   
                   {isAdmin() && (
                     <Link 

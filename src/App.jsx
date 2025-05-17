@@ -1,3 +1,4 @@
+// Modified App.jsx with ticketing system routes
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContexts";
 import MainLayout from "./layouts/MainLayout";
@@ -9,6 +10,14 @@ import RoleBasedRoute from "./components/RoleBasedRoute";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import UserManagementPage from "./pages/admin/UserManagementPage";
 import AccessDeniedPage from "./pages/AccessDeniedPage";
+
+// Ticketing System Pages
+import FormKeluhanMahasiswaPage from "./pages/FormKeluhanMahasiswaPage";
+import TicketDetailPage from "./pages/TicketDetailPage";
+import TicketManagementPage from "./pages/admin/TicketManagementPage";
+import LecturerTicketsPage from "./pages/lecturer/LecturerTicketsPage";
+import StudentTicketsPage from "./pages/student/StudentTicketsPage";
+
 import "./App.css";
 
 function App() {
@@ -28,6 +37,45 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Ticket System Routes - Student */}
+            <Route
+              path="submit-ticket"
+              element={
+                <RoleBasedRoute allowedRoles={["student"]} fallbackPath="/access-denied">
+                  <FormKeluhanMahasiswaPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            <Route
+              path="my-tickets"
+              element={
+                <RoleBasedRoute allowedRoles={["student"]} fallbackPath="/access-denied">
+                  <StudentTicketsPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* Ticket System Routes - Lecturer */}
+            <Route
+              path="lecturer-tickets"
+              element={
+                <RoleBasedRoute allowedRoles={["lecturer"]} fallbackPath="/access-denied">
+                  <LecturerTicketsPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* Ticket Detail - Can be viewed by all roles based on permissions */}
+            <Route
+              path="tickets/:ticketId"
+              element={
+                <ProtectedRoute>
+                  <TicketDetailPage />
                 </ProtectedRoute>
               }
             />
@@ -58,6 +106,16 @@ function App() {
               element={
                 <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
                   <UserManagementPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* Admin Ticket Management Routes */}
+            <Route
+              path="tickets"
+              element={
+                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                  <TicketManagementPage />
                 </RoleBasedRoute>
               }
             />
