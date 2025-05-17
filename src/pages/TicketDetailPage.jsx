@@ -548,6 +548,10 @@ const TicketDetailPage = () => {
 
   const statusBadge = getStatusBadge(ticket.status);
   const fileType = ticket.lampiranURL ? getFileType(ticket.lampiranURL) : 'unknown';
+  console.log("Ticket data:", ticket);
+  console.log("Lampiran URL:", ticket.lampiranURL);
+  console.log("Lampiran Path:", ticket.lampiranStoragePath);
+  console.log("Loading Attachment:", loadingAttachment);
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -666,12 +670,12 @@ const TicketDetailPage = () => {
               
               {loadingAttachment ? (
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                  <div className="animate-spin h-4 w-4 border--fulrder-blue-500 rounded-full border-t-transparent"></div>
                   <span>Memuat lampiran...</span>
                 </div>
               ) : ticket.lampiranURL ? (
                 <div className="border rounded-md p-4 bg-gray-50">
-                  {fileType === 'image' ? (
+                  {getFileType(ticket.lampiranURL) === 'image' ? (
                     <div className="flex flex-col items-center">
                       <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
                         <img 
@@ -708,7 +712,7 @@ const TicketDetailPage = () => {
                         </button>
                       </div>
                     </div>
-                  ) : fileType === 'pdf' ? (
+                  ) : getFileType(ticket.lampiranURL) === 'pdf' ? (
                     <div className="flex flex-col">
                       <div className="flex items-center space-x-2 mb-3">
                         <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -744,7 +748,7 @@ const TicketDetailPage = () => {
                         <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                         </svg>
-                        <span className="text-sm">Lampiran</span>
+                        <span className="text-sm">{ticket.lampiran || "Lampiran"}</span>
                       </div>
                       <a 
                         href={ticket.lampiranURL} 
