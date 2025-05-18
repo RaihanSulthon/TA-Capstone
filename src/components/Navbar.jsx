@@ -1,8 +1,7 @@
-// Updated Navbar.jsx with logo and adjusted text positioning
-
+// src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "./Modal";
 import NotificationsSystem from "./NotificationsSystem";
 
@@ -10,6 +9,21 @@ const Navbar = () => {
   const { currentUser, logout, isAuthenticated, userRole, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  // Fetch user data from localStorage on component mount
+  useEffect(() => {
+    if (currentUser?.uid) {
+      const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
+      if (cachedUserData) {
+        try {
+          setUserData(JSON.parse(cachedUserData));
+        } catch (e) {
+          console.error("Error parsing cached user data:", e);
+        }
+      }
+    }
+  }, [currentUser]);
 
   const openLogoutModal = () => {
     setIsLogoutModalOpen(true);
@@ -26,13 +40,22 @@ const Navbar = () => {
     closeLogoutModal();
   };
 
-  // Get the display name for user
+  // Get the display name for user - prioritize stored name from userData
   const getUserDisplayName = () => {
+    // First check if we have the name in cached userData
+    if (userData?.name) return userData.name;
+    
+    // Then check displayName from Firebase
     if (currentUser?.displayName) return currentUser.displayName;
+    
+    // For admin, always display consistent name
+    if (userRole === 'admin') return "Admin 1";
+    
+    // If nothing else, use email username
     if (currentUser?.email) {
-      // Extract name from email (part before @)
       return currentUser.email.split('@')[0];
     }
+    
     return "User";
   };
 
@@ -84,7 +107,7 @@ const Navbar = () => {
       <nav className="bg-white shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            {/* Updated Logo and App Name with better positioning */}
+            {/* Logo and App Name */}
             <Link to="/" className="flex items-center">
               <svg
                 className="w-8 h-8 text-blue-600 mr-2"

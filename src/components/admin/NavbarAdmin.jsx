@@ -1,15 +1,28 @@
-
-// Updated NavbarAdmin.jsx with logo and adjusted text positioning
-
+// src/components/admin/NavbarAdmin.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContexts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "../Modal";
 
 const NavbarAdmin = () => {
   const { currentUser, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  // Fetch user data from localStorage on component mount
+  useEffect(() => {
+    if (currentUser?.uid) {
+      const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
+      if (cachedUserData) {
+        try {
+          setUserData(JSON.parse(cachedUserData));
+        } catch (e) {
+          console.error("Error parsing cached user data:", e);
+        }
+      }
+    }
+  }, [currentUser]);
 
   const openLogoutModal = () => {
     setIsLogoutModalOpen(true);
@@ -23,6 +36,12 @@ const NavbarAdmin = () => {
     await logout();
     navigate("/");
     closeLogoutModal();
+  };
+
+  // Get the display name for admin - consistent display
+  const getAdminDisplayName = () => {
+    // For admin, always display "Admin 1" for consistency
+    return "Admin 1";
   };
 
   // Content modal logout
@@ -58,7 +77,7 @@ const NavbarAdmin = () => {
       <nav className="bg-red-700 text-white shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            {/* Updated Logo and App Name with better positioning */}
+            {/* Logo and Admin Panel text */}
             <Link to="/admin/dashboard" className="flex items-center">
               <svg
                 className="w-8 h-8 text-white mr-2"
@@ -77,7 +96,7 @@ const NavbarAdmin = () => {
             
             <div className="flex items-center">
               <span className="mr-4">
-                {currentUser?.email || "Admin"}
+                Hello, {getAdminDisplayName()}
               </span>
               <Link 
                 to="/admin/dashboard" 
