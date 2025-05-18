@@ -46,29 +46,38 @@ const StudentTicketsPage = () => {
   
   // Format date
   const formatDate = (timestamp) => {
-    if (!timestamp) return "N/A";
+    if (!timestamp) return { date: "N/A", time: "" };
     
     try {
+      let date;
       if (typeof timestamp.toDate === 'function') {
-        return timestamp.toDate().toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        });
+        date = timestamp.toDate();
+      } else if (typeof timestamp === 'string') {
+        date = new Date(timestamp);
+      } else {
+        return { date: "N/A", time: "" };
       }
       
-      if (typeof timestamp === 'string') {
-        return new Date(timestamp).toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        });
-      }
+      // Format date and time separately
+      const formattedDate = date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
       
-      return "N/A";
+      const formattedTime = date.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      
+      return {
+        date: formattedDate,
+        time: `Pukul ${formattedTime}`
+      };
     } catch (e) {
       console.error("Error formatting date:", e);
-      return "N/A";
+      return { date: "N/A", time: "" };
     }
   };
   
@@ -332,7 +341,7 @@ const StudentTicketsPage = () => {
                     Status
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tanggal
+                    Tanggal & Waktu
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Feedback
@@ -398,8 +407,13 @@ const StudentTicketsPage = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {formatDate(ticket.createdAt)}
+                          <div className="flex flex-col">
+                            <div className="text-sm text-gray-900">
+                              {formatDate(ticket.createdAt).date}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {formatDate(ticket.createdAt).time}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

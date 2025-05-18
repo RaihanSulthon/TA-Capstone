@@ -508,27 +508,121 @@ const FormKeluhanMahasiswaPage = () => {
                   Lampiran (opsional)
                   <span className="text-sm text-gray-500 ml-2">Maksimal 5 MB (.jpg, .png, .pdf)</span>
                 </label>
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Klik untuk upload</span> atau drag and drop</p>
-                      <p className="text-xs text-gray-500">JPG, PNG atau PDF (Maks. 5MB)</p>
-                      {formData.lampiran && (
-                        <p className="text-sm text-blue-500 mt-2">{formData.lampiran.name}</p>
-                      )}
-                    </div>
-                    <input 
-                      type="file" 
-                      name="lampiran"
-                      onChange={handleChange}
-                      accept=".jpg,.jpeg,.png,.pdf" 
-                      className="hidden" 
-                    />
-                  </label>
-                </div>
+                
+                {!formData.lampiran ? (
+                  // Upload interface when no file is selected
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Klik untuk upload</span> atau drag and drop</p>
+                        <p className="text-xs text-gray-500">JPG, PNG atau PDF (Maks. 5MB)</p>
+                      </div>
+                      <input 
+                        type="file" 
+                        name="lampiran"
+                        onChange={handleChange}
+                        accept=".jpg,.jpeg,.png,.pdf" 
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  // Preview section when file is selected
+                  <div className="border rounded-md p-4 bg-gray-50">
+                    {formData.lampiran.type.startsWith('image/') ? (
+                      // Image preview
+                      <div className="flex flex-col">
+                        <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
+                          <img 
+                            src={URL.createObjectURL(formData.lampiran)} 
+                            alt="Lampiran"
+                            className="w-full h-full object-contain"
+                          />
+                          <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
+                            Preview image
+                          </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                          <div className="text-sm font-medium text-gray-900">
+                            {formData.lampiran.name}
+                            <span className="ml-2 text-xs text-gray-500">
+                              ({(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB)
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setFormData({...formData, lampiran: null})}
+                            className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                          >
+                            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                            Hapus File
+                          </button>
+                        </div>
+                      </div>
+                    ) : formData.lampiran.type === 'application/pdf' ? (
+                      // PDF preview
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                          </svg>
+                          <div>
+                            <span className="text-sm font-medium text-gray-900">Dokumen PDF</span>
+                            <p className="text-xs text-gray-500">
+                              {formData.lampiran.name}
+                              <span className="ml-2">
+                                ({(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB)
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
+                          <span className="text-sm text-gray-600">File PDF siap diupload</span>
+                          <button
+                            onClick={() => setFormData({...formData, lampiran: null})}
+                            className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                          >
+                            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                            Hapus File
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Other file types
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                          </svg>
+                          <div>
+                            <span className="text-sm font-medium text-gray-900">{formData.lampiran.name}</span>
+                            <p className="text-xs text-gray-500">
+                              ({(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB)
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
+                          <span className="text-sm text-gray-600">File siap diupload</span>
+                          <button
+                            onClick={() => setFormData({...formData, lampiran: null})}
+                            className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                          >
+                            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                            Hapus File
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             
