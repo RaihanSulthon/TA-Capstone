@@ -361,13 +361,25 @@ const StudentTicketsPage = () => {
                   filteredTickets.map((ticket) => {
                     const statusBadge = getStatusBadge(ticket.status);
                     const hasFeedback = hasUnreadFeedback(ticket);
+
+                    const isUnread = userRole === "student" 
+                    ? !ticket.readByStudent 
+                    : userRole === "admin" 
+                        ? !ticket.readByAdmin 
+                        : !ticket.readByDisposisi;
                     
                     return (
-                      <tr key={ticket.id} className={`hover:bg-gray-50 ${hasFeedback ? "bg-purple-50" : ""}`}>
+                      <tr key={ticket.id} className={`hover:bg-gray-50 ${hasFeedback ? "bg-purple-50" : isUnread? "bg-blue-50" : ""}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col">
                             <div className="text-xs text-gray-500 mb-1">#{ticket.id.substring(0, 8)}</div>
-                            <div className="text-sm font-medium text-gray-900">{ticket.judul}</div>
+                            <div className="flex items-center">
+                              {isUnread && (
+                                <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
+                                      title="Unread ticket"></span>
+                              )}
+                              <span className="text-sm font-medium text-gray-900">{ticket.judul}</span>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

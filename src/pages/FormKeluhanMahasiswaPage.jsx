@@ -212,6 +212,9 @@ const FormKeluhanMahasiswaPage = () => {
         status: "new",
         assignedTo: null,
         feedback: [],
+        readByStudent: false,
+        readByAdmin: false,
+        readByDisposisi: false,
         createdAt: new Date(),
         updatedAt: new Date()
       };

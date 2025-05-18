@@ -292,6 +292,7 @@ const TicketDetailPage = () => {
               }
             }
             setTicket(ticketData);
+            markTicketAsRead(ticketData);
             markRelatedNotificationAsRead(ticketData.id);
             setLoading(false);
           } else {
@@ -310,6 +311,35 @@ const TicketDetailPage = () => {
     
     fetchTicket();
   }, [ticketId]);
+
+  const markTicketAsRead = async (ticketData) =>{
+    if(!currentUser) return;
+
+    try{
+      const ticketRef = doc(db, "tickets", ticketData.id);
+      let updateField = {};
+
+      if(userRole === "admin"){
+        if(!ticketData.readByAdmin){
+          updateField = {readByAdmin: true};
+        }
+      }else if(userRole === "disposisi"){
+        if (ticketData.assignedTo === currentUser.uid && !ticketData.readByDisposisi) {
+          updateField = { readByDisposisi: true };
+        }
+      }else if (userRole === "student"){
+        if (ticketData.userId === currentUser.uid && !ticketData.readByStudent) {
+          updateField = { readByStudent: true };
+        }
+      }
+      if(Object.keys(updateField).length > 0){
+        await updateDoc(ticketRef, updateField);
+        console.log("Marked ticket as read for:", userRole);
+      }
+    }catch(error){
+      console.error("Error marking ticket as read:", error);
+    }
+  }
 
   // Fetch disposisi staff for assignment
   useEffect(() => {
@@ -606,7 +636,7 @@ const TicketDetailPage = () => {
       <div className="flex items-center mb-6">
         <button 
           onClick={handleGoBack}
-          className="mr-3 rounded-full w-10 h-10 flex items-center justify-center border border-blue-300 text-blue-500 hover:bg-blue-50 transition-all duration-300"
+          className="mr-3 rounded-full w-10 h-10 flex items-center justify-center border border-blue-300 text-blue-500 bg-white hover:bg-blue-500 hover:text-white transition-all duration-300"
           aria-label="Back"
         >
           <svg 
@@ -729,10 +759,8 @@ const TicketDetailPage = () => {
                     <div className="flex space-x-2">
                       <a 
                         href={ticket.lampiranBase64} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
                         download={ticket.lampiran || "lampiran"}
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
                       >
                         <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
@@ -741,7 +769,7 @@ const TicketDetailPage = () => {
                       </a>
                       <button
                         onClick={() => openImagePreview(ticket.lampiranBase64)}
-                        className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
+                        className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors"
                       >
                         <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
@@ -1093,22 +1121,23 @@ const TicketDetailPage = () => {
             className="max-w-full max-h-[70vh] object-contain"
           />
         </div>
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-end mt-4 space-x-3">
           <a 
             href={previewUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
             download={ticket?.lampiran || "image"}
-            className="mr-4 text-blue-600 hover:underline"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
           >
+            <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
+            </svg>
             Download
           </a>
-          <Button
+          <button
             onClick={closeImagePreview}
-            className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-white hover:text-red-600 border border-red-600 transition-colors"
           >
             Tutup
-          </Button>
+          </button>
         </div>
       </Modal>
     </div>
