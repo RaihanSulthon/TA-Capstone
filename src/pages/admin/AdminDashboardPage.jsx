@@ -12,7 +12,7 @@ const AdminDashboardPage = () => {
   const [userStats, setUserStats] = useState({
     total: 0,
     students: 0,
-    disposisi: 0 // Changed from lecturers to disposisi
+    disposisi: 0 
   });
   const [loading, setLoading] = useState(true);
 

@@ -406,7 +406,7 @@ const LandingPage = () => {
             <div className="md:w-1/2 md:pl-10">
               <h2 className="text-3xl font-bold mb-6">About This Project</h2>
               <p className="text-gray-600 mb-4">
-                This capstone project was developed as part of the curriculum at Telkom University. It aims to provide a comprehensive platform for students and lecturers to collaborate, share resources, and manage academic activities.
+                This capstone project was developed as part of the curriculum at Telkom University. It aims to provide a comprehensive platform for students and organizations to collaborate, share resources, and manage academic activities.
               </p>
               <p className="text-gray-600 mb-6">
                 The application includes various features such as user authentication, role-based access control, and a responsive design for optimal user experience on all devices.

@@ -15,7 +15,7 @@ import AccessDeniedPage from "./pages/AccessDeniedPage";
 import FormKeluhanMahasiswaPage from "./pages/FormKeluhanMahasiswaPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import TicketManagementPage from "./pages/admin/TicketManagementPage";
-import DisposisiTicketsPage from "./pages/lecturer/DisposisiTicketsPage";
+import DisposisiTicketsPage from "./pages/disposisi/DisposisiTicketsPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 
 import "./App.css";
@@ -60,9 +60,9 @@ function App() {
               }
             />
 
-            {/* Ticket System Routes - Disposisi (formerly Lecturer) */}
+            {/* Ticket System Routes - Disposisi */}
             <Route
-              path="lecturer-tickets"
+              path="disposisi-tickets"
               element={
                 <RoleBasedRoute allowedRoles={["disposisi"]} fallbackPath="/access-denied">
                   <DisposisiTicketsPage />

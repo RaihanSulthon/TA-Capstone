@@ -82,9 +82,9 @@ const MainLayout = () => {
                         Helpdesk
                       </div>
                       <Link
-                        to="/app/lecturer-tickets"
+                        to="/app/disposisi-tickets"
                         className={`block px-4 py-2 rounded-md mb-1 ${
-                          isActive('/app/lecturer-tickets')
+                          isActive('/app/disposisi-tickets')
                             ? 'bg-blue-100 text-blue-700 font-medium'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}

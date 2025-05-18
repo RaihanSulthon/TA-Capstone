@@ -1,5 +1,5 @@
 
-// src/pages/lecturer/DisposisiTicketsPage.jsx - Updated with listener cleanup
+// src/pages/disposisi/DisposisiTicketsPage.jsx - Updated with listener cleanup
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";

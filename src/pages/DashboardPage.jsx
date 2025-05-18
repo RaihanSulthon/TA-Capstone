@@ -108,7 +108,7 @@ const DashboardPage = () => {
       if (userData.email.endsWith("@student.telkomuniversity.ac.id")) {
         return "Student";
       } else if (userData.email.endsWith("@telkomuniversity.ac.id")) {
-        return "Lecturer";
+        return "Disposisi";
       } else if (userData.email.endsWith("@adminhelpdesk.ac.id")) {
         return "Administrator";
       }
@@ -178,10 +178,10 @@ const DashboardPage = () => {
           </div>
         )}
         
-        {userData?.role === "lecturer" && (
+        {userData?.role === "disposisi" && (
           <div className="border-t pt-4 mt-4">
-            <h3 className="font-medium mb-4 text-lg">Lecturer Information</h3>
-            <p className="text-gray-600">Welcome to the lecturer dashboard. Here you can manage your courses and students.</p>
+            <h3 className="font-medium mb-4 text-lg">Disposisi Information</h3>
+            <p className="text-gray-600">Welcome to the disposisi dashboard. Here you can manage your courses and students.</p>
           </div>
         )}
         

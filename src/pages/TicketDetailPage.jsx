@@ -235,6 +235,44 @@ const TicketDetailPage = () => {
     }
   };
 
+  const markRelatedNotificationAsRead = async (ticketId) => {
+    if(!currentUser) return;
+
+    try{
+      let notificationsQuery;
+
+      if (userRole === "admin"){
+        notificationsQuery = query(
+          collection(db, "notifications"),
+          where("ticketId", "==", ticketId),
+          where("recipientRoles", "array-contains", "admin"),
+          where("read", "==", false)
+        );
+      }else{
+        notificationsQuery = query(
+          collection(db, "notifications"),
+          where("ticketId", "==", ticketId),
+          where("recipientId", "==", currentUser.uid),
+          where("read", "==", false)
+        );
+      }
+
+      const notificationSnapshot = await getDocs(notificationsQuery);
+
+      const updatePromises = notificationSnapshot.docs.map(docSnap => {
+        const notificationRef = doc(db, "notifications", docSnap.id);
+        return updateDoc(notificationRef, {read:true});
+      });
+
+      if(updatePromises.length > 0){
+        await Promise.all(updatePromises);
+        console.log(`Marked ${updatePromises.length} notifications as read`);
+      }
+    }catch(error){
+      console.error("Error marking notifications as read:", error);
+    }
+  }
+
   // Fetch ticket data
   useEffect(() => {
     const fetchTicket = async () => {
@@ -253,8 +291,8 @@ const TicketDetailPage = () => {
                 ticketData.lampiranURL = attachmentUrl;
               }
             }
-            
             setTicket(ticketData);
+            markRelatedNotificationAsRead(ticketData.id);
             setLoading(false);
           } else {
             setError("Ticket not found");
@@ -664,113 +702,193 @@ const TicketDetailPage = () => {
           </div>
           
           {/* Lampiran preview improved */}
-          {(ticket.lampiranURL || ticket.lampiranStoragePath || loadingAttachment) && (
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Lampiran</h3>
-              
-              {loadingAttachment ? (
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <div className="animate-spin h-4 w-4 border--fulrder-blue-500 rounded-full border-t-transparent"></div>
-                  <span>Memuat lampiran...</span>
-                </div>
-              ) : ticket.lampiranURL ? (
-                <div className="border rounded-md p-4 bg-gray-50">
-                  {getFileType(ticket.lampiranURL) === 'image' ? (
-                    <div className="flex flex-col items-center">
-                      <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
-                        <img 
-                          src={ticket.lampiranURL} 
-                          alt="Lampiran"
-                          className="w-full h-full object-contain cursor-pointer"
-                          onClick={() => openImagePreview(ticket.lampiranURL)}
-                        />
-                        <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
-                          Klik untuk memperbesar
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <a 
-                          href={ticket.lampiranURL} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                        >
-                          <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 100-2H5z" />
-                          </svg>
-                          Buka di Tab Baru
-                        </a>
-                        <button
-                          onClick={() => openImagePreview(ticket.lampiranURL)}
-                          className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
-                        >
-                          <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                          </svg>
-                          Preview
-                        </button>
+          {(ticket.lampiranBase64 || ticket.lampiranURL || ticket.lampiranStoragePath || loadingAttachment) && (
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Lampiran</h3>
+            
+            {loadingAttachment ? (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <div className="animate-spin h-4 w-4 border--fulrder-blue-500 rounded-full border-t-transparent"></div>
+                <span>Memuat lampiran...</span>
+              </div>
+            ) : ticket.lampiranBase64 ? (
+              <div className="border rounded-md p-4 bg-gray-50">
+                {ticket.lampiranType && ticket.lampiranType.startsWith('image/') ? (
+                  <div className="flex flex-col items-center">
+                    <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
+                      <img 
+                        src={ticket.lampiranBase64} 
+                        alt="Lampiran"
+                        className="w-full h-full object-contain cursor-pointer"
+                        onClick={() => openImagePreview(ticket.lampiranBase64)}
+                      />
+                      <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
+                        Klik untuk memperbesar
                       </div>
                     </div>
-                  ) : getFileType(ticket.lampiranURL) === 'pdf' ? (
-                    <div className="flex flex-col">
-                      <div className="flex items-center space-x-2 mb-3">
-                        <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                    <div className="flex space-x-2">
+                      <a 
+                        href={ticket.lampiranBase64} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                        download={ticket.lampiran || "lampiran"}
+                      >
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
                         </svg>
-                        <span className="text-sm font-medium">Dokumen PDF</span>
-                      </div>
-                      <div className="embed-responsive relative w-full h-64 mb-3">
-                        <iframe 
-                          src={`${ticket.lampiranURL}#view=FitH`} 
-                          className="embed-responsive-item absolute w-full h-full border rounded"
-                          title="PDF Preview"
-                          sandbox="allow-scripts allow-same-origin"
-                        ></iframe>
-                      </div>
-                      <div>
-                        <a 
-                          href={ticket.lampiranURL} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                        >
-                          <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                          Download PDF
-                        </a>
+                        Download
+                      </a>
+                      <button
+                        onClick={() => openImagePreview(ticket.lampiranBase64)}
+                        className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
+                      >
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                        </svg>
+                        Preview
+                      </button>
+                    </div>
+                  </div>
+                ) : ticket.lampiranType === 'application/pdf' ? (
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium">Dokumen PDF</span>
+                    </div>
+                    <div>
+                      <a 
+                        href={ticket.lampiranBase64} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                        download={ticket.lampiran || "document.pdf"}
+                      >
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Download PDF
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm">{ticket.lampiran || "Lampiran"}</span>
+                    </div>
+                    <a 
+                      href={ticket.lampiranBase64} 
+                      download={ticket.lampiran || "file"}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Download
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : ticket.lampiranURL ? (
+              <div className="border rounded-md p-4 bg-gray-50">
+                {getFileType(ticket.lampiranURL) === 'image' ? (
+                  <div className="flex flex-col items-center">
+                    <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
+                      <img 
+                        src={ticket.lampiranURL} 
+                        alt="Lampiran"
+                        className="w-full h-full object-contain cursor-pointer"
+                        onClick={() => openImagePreview(ticket.lampiranURL)}
+                      />
+                      <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
+                        Klik untuk memperbesar
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-sm">{ticket.lampiran || "Lampiran"}</span>
-                      </div>
+                    <div className="flex space-x-2">
                       <a 
                         href={ticket.lampiranURL} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-blue-600 text-sm hover:underline"
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
                       >
-                        Download
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 100-2H5z" />
+                        </svg>
+                        Buka di Tab Baru
+                      </a>
+                      <button
+                        onClick={() => openImagePreview(ticket.lampiranURL)}
+                        className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
+                      >
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                        </svg>
+                        Preview
+                      </button>
+                    </div>
+                  </div>
+                ) : getFileType(ticket.lampiranURL) === 'pdf' ? (
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium">Dokumen PDF</span>
+                    </div>
+                    <div className="embed-responsive relative w-full h-64 mb-3">
+                      <iframe 
+                        src={`${ticket.lampiranURL}#view=FitH`} 
+                        className="embed-responsive-item absolute w-full h-full border rounded"
+                        title="PDF Preview"
+                        sandbox="allow-scripts allow-same-origin"
+                      ></iframe>
+                    </div>
+                    <div>
+                      <a 
+                        href={ticket.lampiranURL} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                      >
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Download PDF
                       </a>
                     </div>
-                  )}
-                </div>
-              ) : ticket.lampiranStoragePath ? (
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span>Lampiran tidak dapat diakses. Coba refresh halaman atau hubungi admin.</span>
-                </div>
-              ): null}
-            </div>
-          )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm">{ticket.lampiran || "Lampiran"}</span>
+                    </div>
+                    <a 
+                      href={ticket.lampiranURL} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Download
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : ticket.lampiranStoragePath ? (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Lampiran tidak dapat diakses. Coba refresh halaman atau hubungi admin.</span>
+              </div>
+            ): null}
+          </div>
+        )}
           
           {/* Feedback / Communication section */}
           {ticket.feedback && ticket.feedback.length > 0 && (
@@ -980,9 +1098,10 @@ const TicketDetailPage = () => {
             href={previewUrl} 
             target="_blank" 
             rel="noopener noreferrer" 
+            download={ticket?.lampiran || "image"}
             className="mr-4 text-blue-600 hover:underline"
           >
-            Buka di Tab Baru
+            Download
           </a>
           <Button
             onClick={closeImagePreview}

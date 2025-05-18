@@ -1,4 +1,4 @@
-// src/contexts/AuthContexts.jsx - Fixed to better handle disposisi role
+// src/contexts/AuthContexts.jsx - Standardized to use disposisi role only
 import { createContext, useState, useEffect, useContext, useCallback, useRef } from "react";
 import { getCurrentUser, logoutUser } from "../Services/authService";
 import {db} from "../firebase-config";
@@ -80,9 +80,8 @@ export const AuthProvider = ({ children }) => {
         if (cachedUserData) {
           const parsedData = JSON.parse(cachedUserData);
           if (parsedData.role) {
-            // Set role correctly - ensure 'lecturer' is treated as 'disposisi'
-            const normalizedRole = parsedData.role === 'lecturer' ? 'disposisi' : parsedData.role;
-            setUserRole(normalizedRole);
+            // No need to normalize role anymore, just use it directly
+            setUserRole(parsedData.role);
             setCheckingRole(false);
             setInitialized(true);
             userDataFetched.current = true;
@@ -95,15 +94,14 @@ export const AuthProvider = ({ children }) => {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          // Normalize role - ensure 'lecturer' is treated as 'disposisi'
-          const normalizedRole = userData.role === 'lecturer' ? 'disposisi' : userData.role;
-          setUserRole(normalizedRole);
-          console.log("User role set to: ", normalizedRole);
+          // Use role directly - no need to normalize
+          setUserRole(userData.role);
+          console.log("User role set to: ", userData.role);
 
           const cachedData = cachedUserData ? JSON.parse(cachedUserData) : {};
           localStorage.setItem(
             `userData_${currentUser.uid}`,
-            JSON.stringify({ ...cachedData, ...userData, role: normalizedRole })
+            JSON.stringify({ ...cachedData, ...userData })
           );
           
           userDataFetched.current = true;
@@ -153,17 +151,9 @@ export const AuthProvider = ({ children }) => {
 
   const hasRole = useCallback((requiredRole) => {
     if (!userRole) return false;
-    
-    // Handle case when requiredRole includes 'lecturer' but userRole is 'disposisi'
     if (Array.isArray(requiredRole)) {
-      if (requiredRole.includes('disposisi') && userRole === 'lecturer') return true;
-      if (requiredRole.includes('lecturer') && userRole === 'disposisi') return true;
       return requiredRole.includes(userRole);
     }
-    
-    // Handle case when requiredRole is 'lecturer' but userRole is 'disposisi' or vice versa
-    if (requiredRole === 'lecturer' && userRole === 'disposisi') return true;
-    if (requiredRole === 'disposisi' && userRole === 'lecturer') return true;
     
     return userRole === requiredRole;
   }, [userRole]);

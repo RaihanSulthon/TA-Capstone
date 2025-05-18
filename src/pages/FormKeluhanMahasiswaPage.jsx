@@ -7,6 +7,7 @@ import Button from "../components/forms/Button";
 import TextField from "../components/forms/TextField";
 import Toast from "../components/Toast";
 import { useNavigate } from "react-router-dom";
+import { resolve } from "styled-jsx/css";
 
 const FormKeluhanMahasiswaPage = () => {
   const { currentUser, userRole } = useAuth();
@@ -179,17 +180,40 @@ const FormKeluhanMahasiswaPage = () => {
     try {
       // Import notificationService
       const { notifyNewTicket } = await import("../services/notificationService");
+
+      let lampiranBase64 = null;
+      let lampiranType = null;
+      let lampiranName = null;
+
+      if(formData.lampiran){
+        try{
+          const base64Data = await fileToBase64(formData.lampiran);
+          lampiranBase64 = base64Data;
+          lampiranType = formData.lampiran.type;
+          lampiranName = formData.lampiran.name;
+        }catch(error){
+          console.error("Error converting file to base64:", error);
+          setToast({
+            message: "Gagal mengupload lampiran. Silakan coba lagi.",
+            type: "error"
+          });
+          setLoading(false);
+          return;
+        }
+      }
       
       // Persiapkan data untuk disimpan ke Firestore
       const ticketData = {
         ...formData,
-        lampiran: null,
+        lampiran: lampiranName,
+        lampiranBase64: lampiranBase64,
+        lampiranType: lampiranType,
         userId: currentUser?.uid || "anonymous",
         status: "new",
         assignedTo: null,
         feedback: [],
-        createdAt: new Date(),  // Gunakan objek Date JavaScript biasa
-        updatedAt: new Date()   // Gunakan objek Date JavaScript biasa
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
       // Simpan ke Firestore
@@ -214,7 +238,7 @@ const FormKeluhanMahasiswaPage = () => {
       // dan update dokumen dengan URL lampiran
       
       setToast({
-        message: "Laporan Anda berhasil dikirim. Tim kami akan segera menindaklanjuti.",
+        message: "Laporan Anda berhasil dikirim dan akan segera ditindaklanjuti.",
         type: "success"
       });
       
@@ -249,6 +273,26 @@ const FormKeluhanMahasiswaPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      if(!file){
+        resolve(null);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+    });
   };
 
   return (
@@ -492,7 +536,7 @@ const FormKeluhanMahasiswaPage = () => {
                 disabled={loading}
                 className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow"
               >
-                {loading ? "Mengirim..." : "Kirim Laporan"}
+                {loading ? "Mengirim.ed.." : "Kirim Laporan"}
               </Button>
             </div>
             

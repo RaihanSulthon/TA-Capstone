@@ -381,7 +381,7 @@ const StudentTicketsPage = () => {
                           </span>
                           {ticket.assignedToName && (
                             <div className="text-xs text-gray-500 mt-1">
-                              Dosen: {ticket.assignedToName}
+                              Oleh: {ticket.assignedToName}
                             </div>
                           )}
                         </td>

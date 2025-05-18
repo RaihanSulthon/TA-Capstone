@@ -39,10 +39,10 @@ export const registerUser = async (email, password, userData) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Set role consistently as 'disposisi' (not 'lecturer')
+
       let role = "student";
       if (email.endsWith("@telkomuniversity.ac.id")) {
-        role = "disposisi"; // Always use 'disposisi' instead of 'lecturer'
+        role = "disposisi";
       } else if (email.endsWith("@adminhelpdesk.ac.id")) {
         role = "admin";
       }

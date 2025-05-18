@@ -16,6 +16,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
  * @param {string} params.senderRole - Role of the sender
  * @returns {Promise<Object>} - Object with success flag and data or error
  */
+
 export const createTicketNotification = async (params) => {
   try {
     const {
@@ -94,19 +95,19 @@ export const notifyNewTicket = async (ticket, senderId, senderName) => {
 /**
  * Create a notification for ticket assignment
  * @param {Object} ticket - Ticket data
- * @param {string} lecturerId - ID of the assigned lecturer
- * @param {string} lecturerName - Name of the assigned lecturer
+ * @param {string} disposisiId - ID of the assigned disposisi staff
+ * @param {string} disposisiName - Name of the assigned disposisi staff
  * @param {string} adminId - ID of the admin who made the assignment
  * @param {string} adminName - Name of the admin who made the assignment
  * @returns {Promise<Object>} - Object with success flag and data or error
  */
-export const notifyTicketAssignment = async (ticket, lecturerId, lecturerName, adminId, adminName) => {
+export const notifyTicketAssignment = async (ticket, disposisiId, disposisiName, adminId, adminName) => {
   return createTicketNotification({
     ticketId: ticket.id,
     type: "assignment",
     title: "Tiket Didisposisikan",
     message: `Tiket telah didisposisikan kepada Anda: ${ticket.judul}`,
-    recipientId: lecturerId,
+    recipientId: disposisiId,
     senderId: adminId,
     senderName: adminName,
     senderRole: "admin"
@@ -140,8 +141,8 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
   // Create notifications for different recipients based on roles
   const notifications = [];
   
-  // If updated by admin or lecturer, notify student
-  if (updaterRole === "admin" || updaterRole === "lecturer") {
+  // If updated by admin or disposisi, notify student
+  if (updaterRole === "admin" || updaterRole === "disposisi") {
     notifications.push(
       createTicketNotification({
         ticketId: ticket.id,
@@ -156,8 +157,8 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
     );
   }
   
-  // If updated by lecturer, notify admin
-  if (updaterRole === "lecturer") {
+  // If updated by disposisi, notify admin
+  if (updaterRole === "disposisi") {
     notifications.push(
       createTicketNotification({
         ticketId: ticket.id,
@@ -172,7 +173,7 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
     );
   }
   
-  // If updated by admin and ticket is assigned to lecturer, notify lecturer
+  // If updated by admin and ticket is assigned to disposisi, notify them
   if (updaterRole === "admin" && ticket.assignedTo) {
     notifications.push(
       createTicketNotification({
@@ -190,6 +191,7 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
   
   try {
     const results = await Promise.all(notifications);
+    console.log("Status change notifications created:", results);
     
     return {
       success: true,
@@ -214,8 +216,8 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
  * @returns {Promise<Object>} - Object with success flag and data or error
  */
 export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, senderRole) => {
-  // If feedback is from admin or lecturer, notify student
-  if (senderRole === "admin" || senderRole === "lecturer") {
+  // If feedback is from admin or disposisi, notify student
+  if (senderRole === "admin" || senderRole === "disposisi") {
     return createTicketNotification({
       ticketId: ticket.id,
       type: "feedback",
@@ -228,7 +230,7 @@ export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, 
     });
   }
   
-  // If feedback is from student, notify admin and assigned lecturer
+  // If feedback is from student, notify admin and assigned disposisi
   const notifications = [
     // Notify admin
     createTicketNotification({
@@ -243,7 +245,7 @@ export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, 
     })
   ];
   
-  // If assigned to lecturer, also notify lecturer
+  // If assigned to disposisi, also notify disposisi
   if (ticket.assignedTo) {
     notifications.push(
       createTicketNotification({
@@ -261,6 +263,7 @@ export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, 
   
   try {
     const results = await Promise.all(notifications);
+    console.log("Feedback notifications created:", results);
     
     return {
       success: true,

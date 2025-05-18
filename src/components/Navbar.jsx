@@ -125,7 +125,7 @@ const Navbar = () => {
                   
                   {userRole === 'disposisi' && (
                     <Link 
-                      to="/app/lecturer-tickets" 
+                      to="/app/disposisi-tickets" 
                       className="mr-4 text-gray-700 hover:text-blue-600"
                     >
                       Kelola Tiket

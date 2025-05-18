@@ -95,9 +95,12 @@ const NotificationsSystem = () => {
       // No valid role, return early
       return;
     }
+
+    console.log(`Starting notifications listener for ${userRole} with ID ${currentUser.uid}`);
     
     // Register the listener 
     const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      console.log(`Got ${snapshot.docs.length} notifications`);
       const notificationsList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
