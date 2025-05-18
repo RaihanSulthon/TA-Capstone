@@ -1,8 +1,12 @@
-// src/components/admin/NavbarAdmin.jsx
+
+// Updated NavbarAdmin.jsx with logo and adjusted text positioning
+
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContexts";
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
+import {db} from "../../firebase-config";
+import {doc, getDoc} from "firebase/firestore";
 
 const NavbarAdmin = () => {
   const { currentUser, logout, isAdmin } = useAuth();
@@ -10,18 +14,33 @@ const NavbarAdmin = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Fetch user data from localStorage on component mount
+  // Fetch user data to get the name
   useEffect(() => {
-    if (currentUser?.uid) {
-      const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
-      if (cachedUserData) {
-        try {
-          setUserData(JSON.parse(cachedUserData));
-        } catch (e) {
-          console.error("Error parsing cached user data:", e);
+    const fetchUserData = async () => {
+      if (!currentUser) return;
+      
+      try {
+        // Try to get from localStorage first to avoid flicker
+        const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
+        if (cachedUserData) {
+          const parsedData = JSON.parse(cachedUserData);
+          setUserData(parsedData);
         }
+
+        // Fetch fresh data from Firestore
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const freshUserData = userDoc.data();
+          setUserData(freshUserData);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
-    }
+    };
+
+    fetchUserData();
   }, [currentUser]);
 
   const openLogoutModal = () => {
@@ -38,11 +57,13 @@ const NavbarAdmin = () => {
     closeLogoutModal();
   };
 
-  // Get the display name for admin - consistent display
-  const getAdminDisplayName = () => {
-    // For admin, always display "Admin 1" for consistency
-    return "Admin 1";
+  const getDisplayName = () => {
+    if (userData?.name) {
+      return userData.name;
+    }
+    return currentUser?.displayName || currentUser?.email || "Admin";
   };
+
 
   // Content modal logout
   const logoutModalContent = (
@@ -77,7 +98,7 @@ const NavbarAdmin = () => {
       <nav className="bg-red-700 text-white shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            {/* Logo and Admin Panel text */}
+            {/* Updated Logo and App Name with better positioning */}
             <Link to="/admin/dashboard" className="flex items-center">
               <svg
                 className="w-8 h-8 text-white mr-2"
@@ -96,7 +117,7 @@ const NavbarAdmin = () => {
             
             <div className="flex items-center">
               <span className="mr-4">
-                Hello, {getAdminDisplayName()}
+                Hello, {getDisplayName()}
               </span>
               <Link 
                 to="/admin/dashboard" 
