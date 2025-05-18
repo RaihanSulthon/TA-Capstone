@@ -1,4 +1,4 @@
-// src/pages/student/StudentTicketsPage.jsx - Updated with listener cleanup
+// src/pages/student/StudentTicketsPage.jsx - Fully updated version with all methods
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
@@ -6,6 +6,8 @@ import { db } from "../../firebase-config";
 import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
+import Modal from "../../components/Modal";
+import { softDeleteTicket, getVisibleTickets } from "../../services/ticketService";
 
 const StudentTicketsPage = () => {
   const { currentUser, userRole } = useAuth();
@@ -17,6 +19,9 @@ const StudentTicketsPage = () => {
   const [filterCategory, setFilterCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState({ message: "", type: "success" });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Get status badge
   const getStatusBadge = (status) => {
@@ -67,13 +72,12 @@ const StudentTicketsPage = () => {
       
       const formattedTime = date.toLocaleTimeString('id-ID', {
         hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        minute: '2-digit'
       });
       
       return {
         date: formattedDate,
-        time: `Pukul ${formattedTime}`
+        time: formattedTime
       };
     } catch (e) {
       console.error("Error formatting date:", e);
@@ -96,6 +100,57 @@ const StudentTicketsPage = () => {
     return kategoriMap[kategori] || kategori;
   };
   
+  // Delete ticket handlers
+  const openDeleteModal = (ticket) => {
+    setTicketToDelete(ticket);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setTicketToDelete(null);
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticketToDelete || !currentUser) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      const result = await softDeleteTicket(
+        ticketToDelete.id, 
+        currentUser.uid,
+        userRole
+      );
+      
+      if (result.success) {
+        // Remove the ticket from the local state
+        setTickets(prevTickets => 
+          prevTickets.filter(t => t.id !== ticketToDelete.id)
+        );
+        
+        setToast({
+          message: result.message || "Tiket berhasil dihapus",
+          type: "success"
+        });
+      } else {
+        setToast({
+          message: result.error || "Gagal menghapus tiket",
+          type: "error"
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting ticket:", error);
+      setToast({
+        message: "Gagal menghapus tiket. Silakan coba lagi nanti.",
+        type: "error"
+      });
+    } finally {
+      setIsDeleting(false);
+      closeDeleteModal();
+    }
+  };
+  
   // Fetch tickets
   useEffect(() => {
     const fetchTickets = async () => {
@@ -113,22 +168,17 @@ const StudentTicketsPage = () => {
         );
         
         // Use onSnapshot instead of getDocs for real-time updates
-        const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
-          const ticketList = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
+        const unsubscribe = onSnapshot(ticketsQuery, async (snapshot) => {
+          // Use getVisibleTickets to filter out hidden tickets
+          const ticketList = await getVisibleTickets(snapshot, currentUser.uid);
           
           setTickets(ticketList);
           setLoading(false);
         }, (error) => {
           console.error("Error in tickets listener:", error);
           // Fall back to regular query if listener fails
-          getDocs(ticketsQuery).then((snapshot) => {
-            const ticketList = snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
+          getDocs(ticketsQuery).then(async (snapshot) => {
+            const ticketList = await getVisibleTickets(snapshot, currentUser.uid);
             
             setTickets(ticketList);
             setLoading(false);
@@ -197,7 +247,14 @@ const StudentTicketsPage = () => {
     if (!ticket.feedback || ticket.feedback.length === 0) return false;
     
     // If the ticket has feedback and the student hasn't read it
-    return !ticket.feedbackReadByStudent;
+    // Check if there's any feedback from admin or disposisi
+    // and if there is, check if the student has read it
+    const hasNewFeedback = ticket.feedback.some(f => 
+      (f.createdByRole === "admin" || f.createdByRole === "disposisi") && 
+      !ticket.feedbackReadByStudent
+    );
+    
+    return hasNewFeedback;
   };
 
   return (
@@ -370,22 +427,17 @@ const StudentTicketsPage = () => {
                   filteredTickets.map((ticket) => {
                     const statusBadge = getStatusBadge(ticket.status);
                     const hasFeedback = hasUnreadFeedback(ticket);
-
-                    const isUnread = userRole === "student" 
-                    ? !ticket.readByStudent 
-                    : userRole === "admin" 
-                        ? !ticket.readByAdmin 
-                        : !ticket.readByDisposisi;
+                    const isUnread = userRole === "student" ? !ticket.readByStudent : false;
                     
                     return (
-                      <tr key={ticket.id} className={`hover:bg-gray-50 ${hasFeedback ? "bg-purple-50" : isUnread? "bg-blue-50" : ""}`}>
+                      <tr key={ticket.id} className={`hover:bg-gray-50 ${hasFeedback ? "bg-purple-50" : isUnread ? "bg-blue-50" : ""}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col">
                             <div className="text-xs text-gray-500 mb-1">#{ticket.id.substring(0, 8)}</div>
                             <div className="flex items-center">
                               {isUnread && (
                                 <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
-                                      title="Unread ticket"></span>
+                                      title="Belum dibaca"></span>
                               )}
                               <span className="text-sm font-medium text-gray-900">{ticket.judul}</span>
                             </div>
@@ -435,12 +487,21 @@ const StudentTicketsPage = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button
-                            onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                            className={hasFeedback ? "bg-purple-600 hover:bg-purple-700" : ""}
-                          >
-                            {hasFeedback ? "Lihat Feedback" : "Detail"}
-                          </Button>
+                          <div className="flex space-x-2">
+                            <Button
+                              onClick={() => navigate(`/app/tickets/${ticket.id}`)}
+                              className={hasFeedback ? "bg-purple-600 hover:bg-purple-700" : ""}
+                            >
+                              {hasFeedback ? "Lihat Feedback" : "Detail"}
+                            </Button>
+                            
+                            <Button
+                              onClick={() => openDeleteModal(ticket)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Hapus
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -451,6 +512,40 @@ const StudentTicketsPage = () => {
           </div>
         </div>
       )}
+      
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        title="Konfirmasi Hapus Tiket"
+        size="sm"
+      >
+        <div>
+          <p className="text-gray-600 mb-4">
+            Apakah Anda yakin ingin menghapus tiket ini?
+          </p>
+          <p className="text-gray-600 mb-6">
+            <span className="font-medium">Judul:</span> {ticketToDelete?.judul}
+          </p>
+          
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={closeDeleteModal}
+              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+              disabled={isDeleting}
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleDeleteTicket}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Menghapus..." : "Hapus Tiket"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

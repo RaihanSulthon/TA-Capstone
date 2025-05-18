@@ -1,12 +1,13 @@
-
-// src/pages/disposisi/DisposisiTicketsPage.jsx - Updated with listener cleanup
+// src/pages/disposisi/DisposisiTicketsPage.jsx - Complete updated version
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
 import { db } from "../../firebase-config";
-import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
+import Modal from "../../components/Modal";
+import { softDeleteTicket, getVisibleTickets } from "../../services/ticketService";
 
 const DisposisiTicketsPage = () => {
   const { currentUser, userRole } = useAuth();
@@ -19,6 +20,9 @@ const DisposisiTicketsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [notificationsCount, setNotificationsCount] = useState(0);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Get status badge
   const getStatusBadge = (status) => {
@@ -69,13 +73,12 @@ const DisposisiTicketsPage = () => {
       
       const formattedTime = date.toLocaleTimeString('id-ID', {
         hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        minute: '2-digit'
       });
       
       return {
         date: formattedDate,
-        time: `Pukul ${formattedTime}`
+        time: formattedTime
       };
     } catch (e) {
       console.error("Error formatting date:", e);
@@ -97,6 +100,57 @@ const DisposisiTicketsPage = () => {
     
     return kategoriMap[kategori] || kategori;
   };
+
+  // Handle delete functions
+  const openDeleteModal = (ticket) => {
+    setTicketToDelete(ticket);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setTicketToDelete(null);
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticketToDelete || !currentUser) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      const result = await softDeleteTicket(
+        ticketToDelete.id, 
+        currentUser.uid,
+        userRole
+      );
+      
+      if (result.success) {
+        // Remove the ticket from the local state
+        setTickets(prevTickets => 
+          prevTickets.filter(t => t.id !== ticketToDelete.id)
+        );
+        
+        setToast({
+          message: result.message || "Tiket berhasil dihapus secara permanen",
+          type: "success"
+        });
+      } else {
+        setToast({
+          message: result.error || "Gagal menghapus tiket",
+          type: "error"
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting ticket:", error);
+      setToast({
+        message: "Gagal menghapus tiket. Silakan coba lagi nanti.",
+        type: "error"
+      });
+    } finally {
+      setIsDeleting(false);
+      closeDeleteModal();
+    }
+  };
   
   // Fetch tickets
   useEffect(() => {
@@ -116,6 +170,7 @@ const DisposisiTicketsPage = () => {
         
         // Use onSnapshot for real-time updates
         const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+          // Disposisi sees all tickets assigned to them that haven't been hard deleted
           const ticketList = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -367,16 +422,17 @@ const DisposisiTicketsPage = () => {
               ) : (
                 filteredTickets.map((ticket) => {
                   const statusBadge = getStatusBadge(ticket.status);
-                  const isNew = ticket.status === "new" && !ticket.readByDisposisi;
+                  const isUnread = userRole === "disposisi" && !ticket.readByDisposisi;
                   
                   return (
-                    <tr key={ticket.id} className={`hover:bg-gray-50 ${isNew ? "bg-blue-50" : ""}`}>
+                    <tr key={ticket.id} className={`hover:bg-gray-50 ${isUnread ? "bg-blue-50" : ""}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <div className="text-xs text-gray-500 mb-1">#{ticket.id.substring(0, 8)}</div>
                           <div className="flex items-center">
-                            {isNew && (
-                              <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2"></span>
+                            {isUnread && (
+                              <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
+                                    title="Belum dibaca"></span>
                             )}
                             <span className="text-sm font-medium text-gray-900">{ticket.judul}</span>
                           </div>
@@ -411,12 +467,21 @@ const DisposisiTicketsPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <Button
-                          onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                          className={isNew ? "bg-blue-600 hover:bg-blue-700" : ""}
-                        >
-                          {isNew ? "Lihat Tiket Baru" : "Detail"}
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={() => navigate(`/app/tickets/${ticket.id}`)}
+                            className={isUnread ? "bg-blue-600 hover:bg-blue-700" : ""}
+                          >
+                            {isUnread ? "Lihat Tiket Baru" : "Detail"}
+                          </Button>
+                          
+                          <Button
+                            onClick={() => openDeleteModal(ticket)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Hapus
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -426,6 +491,43 @@ const DisposisiTicketsPage = () => {
           </table>
         </div>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        title="Konfirmasi Hapus Tiket"
+        size="sm"
+      >
+        <div>
+          <p className="text-gray-600 mb-4">
+            Apakah Anda yakin ingin menghapus tiket ini?
+          </p>
+          <p className="text-gray-600 mb-2">
+            <span className="font-medium">Judul:</span> {ticketToDelete?.judul}
+          </p>
+          <p className="text-red-600 text-sm mb-6">
+            <strong>Perhatian:</strong> Tindakan ini akan menghapus tiket secara permanen bagi semua pengguna termasuk mahasiswa.
+          </p>
+          
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={closeDeleteModal}
+              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+              disabled={isDeleting}
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleDeleteTicket}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Menghapus..." : "Hapus Permanen"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
