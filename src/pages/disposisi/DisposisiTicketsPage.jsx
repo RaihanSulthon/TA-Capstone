@@ -8,6 +8,7 @@ import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
 import Modal from "../../components/Modal";
 import { softDeleteTicket, getVisibleTickets } from "../../services/ticketService";
+import ReadStatusFilter from "../../components/ReadStatusFilter";
 
 const DisposisiTicketsPage = () => {
   const { currentUser, userRole } = useAuth();
@@ -17,6 +18,7 @@ const DisposisiTicketsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [filterReadStatus, setFilterReadStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [notificationsCount, setNotificationsCount] = useState(0);
@@ -239,13 +241,21 @@ const DisposisiTicketsPage = () => {
     // Filter by category
     const matchesCategory = filterCategory === "all" || ticket.kategori === filterCategory;
     
+    // Filter by read status - this is the new filter
+    let matchesReadStatus = true;
+    if (filterReadStatus === "read") {
+      matchesReadStatus = ticket.readByDisposisi === true;
+    } else if (filterReadStatus === "unread") {
+      matchesReadStatus = ticket.readByDisposisi !== true;
+    }
+    
     // Filter by search term
     const matchesSearch = 
       ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.deskripsi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (ticket.nama && ticket.nama.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesStatus && matchesCategory && matchesSearch;
+    return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch;
   });
   
   // Get ticket categories from data
@@ -255,6 +265,7 @@ const DisposisiTicketsPage = () => {
   const resetFilters = () => {
     setFilterStatus("all");
     setFilterCategory("all");
+    setFilterReadStatus("all"); // Reset read status filter too
     setSearchTerm("");
   };
   
@@ -263,7 +274,8 @@ const DisposisiTicketsPage = () => {
     total: tickets.length,
     new: tickets.filter(t => t.status === "new").length,
     inProgress: tickets.filter(t => t.status === "in_progress").length,
-    done: tickets.filter(t => t.status === "done").length
+    done: tickets.filter(t => t.status === "done").length,
+    unread: tickets.filter(t => t.readByDisposisi !== true).length // Add unread count
   };
 
   return (
@@ -331,6 +343,13 @@ const DisposisiTicketsPage = () => {
                 ))}
               </select>
             </div>
+
+            {/* Add Read Status Filter */}
+            <ReadStatusFilter 
+              readStatus={filterReadStatus}
+              setReadStatus={setFilterReadStatus}
+              userRole={userRole}
+            />
             
             <div>
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
@@ -359,7 +378,7 @@ const DisposisiTicketsPage = () => {
       </div>
       
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Tiket</p>
           <p className="text-2xl font-bold text-blue-600">{ticketStats.total}</p>
@@ -375,6 +394,10 @@ const DisposisiTicketsPage = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Selesai</p>
           <p className="text-2xl font-bold text-green-600">{ticketStats.done}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Belum Dibaca</p>
+          <p className="text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
         </div>
       </div>
       
