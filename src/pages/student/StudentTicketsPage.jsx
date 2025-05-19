@@ -1,4 +1,4 @@
-// Modified StudentTicketsPage.jsx with read/unread filter
+// Apply the same truncation to StudentTicketsPage.jsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
@@ -24,6 +24,12 @@ const StudentTicketsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Function to truncate text with ellipsis
+  const truncateText = (text, maxLength = 25) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
   
   // Get status badge
   const getStatusBadge = (status) => {
@@ -411,19 +417,19 @@ const StudentTicketsPage = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                     ID & Judul
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Kategori
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Tanggal & Waktu
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Feedback
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -462,7 +468,9 @@ const StudentTicketsPage = () => {
                                 <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
                                       title="Belum dibaca"></span>
                               )}
-                              <span className="text-sm font-medium text-gray-900">{ticket.judul}</span>
+                              <span className="text-sm font-medium text-gray-900 truncate max-w-xs" title={ticket.judul}>
+                                {truncateText(ticket.judul, 30)}
+                              </span>
                             </div>
                           </div>
                         </td>
@@ -476,8 +484,8 @@ const StudentTicketsPage = () => {
                             {statusBadge.label}
                           </span>
                           {ticket.assignedToName && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              Oleh: {ticket.assignedToName}
+                            <div className="text-xs text-gray-500 mt-1 truncate max-w-[120px]" title={`Oleh: ${ticket.assignedToName}`}>
+                              Oleh: {truncateText(ticket.assignedToName, 12)}
                             </div>
                           )}
                         </td>

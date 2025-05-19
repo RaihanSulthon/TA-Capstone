@@ -1,3 +1,4 @@
+// Modified DashboardPage.jsx with truncated email addresses
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContexts";
 import { db } from "../firebase-config";
@@ -7,6 +8,12 @@ const DashboardPage = () => {
   const { currentUser } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Function to truncate text with ellipsis
+  const truncateText = (text, maxLength = 25) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -153,7 +160,9 @@ const DashboardPage = () => {
             
             <div>
               <p className="text-gray-600 text-sm">Email</p>
-              <p className="font-medium">{currentUser?.email || userData?.email || "Not available"}</p>
+              <p className="font-medium truncate max-w-xs" title={currentUser?.email || userData?.email || "Not available"}>
+                {currentUser?.email || userData?.email || "Not available"}
+              </p>
             </div>
             
             <div>

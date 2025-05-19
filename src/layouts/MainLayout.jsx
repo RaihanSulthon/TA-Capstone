@@ -1,4 +1,4 @@
-// src/layouts/MainLayout.jsx
+// Modified MainLayout.jsx with enhanced floating navigation links
 import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
@@ -37,10 +37,10 @@ const MainLayout = () => {
                 <>
                   <Link
                     to="/app/dashboard"
-                    className={`block px-4 py-2 rounded-md mb-1 ${
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                       isActive('/app/dashboard')
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
                     Dashboard
@@ -54,20 +54,20 @@ const MainLayout = () => {
                       </div>
                       <Link
                         to="/app/submit-ticket"
-                        className={`block px-4 py-2 rounded-md mb-1 ${
+                        className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                           isActive('/app/submit-ticket')
-                            ? 'bg-blue-100 text-blue-700 font-medium'
-                            : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                            : 'text-gray-700 hover:bg-blue-50'
                         }`}
                       >
                         Buat Tiket Baru
                       </Link>
                       <Link
                         to="/app/my-tickets"
-                        className={`block px-4 py-2 rounded-md mb-1 ${
+                        className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                           isActive('/app/my-tickets')
-                            ? 'bg-blue-100 text-blue-700 font-medium'
-                            : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                            : 'text-gray-700 hover:bg-blue-50'
                         }`}
                       >
                         Tiket Saya
@@ -83,10 +83,10 @@ const MainLayout = () => {
                       </div>
                       <Link
                         to="/app/disposisi-tickets"
-                        className={`block px-4 py-2 rounded-md mb-1 ${
+                        className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                           isActive('/app/disposisi-tickets')
-                            ? 'bg-blue-100 text-blue-700 font-medium'
-                            : 'text-gray-700 hover:bg-gray-100'
+                            ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                            : 'text-gray-700 hover:bg-blue-50'
                         }`}
                       >
                         Kelola Tiket
@@ -101,20 +101,20 @@ const MainLayout = () => {
                 <>
                   <Link
                     to="/admin/dashboard"
-                    className={`block px-4 py-2 rounded-md mb-1 ${
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                       isActive('/admin/dashboard')
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
                     Admin Dashboard
                   </Link>
                   <Link
                     to="/admin/users"
-                    className={`block px-4 py-2 rounded-md mb-1 ${
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                       isActive('/admin/users')
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
                     Manage Users
@@ -126,10 +126,10 @@ const MainLayout = () => {
                   </div>
                   <Link
                     to="/admin/tickets"
-                    className={`block px-4 py-2 rounded-md mb-1 ${
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
                       isActive('/admin/tickets')
-                        ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
                     Manajemen Tiket
@@ -142,7 +142,7 @@ const MainLayout = () => {
                 <div className="border-t mt-4 pt-4">
                   <Link
                     to={isAdminSection ? "/app/dashboard" : "/admin/dashboard"}
-                    className="block px-4 py-2 rounded-md mb-1 text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg text-gray-700 hover:bg-gray-100"
                   >
                     {isAdminSection ? "Switch to User View" : "Switch to Admin View"}
                   </Link>

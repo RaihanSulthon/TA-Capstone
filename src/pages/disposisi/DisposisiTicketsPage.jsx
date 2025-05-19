@@ -1,4 +1,4 @@
-// src/pages/disposisi/DisposisiTicketsPage.jsx - Complete updated version
+// Apply the same truncation to DisposisiTicketsPage.jsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
@@ -25,6 +25,12 @@ const DisposisiTicketsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Function to truncate text with ellipsis
+  const truncateText = (text, maxLength = 25) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
   
   // Get status badge
   const getStatusBadge = (status) => {
@@ -407,19 +413,19 @@ const DisposisiTicketsPage = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                   ID & Judul
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                   Pengirim
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                   Kategori
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                   Tanggal & Waktu
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -454,19 +460,25 @@ const DisposisiTicketsPage = () => {
                           <div className="text-xs text-gray-500 mb-1">#{ticket.id.substring(0, 8)}</div>
                           <div className="flex items-center">
                             {isUnread && (
-                              <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
-                                    title="Belum dibaca"></span>
+                              <span 
+                                className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
+                                title="Belum dibaca"
+                              ></span>
                             )}
-                            <span className="text-sm font-medium text-gray-900">{ticket.judul}</span>
+                            <span className="text-sm font-medium text-gray-900 truncate max-w-xs" title={ticket.judul}>
+                              {truncateText(ticket.judul, 30)}
+                            </span>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {ticket.anonymous ? "Anonymous" : ticket.nama || "Unknown"}
+                        <div className="text-sm text-gray-900 truncate max-w-[150px]" title={ticket.anonymous ? "Anonymous" : ticket.nama || "Unknown"}>
+                          {ticket.anonymous ? "Anonymous" : truncateText(ticket.nama || "Unknown", 15)}
                         </div>
                         {!ticket.anonymous && ticket.email && (
-                          <div className="text-xs text-gray-500">{ticket.email}</div>
+                          <div className="text-xs text-gray-500 truncate max-w-[150px]" title={ticket.email}>
+                            {truncateText(ticket.email, 18)}
+                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

@@ -80,6 +80,8 @@ const Modal = ({
 
   if (!isOpen) return null;
 
+  const isAdminPanel = window.location.pathname.startsWith('/admin');
+
   return (
     <>
       {/* Backdrop dengan efek blur */}
@@ -91,7 +93,9 @@ const Modal = ({
         className={`${getModalPosition()} bg-white rounded-xl shadow-2xl p-6 w-full ${getModalSize()} mx-4 transform transition-all duration-300 ease-in-out`}
       >
         {title && (
-          <h2 className="text-xl font-semibold mb-4">{title}</h2>
+          <h2 className={`text-xl font-semibold mb-4 ${isAdminPanel ? 'text-gray-900' : ''}`}>
+            {title}
+          </h2>
         )}
         
         {children}

@@ -633,7 +633,7 @@ const FormKeluhanMahasiswaPage = () => {
                 disabled={loading}
                 className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow"
               >
-                {loading ? "Mengirim.ed.." : "Kirim Laporan"}
+                {loading ? "Mengirim..." : "Kirim Laporan"}
               </Button>
             </div>
             

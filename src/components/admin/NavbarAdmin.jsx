@@ -1,12 +1,11 @@
-
-// Updated NavbarAdmin.jsx with logo and adjusted text positioning
-
+// src/components/admin/NavbarAdmin.jsx - Updated with notifications
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContexts";
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
 import {db} from "../../firebase-config";
 import {doc, getDoc} from "firebase/firestore";
+import NotificationsSystem from "../NotificationsSystem"; // Import the notification system
 
 const NavbarAdmin = () => {
   const { currentUser, logout, isAdmin } = useAuth();
@@ -119,6 +118,12 @@ const NavbarAdmin = () => {
               <span className="mr-4">
                 Hello, {getDisplayName()}
               </span>
+              
+              {/* Add NotificationSystem component */}
+              <div className="mr-4">
+                <NotificationsSystem />
+              </div>
+              
               <Link 
                 to="/admin/dashboard" 
                 className="mr-4 text-white hover:text-red-200"
@@ -130,6 +135,12 @@ const NavbarAdmin = () => {
                 className="mr-4 text-white hover:text-red-200"
               >
                 Users
+              </Link>
+              <Link 
+                to="/admin/tickets"
+                className="mr-4 text-white hover:text-red-200"
+              >
+                Tickets
               </Link>
               <Link 
                 to="/app/dashboard" 
