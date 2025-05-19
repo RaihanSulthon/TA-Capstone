@@ -1,3 +1,4 @@
+// Enhanced Modal component with better text handling
 import { useRef, useEffect } from "react";
 
 const Modal = ({ 
@@ -80,6 +81,7 @@ const Modal = ({
 
   if (!isOpen) return null;
 
+  // Check if we're in admin panel by looking for red in background elements
   const isAdminPanel = window.location.pathname.startsWith('/admin');
 
   return (
@@ -98,7 +100,9 @@ const Modal = ({
           </h2>
         )}
         
-        {children}
+        <div className="overflow-hidden">
+          {children}
+        </div>
       </div>
     </>
   );

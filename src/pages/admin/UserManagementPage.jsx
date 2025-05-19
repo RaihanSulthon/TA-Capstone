@@ -1,4 +1,4 @@
-// src/pages/admin/UserManagementPage.jsx - Fixed to properly handle disposisi role
+// Modified UserManagementPage.jsx with improved confirmation modal
 import { useState, useEffect } from "react";
 import { db } from "../../firebase-config";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -18,6 +18,12 @@ const UserManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [toast, setToast] = useState({ message: "", type: "success" });
+
+  // Function to truncate text with ellipsis
+  const truncateText = (text, maxLength = 25) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
 
   // Fetch all users
   useEffect(() => {
@@ -289,11 +295,17 @@ const UserManagementPage = () => {
     </form>
   );
 
-  // Delete User Modal Content
+  // Delete User Modal Content with improved email handling
   const deleteUserModalContent = (
     <>
+      <p className="text-gray-600 mb-4">
+        Are you sure you want to delete user: 
+      </p>
+      <p className="text-gray-800 font-medium mb-2 break-words overflow-hidden">
+        {selectedUser?.email}
+      </p>
       <p className="text-gray-600 mb-6">
-        Are you sure you want to delete user <span className="font-semibold">{selectedUser?.email}</span>? This action cannot be undone.
+        This action cannot be undone.
       </p>
       
       <div className="flex justify-end space-x-3">
@@ -455,7 +467,9 @@ const UserManagementPage = () => {
                       <div className="text-sm font-medium text-gray-900">{user.name || "N/A"}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="text-sm text-gray-500 truncate max-w-xs" title={user.email}>
+                        {truncateText(user.email, 30)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
