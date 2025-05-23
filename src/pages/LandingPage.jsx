@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 import Button from "../components/forms/Button";
-import ContactsSection from "../components/ContactsSection"; // Import the updated component
+import ContactsSection from "../components/ContactsSection";
+import FAQSection from "../components/FAQSection"; // Import the new FAQ component
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -15,16 +16,19 @@ const LandingPage = () => {
   const homeRef = useRef(null);
   const featuresRef = useRef(null);
   const contactsRef = useRef(null); // Contact Dosen section ref
+  const faqRef = useRef(null); // FAQ section ref
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
 
   // Handle smooth scrolling
   const scrollToSection = (elementRef) => {
     setIsMobileMenuOpen(false);
-    window.scrollTo({
-      top: elementRef.current.offsetTop - 80, // Adjust for navbar height
-      behavior: "smooth",
-    });
+    if(elementRef.current){
+      window.scrollTo({
+        top: elementRef.current.offsetTop - 80, // Adjust for navbar height
+        behavior: "smooth",
+      });
+    }
   };
 
   // Update useEffect for scroll event
@@ -38,24 +42,35 @@ const LandingPage = () => {
       // Check which section is in view
       if (
         homeRef.current &&
+        featuresRef.current &&  // ✅ Add null check
         scrollPosition + 100 >= homeRef.current.offsetTop &&
         scrollPosition + 100 < featuresRef.current.offsetTop
       ) {
         setActiveSection("home");
       } else if (
         featuresRef.current &&
+        contactsRef.current &&  // ✅ Add null check
         scrollPosition + 100 >= featuresRef.current.offsetTop &&
         scrollPosition + 100 < contactsRef.current.offsetTop
       ) {
         setActiveSection("features");
       } else if (
         contactsRef.current &&
+        faqRef.current &&  // ✅ Add null check
         scrollPosition + 100 >= contactsRef.current.offsetTop &&
-        scrollPosition + 100 < aboutRef.current.offsetTop
+        scrollPosition + 100 < faqRef.current.offsetTop
       ) {
         setActiveSection("contacts");
       } else if (
+        faqRef.current &&
+        aboutRef.current &&  // ✅ Add null check
+        scrollPosition + 100 >= faqRef.current.offsetTop &&
+        scrollPosition + 100 < aboutRef.current.offsetTop
+      ) {
+        setActiveSection("faq");
+      } else if (
         aboutRef.current &&
+        contactRef.current &&  // ✅ Add null check
         scrollPosition + 100 >= aboutRef.current.offsetTop &&
         scrollPosition + 100 < contactRef.current.offsetTop
       ) {
@@ -146,6 +161,18 @@ const LandingPage = () => {
               >
                 Dosen
               </button>
+              {/* FAQ Menu Item */}
+              <button
+                onClick={() => scrollToSection(faqRef)}
+                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
+                  isScrolled 
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    : 'text-white hover:bg-white/10'
+                } ${activeSection === "faq" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                `}
+              >
+                FAQ
+              </button>
               <button
                 onClick={() => scrollToSection(aboutRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
@@ -158,7 +185,7 @@ const LandingPage = () => {
                 About
               </button>
               <button
-                onClick={() => scrollToSection(contactRef)}
+                onClick={() => scrollToSection(contactsRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
                     ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
@@ -252,6 +279,12 @@ const LandingPage = () => {
                 Dosen
               </button>
               <button
+                onClick={() => scrollToSection(faqRef)}
+                className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
+              >
+                FAQ
+              </button>
+              <button
                 onClick={() => scrollToSection(aboutRef)}
                 className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
               >
@@ -338,6 +371,46 @@ const LandingPage = () => {
                     Learn More
                   </Button>
                 </>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section
+        ref={aboutRef}
+        id="about"
+        className="py-16"
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-1/2 mb-8 md:mb-0">
+              <div className="bg-gray-200 h-80 rounded-lg flex items-center justify-center text-gray-500">
+                <span className="text-lg">Application Screenshot</span>
+              </div>
+            </div>
+            <div className="md:w-1/2 md:pl-10">
+              <h2 className="text-3xl font-bold mb-6">About This Project</h2>
+              <p className="text-gray-600 mb-4">
+                This capstone project was developed as part of the curriculum at Telkom University. It aims to provide a comprehensive platform for students and organizations to collaborate, share resources, and manage academic activities.
+              </p>
+              <p className="text-gray-600 mb-6">
+                The application includes various features such as user authentication, role-based access control, and a responsive design for optimal user experience on all devices.
+              </p>
+              {isAuthenticated ? (
+                <Button
+                  onClick={() => navigate("/app/dashboard")}
+                  className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 rounded-lg font-semibold transition-colors duration-300">
+                  Go to Dashboard
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate("/auth", { state: { initialTab: "signup" } })}
+                  className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 rounded-lg font-semibold transition-colors duration-300"
+                >
+                  Get Started
+                </Button>
               )}
             </div>
           </div>
@@ -433,165 +506,11 @@ const LandingPage = () => {
         <ContactsSection />
       </div>
 
-      {/* About Section */}
-      <section
-        ref={aboutRef}
-        id="about"
-        className="py-16"
-      >
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <div className="bg-gray-200 h-80 rounded-lg flex items-center justify-center text-gray-500">
-                <span className="text-lg">Application Screenshot</span>
-              </div>
-            </div>
-            <div className="md:w-1/2 md:pl-10">
-              <h2 className="text-3xl font-bold mb-6">About This Project</h2>
-              <p className="text-gray-600 mb-4">
-                This capstone project was developed as part of the curriculum at Telkom University. It aims to provide a comprehensive platform for students and organizations to collaborate, share resources, and manage academic activities.
-              </p>
-              <p className="text-gray-600 mb-6">
-                The application includes various features such as user authentication, role-based access control, and a responsive design for optimal user experience on all devices.
-              </p>
-              {isAuthenticated ? (
-                <Button
-                  onClick={() => navigate("/app/dashboard")}
-                  className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 rounded-lg font-semibold transition-colors duration-300">
-                  Go to Dashboard
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => navigate("/auth", { state: { initialTab: "signup" } })}
-                  className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 rounded-lg font-semibold transition-colors duration-300"
-                >
-                  Get Started
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* FAQ Section */}
+      <div ref={faqRef}>
+        <FAQSection />
+      </div>
 
-      {/* Contact Section */}
-      <section
-        ref={contactRef}
-        id="contact"
-        className="py-16 bg-gray-50"
-      >
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Contact Us</h2>
-          <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-6 md:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Get in Touch</h3>
-                  <p className="text-gray-600 mb-6">
-                    Have questions or suggestions? Feel free to contact us!
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <svg
-                        className="w-5 h-5 text-blue-600 mt-1 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        ></path>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        ></path>
-                      </svg>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Address</h4>
-                        <p className="text-gray-600">
-                          Telkom University, Bandung, Indonesia
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start">
-                      <svg
-                        className="w-5 h-5 text-blue-600 mt-1 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        ></path>
-                      </svg>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Email</h4>
-                        <p className="text-gray-600">contact@mycapstoneapp.com</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Send a Message</h3>
-                  <form>
-                    <div className="mb-4">
-                      <label className="block text-gray-700 text-sm font-medium mb-2">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Your name"
-                      />
-                    </div>
-                    
-                    <div className="mb-4">
-                      <label className="block text-gray-700 text-sm font-medium mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Your email"
-                      />
-                    </div>
-                    
-                    <div className="mb-4">
-                      <label className="block text-gray-700 text-sm font-medium mb-2">
-                        Message
-                      </label>
-                      <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        rows="4"
-                        placeholder="Your message"
-                      ></textarea>
-                    </div>
-                    
-                    <Button
-                      type="button"
-                      className="w-full bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 text-white rounded-lg font-medium transition-colors duration-300"
-                    >
-                      Send Message
-                    </Button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4">
