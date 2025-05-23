@@ -1,4 +1,3 @@
-// Modified MainLayout.jsx with enhanced floating navigation links
 import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
@@ -93,6 +92,21 @@ const MainLayout = () => {
                       </Link>
                     </>
                   )}
+
+                  {/* Public Links untuk semua user */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                    Informasi
+                  </div>
+                  <Link
+                    to="/contacts"
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
+                      isActive('/contacts')
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
+                    }`}
+                  >
+                    Kontak Dosen
+                  </Link>
                 </>
               )}
               
@@ -133,6 +147,21 @@ const MainLayout = () => {
                     }`}
                   >
                     Manajemen Tiket
+                  </Link>
+
+                  {/* Admin Contacts Management */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
+                    Konten
+                  </div>
+                  <Link
+                    to="/admin/contacts"
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
+                      isActive('/admin/contacts')
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
+                    }`}
+                  >
+                    Kelola Kontak Dosen
                   </Link>
                 </>
               )}

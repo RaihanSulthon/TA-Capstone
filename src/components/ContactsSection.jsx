@@ -1,0 +1,172 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { db } from "../firebase-config";
+import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
+
+const ContactsSection = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // limiter for 6 contacts only
+  useEffect(() => {
+    const fetchFeaturedContacts = async () => {
+      try {
+        const contactsQuery = query(
+          collection(db, "users"),
+          where("role", "==", "dosen_public"),
+          orderBy("name", "asc"),
+          limit(6)
+        );
+        
+        const contactsSnapshot = await getDocs(contactsQuery);
+        const contactsList = contactsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          // Map fields only for compatibility
+          nama: doc.data().name,
+          bidangKeahlian: doc.data().expertise || doc.data().bidangKeahlian || ""
+        }));
+        
+        setContacts(contactsList);
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedContacts();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Kontak Dosen</h2>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Kontak Dosen</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Hubungi dosen-dosen kami untuk konsultasi akademik, penelitian, atau pertanyaan lainnya sesuai dengan bidang keahlian mereka.
+          </p>
+        </div>
+        
+        {contacts.length === 0 ? (
+          <div className="text-center py-12">
+            <svg className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Kontak</h3>
+            <p className="text-gray-600">
+              Kontak dosen akan segera tersedia.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Contacts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {contacts.map((contact) => (
+                <div key={contact.id} className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  {/* Profile Image */}
+                  <div className="flex items-center mb-4">
+                    {contact.photoBase64 ? (
+                      <img
+                        src={contact.photoBase64}
+                        alt={contact.nama}
+                        className="w-16 h-16 rounded-full object-cover mr-4"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mr-4">
+                        <svg className="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        {contact.nama}
+                      </h3>
+                      {contact.office && (
+                        <p className="text-sm text-gray-600">{contact.office}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Contact Info */}
+                  {contact.email && (
+                    <div className="flex items-center mb-2">
+                      <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <a
+                        href={`mailto:${contact.email}`}
+                        className="text-blue-600 hover:text-blue-700 text-sm break-all"
+                      >
+                        {contact.email}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {contact.phone && (
+                    <div className="flex items-center mb-3">
+                      <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <span className="text-gray-600 text-sm">{contact.phone}</span>
+                    </div>
+                  )}
+                  
+                  {/* Expertise Tags */}
+                  {contact.bidangKeahlian && (
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {contact.bidangKeahlian.split(',').slice(0, 2).map((keahlian, index) => (
+                          <span
+                            key={index}
+                            className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                          >
+                            {keahlian.trim()}
+                          </span>
+                        ))}
+                        {contact.bidangKeahlian.split(',').length > 2 && (
+                          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                            +{contact.bidangKeahlian.split(',').length - 2} lainnya
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {/* View All Button */}
+            <div className="text-center">
+              <Link
+                to="/contacts"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Lihat Semua Kontak Dosen
+                <svg className="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+};
+
+export default ContactsSection;

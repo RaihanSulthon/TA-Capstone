@@ -1,4 +1,3 @@
-// Enhanced Toast.jsx with better styling especially for success messages
 import React, { useEffect } from "react";
 
 const Toast = ({ message, type = "error", onClose, duration = 5000 }) => {
@@ -13,8 +12,7 @@ const Toast = ({ message, type = "error", onClose, duration = 5000 }) => {
   }, [message, onClose, duration]);
   
   if (!message) return null;
-  
-  // Determine styling based on toast type
+
   const getToastStyles = () => {
     switch(type) {
       case "success":

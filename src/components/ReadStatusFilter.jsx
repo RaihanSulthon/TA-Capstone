@@ -1,14 +1,12 @@
 import React from "react";
 
 /**
- * Component for filtering tickets by read/unread status
  * @param {Object} props Component props
  * @param {string} props.readStatus Current read status filter value ("all", "read", "unread")
  * @param {Function} props.setReadStatus Function to set read status filter
  * @param {string} props.userRole Current user role
  */
 const ReadStatusFilter = ({ readStatus, setReadStatus, userRole }) => {
-  // Get the appropriate field name based on user role
   const getReadFieldName = () => {
     switch (userRole) {
       case "admin":

@@ -1,4 +1,3 @@
-// src/components/ProtectedRoute.jsx
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 
@@ -12,14 +11,10 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  
-  // Redirect to auth page if not authenticated
   if (!isAuthenticated) {
     console.log("User not authenticated, redirecting to /auth");
     return <Navigate to="/auth" replace />;
   }
-  
-  // If authenticated, render children
   return children;
 };
 

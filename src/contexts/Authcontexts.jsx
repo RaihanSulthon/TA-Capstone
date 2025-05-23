@@ -1,4 +1,3 @@
-// src/contexts/AuthContexts.jsx - Standardized to use disposisi role only
 import { createContext, useState, useEffect, useContext, useCallback, useRef } from "react";
 import { getCurrentUser, logoutUser } from "../Services/authService";
 import {db} from "../firebase-config";

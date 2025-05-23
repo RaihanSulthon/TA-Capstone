@@ -1,4 +1,3 @@
-// Enhanced Modal component with better text handling
 import { useRef, useEffect } from "react";
 
 const Modal = ({ 
@@ -11,7 +10,6 @@ const Modal = ({
 }) => {
   const modalRef = useRef(null);
 
-  // Menangani klik di luar modal untuk menutup modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {

@@ -1,11 +1,10 @@
-// src/components/admin/NavbarAdmin.jsx - Updated with notifications
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContexts";
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
 import {db} from "../../firebase-config";
 import {doc, getDoc} from "firebase/firestore";
-import NotificationsSystem from "../NotificationsSystem"; // Import the notification system
+import NotificationsSystem from "../NotificationsSystem";
 
 const NavbarAdmin = () => {
   const { currentUser, logout, isAdmin } = useAuth();
@@ -13,13 +12,13 @@ const NavbarAdmin = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Fetch user data to get the name
+  // Fetch user data name
   useEffect(() => {
     const fetchUserData = async () => {
       if (!currentUser) return;
       
       try {
-        // Try to get from localStorage first to avoid flicker
+        //get from localStorage
         const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
         if (cachedUserData) {
           const parsedData = JSON.parse(cachedUserData);
@@ -97,7 +96,6 @@ const NavbarAdmin = () => {
       <nav className="bg-red-700 text-white shadow-md">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            {/* Updated Logo and App Name with better positioning */}
             <Link to="/admin/dashboard" className="flex items-center">
               <svg
                 className="w-8 h-8 text-white mr-2"
@@ -141,6 +139,13 @@ const NavbarAdmin = () => {
                 className="mr-4 text-white hover:text-red-200"
               >
                 Tickets
+              </Link>
+              {/* Add Contacts Menu */}
+              <Link 
+                to="/admin/contacts"
+                className="mr-4 text-white hover:text-red-200"
+              >
+                Contacts
               </Link>
               <Link 
                 to="/app/dashboard" 

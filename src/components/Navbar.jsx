@@ -1,5 +1,3 @@
-// Updated Navbar.jsx with logo and adjusted text positioning
-
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 import { useState } from "react";
@@ -20,23 +18,21 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
-    // Logout and redirect to home page
     await logout();
     navigate("/");
     closeLogoutModal();
   };
 
-  // Get the display name for user
+  // Get user display name
   const getUserDisplayName = () => {
     if (currentUser?.displayName) return currentUser.displayName;
     if (currentUser?.email) {
-      // Extract name from email (part before @)
       return currentUser.email.split('@')[0];
     }
     return "User";
   };
 
-  // Get role badge style
+  // Role Badge Styling
   const getRoleBadgeStyle = () => {
     switch (userRole) {
       case 'admin':

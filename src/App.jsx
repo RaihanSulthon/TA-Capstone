@@ -1,4 +1,4 @@
-// Modified App.jsx with updated routes
+// Update App.jsx - Tambahkan route untuk kontak
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContexts";
 import MainLayout from "./layouts/MainLayout";
@@ -18,6 +18,10 @@ import TicketManagementPage from "./pages/admin/TicketManagementPage";
 import DisposisiTicketsPage from "./pages/disposisi/DisposisiTicketsPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 
+// Contact Pages
+import ContactsPage from "./pages/ContactsPage";
+import AdminContactsPage from "./pages/admin/AdminContactsPage";
+
 import "./App.css";
 
 function App() {
@@ -29,6 +33,9 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="auth" element={<AuthPage />} />
           <Route path="access-denied" element={<AccessDeniedPage />} />
+          
+          {/* Public Contacts Route - Tidak perlu login */}
+          <Route path="/contacts" element={<ContactsPage />} />
           
           {/* Protected User Routes */}
           <Route path="app" element={<MainLayout />}>
@@ -116,6 +123,16 @@ function App() {
               element={
                 <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
                   <TicketManagementPage />
+                </RoleBasedRoute>
+              }
+            />
+            
+            {/* Admin Contacts Management Route */}
+            <Route
+              path="contacts"
+              element={
+                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                  <AdminContactsPage />
                 </RoleBasedRoute>
               }
             />

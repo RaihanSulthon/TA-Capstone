@@ -1,4 +1,3 @@
-// src/components/NotificationBadge.jsx
 import React from 'react';
 
 const NotificationBadge = ({ count, onClick, className }) => {

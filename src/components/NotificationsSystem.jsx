@@ -1,4 +1,3 @@
-// Enhanced NotificationsSystem.jsx to better handle admin notifications
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, useFirestoreListeners } from '../contexts/AuthContexts';
@@ -15,7 +14,7 @@ const NotificationsSystem = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   
-  // Check if the current user is in admin panel view
+  // Check isadmin panel view true or not
   useEffect(() => {
     // Check if we're in the admin section by looking at the URL
     const inAdminSection = window.location.pathname.startsWith('/admin');
@@ -224,12 +223,10 @@ const NotificationsSystem = () => {
     if (!notification.read) {
       await markAsRead(notification.id);
     }
-    
     if (notification.ticketId) {
-      // Determine the appropriate URL based on whether we're in admin view or not
       const ticketPath = isAdmin 
-        ? `/admin/tickets` // In admin view, go to the tickets management page
-        : `/app/tickets/${notification.ticketId}`; // In user view, go to the specific ticket
+        ? `/admin/tickets`
+        : `/app/tickets/${notification.ticketId}`;
       
       navigate(ticketPath);
     }

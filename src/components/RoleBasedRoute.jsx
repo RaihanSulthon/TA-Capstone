@@ -16,7 +16,7 @@ const RoleBasedRoute = ({
         initialized
     } = useAuth();
 
-    // Wait for authentication and role checking to complete
+// Check Complete auth
     if (loading || checkingRole || !initialized) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -24,8 +24,6 @@ const RoleBasedRoute = ({
             </div>
         );
     }
-
-    // If not authenticated, redirect to auth page
     if(!isAuthenticated){
         console.log("User not authenticated, redirecting to /auth");
         return <Navigate to="/auth" replace/>
