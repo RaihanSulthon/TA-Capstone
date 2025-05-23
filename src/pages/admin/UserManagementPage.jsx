@@ -68,12 +68,12 @@ const UserManagementPage = () => {
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Update filter logic to handle only disposisi role
+    // Update filter logic to handle all roles including dosen_public
     let matchesRole = filterRole === "all";
     
     if (filterRole === "disposisi") {
       matchesRole = user.role === "disposisi";
-    } else if (filterRole === "student" || filterRole === "admin") {
+    } else if (filterRole === "student" || filterRole === "admin" || filterRole === "dosen_public") {
       matchesRole = user.role === filterRole;
     }
     
@@ -240,6 +240,7 @@ const UserManagementPage = () => {
       case 'admin': return 'Admin';
       case 'disposisi': return 'Disposisi';
       case 'student': return 'Student';
+      case 'dosen_public': return 'Kontak Dosen';
       default: return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
     }
   };
@@ -274,6 +275,7 @@ const UserManagementPage = () => {
           <option value="student">Student</option>
           <option value="disposisi">Disposisi</option>
           <option value="admin">Admin</option>
+          <option value="dosen_public">Kontak Dosen</option>
         </select>
       </div>
       
@@ -326,18 +328,19 @@ const UserManagementPage = () => {
   );
 
   // Get user count by role
-  const getUserCounts = () => {
-    const studentCount = users.filter(user => user.role === 'student').length;
-    // Count only disposisi roles
-    const disposisiCount = users.filter(user => user.role === 'disposisi').length;
-    const adminCount = users.filter(user => user.role === 'admin').length;
-    
-    return {
-      students: studentCount,
-      disposisi: disposisiCount,
-      admins: adminCount
-    };
+const getUserCounts = () => {
+  const studentCount = users.filter(user => user.role === 'student').length;
+  const disposisiCount = users.filter(user => user.role === 'disposisi').length;
+  const adminCount = users.filter(user => user.role === 'admin').length;
+  const dosenPublicCount = users.filter(user => user.role === 'dosen_public').length;
+  
+  return {
+    students: studentCount,
+    disposisi: disposisiCount,
+    admins: adminCount,
+    dosenPublic: dosenPublicCount
   };
+};
 
   // Get user counts for display
   const userCounts = getUserCounts();
@@ -395,6 +398,7 @@ const UserManagementPage = () => {
                 <option value="student">Students</option>
                 <option value="disposisi">Disposisi</option>
                 <option value="admin">Admins</option>
+                <option value="dosen_public">Kontak Dosen</option>
               </select>
             </div>
           </div>
@@ -411,7 +415,7 @@ const UserManagementPage = () => {
       </div>
       
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Users</p>
           <p className="text-2xl font-bold text-blue-600">{users.length}</p>
@@ -432,6 +436,12 @@ const UserManagementPage = () => {
           <p className="text-sm text-gray-500">Admins</p>
           <p className="text-2xl font-bold text-red-600">
             {userCounts.admins}
+          </p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Kontak Dosen</p>
+          <p className="text-2xl font-bold text-orange-600">
+            {userCounts.dosenPublic}
           </p>
         </div>
       </div>
@@ -475,6 +485,7 @@ const UserManagementPage = () => {
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
                           user.role === 'disposisi' ? 'bg-purple-100 text-purple-800' : 
+                          user.role === 'dosen_public' ? 'bg-orange-100 text-orange-800' :
                           'bg-green-100 text-green-800'}`}>
                         {getRoleDisplayName(user.role)}
                       </span>
