@@ -101,19 +101,6 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
         
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2">
-            Nomor Telepon
-          </label>
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleFormChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-gray-700 text-sm font-medium mb-2">
             Ruang Kantor
           </label>
           <input
@@ -394,7 +381,6 @@ const AdminContactsPage = () => {
       const contactData = {
         name: formData.nama,
         email: formData.email,
-        phone: formData.phone || "",
         office: formData.office || "",
         expertise: formData.bidangKeahlian || "",
         bidangKeahlian: formData.bidangKeahlian || "",
@@ -475,7 +461,6 @@ const AdminContactsPage = () => {
       const updatedData = {
         name: formData.nama,
         email: formData.email,
-        phone: formData.phone || "",
         office: formData.office || "",
         expertise: formData.bidangKeahlian || "",
         bidangKeahlian: formData.bidangKeahlian || "",
@@ -549,7 +534,6 @@ const AdminContactsPage = () => {
     setFormData({
       nama: contact.name || contact.nama || "",
       email: contact.email || "",
-      phone: contact.phone || "",
       office: contact.office || "",
       bidangKeahlian: contact.expertise || contact.bidangKeahlian || "",
       photoFile: null,
@@ -691,9 +675,6 @@ const AdminContactsPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{contact.nama}</div>
-                      {contact.phone && (
-                        <div className="text-sm text-gray-500">{contact.phone}</div>
-                      )}
                       {contact.office && (
                         <div className="text-sm text-gray-500">{contact.office}</div>
                       )}
