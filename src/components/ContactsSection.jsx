@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { db } from "../firebase-config";
 import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
+import { useAuth } from "../contexts/AuthContexts";
 
 const ContactsSection = () => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // limiter for 6 contacts only
   useEffect(() => {
@@ -28,8 +32,11 @@ const ContactsSection = () => {
         }));
         
         setContacts(contactsList);
+        setError(null);
       } catch (error) {
         console.error("Error fetching contacts:", error);
+        setError("Failed to load contacts. Please check your Firebase security rules.");
+        setContacts([]);
       } finally {
         setLoading(false);
       }
@@ -38,9 +45,14 @@ const ContactsSection = () => {
     fetchFeaturedContacts();
   }, []);
 
+  // Handle view all button click - redirect to appropriate page
+  const handleViewAllClick = () => {
+    navigate("/contacts");
+  };
+
   if (loading) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white" id="contacts">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Kontak Dosen</h2>
           <div className="flex justify-center">
@@ -52,7 +64,7 @@ const ContactsSection = () => {
   }
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white" id="contacts">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Kontak Dosen</h2>
@@ -61,7 +73,21 @@ const ContactsSection = () => {
           </p>
         </div>
         
-        {contacts.length === 0 ? (
+        {error ? (
+          <div className="text-center py-8">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-lg mx-auto">
+              <p>{error}</p>
+              <p className="mt-2 text-sm">
+                This may be due to Firebase permission settings. Please update your Firestore security rules to allow reading users with role "dosen_public".
+              </p>
+              <div className="mt-4 bg-gray-100 p-3 rounded text-xs text-left overflow-auto">
+                <pre>
+                  {`match /users/{userId} {\n  allow read: if resource.data.role == "dosen_public" || \n              (request.auth != null && request.auth.uid == userId);\n}`}
+                </pre>
+              </div>
+            </div>
+          </div>
+        ) : contacts.length === 0 ? (
           <div className="text-center py-12">
             <svg className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -152,15 +178,15 @@ const ContactsSection = () => {
             
             {/* View All Button */}
             <div className="text-center">
-              <Link
-                to="/contacts"
+              <button
+                onClick={handleViewAllClick}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Lihat Semua Kontak Dosen
                 <svg className="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </Link>
+              </button>
             </div>
           </>
         )}

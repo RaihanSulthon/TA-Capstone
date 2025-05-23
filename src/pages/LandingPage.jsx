@@ -1,9 +1,8 @@
-// Update untuk LandingPage.jsx - Tambahkan import dan section kontak
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContexts";
 import Button from "../components/forms/Button";
-import ContactsSection from "../components/ContactsSection"; // Import komponen kontak
+import ContactsSection from "../components/ContactsSection"; // Import the updated component
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ const LandingPage = () => {
   // Refs for each section
   const homeRef = useRef(null);
   const featuresRef = useRef(null);
-  const contactsRef = useRef(null); // Tambah ref untuk contacts
+  const contactsRef = useRef(null); // Contact Dosen section ref
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
 
@@ -28,7 +27,7 @@ const LandingPage = () => {
     });
   };
 
-  // Update useEffect untuk scroll event
+  // Update useEffect for scroll event
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -135,7 +134,7 @@ const LandingPage = () => {
               >
                 Features
               </button>
-              {/* Tambah menu Contacts */}
+              {/* Contact Dosen Menu Item */}
               <button
                 onClick={() => scrollToSection(contactsRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
@@ -429,7 +428,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Contacts Section - Tambahkan section kontak dosen */}
+      {/* Contacts Section - Uses updated ContactsSection component */}
       <div ref={contactsRef}>
         <ContactsSection />
       </div>
@@ -604,7 +603,6 @@ const LandingPage = () => {
                     <Button
                       type="button"
                       className="w-full bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 px-5 py-2 text-white rounded-lg font-medium transition-colors duration-300"
-                      
                     >
                       Send Message
                     </Button>

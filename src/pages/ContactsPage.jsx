@@ -1,22 +1,22 @@
-// src/pages/ContactsPage.jsx - Final version menggunakan users collection dengan role dosen_public
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { db } from "../firebase-config";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { useAuth } from "../contexts/AuthContexts";
 
 const ContactsPage = () => {
+  const { isAuthenticated } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterKeahlian, setFilterKeahlian] = useState("all");
 
-  // Fetch contacts from users collection dengan role "dosen_public"
+  // Fetch contacts from users collection with role "dosen_public"
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        // Query users dengan role "dosen_public" - bisa diakses tanpa auth
-        // Karena biasanya Firestore rules allow read untuk collection users
+        // Query users with role "dosen_public" - accessible without auth
         const contactsQuery = query(
           collection(db, "users"),
           where("role", "==", "dosen_public"),
@@ -27,15 +27,23 @@ const ContactsPage = () => {
         const contactsList = contactsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
-          // Map fields untuk compatibility
+          // Map fields for compatibility
           nama: doc.data().name,
           bidangKeahlian: doc.data().expertise || doc.data().bidangKeahlian || ""
         }));
         
         setContacts(contactsList);
+        setError("");
       } catch (error) {
         console.error("Error fetching contacts:", error);
-        setError("Gagal memuat data kontak. Silakan coba lagi nanti.");
+        let errorMessage = "Gagal memuat data kontak. Silakan coba lagi nanti.";
+        
+        // If the error is due to Firebase permissions
+        if (error.code === 'permission-denied') {
+          errorMessage = "Akses ditolak - Cek pengaturan keamanan Firebase Anda.";
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -111,7 +119,26 @@ const ContactsPage = () => {
         
         <div className="container mx-auto px-4 py-8">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p className="font-bold mb-2">Error:</p>
             <p>{error}</p>
+            {error.includes("Akses ditolak") && (
+              <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded">
+                <p className="font-semibold">Possible Firebase Security Rules Issue:</p>
+                <p className="mt-2">
+                  It looks like your Firebase security rules might be preventing access to the contacts data. 
+                  Please make sure your Firestore security rules allow reading users with role "dosen_public".
+                </p>
+                <p className="mt-2">
+                  Update your security rules in Firebase Console to include:
+                </p>
+                <pre className="mt-2 p-2 bg-gray-100 rounded overflow-x-auto">
+                  {`match /users/{userId} {
+  allow read: if resource.data.role == "dosen_public" || 
+              (request.auth != null && request.auth.uid == userId);
+}`}
+                </pre>
+              </div>
+            )}
           </div>
         </div>
       </div>

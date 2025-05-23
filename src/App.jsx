@@ -1,4 +1,3 @@
-// Update App.jsx - Tambahkan route untuk kontak
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContexts";
 import MainLayout from "./layouts/MainLayout";
@@ -34,7 +33,7 @@ function App() {
           <Route path="auth" element={<AuthPage />} />
           <Route path="access-denied" element={<AccessDeniedPage />} />
           
-          {/* Public Contacts Route - Tidak perlu login */}
+          {/* Public Contacts Route - Always accessible without login */}
           <Route path="/contacts" element={<ContactsPage />} />
           
           {/* Protected User Routes */}
