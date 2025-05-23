@@ -139,6 +139,17 @@ const LandingPage = () => {
                 Home
               </button>
               <button
+                onClick={() => scrollToSection(aboutRef)}
+                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
+                  isScrolled 
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    : 'text-white hover:bg-white/10'
+                } ${activeSection === "about" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                `}
+              >
+                About
+              </button>
+              <button
                 onClick={() => scrollToSection(featuresRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
@@ -172,28 +183,6 @@ const LandingPage = () => {
                 `}
               >
                 FAQ
-              </button>
-              <button
-                onClick={() => scrollToSection(aboutRef)}
-                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
-                  isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
-                    : 'text-white hover:bg-white/10'
-                } ${activeSection === "about" && (isScrolled ? "text-blue-600" : "font-semibold")}
-                `}
-              >
-                About
-              </button>
-              <button
-                onClick={() => scrollToSection(contactsRef)}
-                className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
-                  isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
-                    : 'text-white hover:bg-white/10'
-                } ${activeSection === "contact" && (isScrolled ? "text-blue-600" : "font-semibold")}
-                `}
-              >
-                Contact
               </button>
             </div>
 
