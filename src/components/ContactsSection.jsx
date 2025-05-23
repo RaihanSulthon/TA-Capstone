@@ -145,8 +145,11 @@ const ContactsSection = () => {
                   {/* Expertise Tags */}
                   {contact.bidangKeahlian && (
                     <div className="mb-3">
+                      <div className="flex items-center mb-2">
+                        <span className="text-gray-600 text-sm font-medium">Bidang Keahlian</span>
+                      </div>
                       <div className="flex flex-wrap gap-1">
-                        {contact.bidangKeahlian.split(',').slice(0, 2).map((keahlian, index) => (
+                        {contact.bidangKeahlian.split(',').map((keahlian, index) => (
                           <span
                             key={index}
                             className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
@@ -154,11 +157,6 @@ const ContactsSection = () => {
                             {keahlian.trim()}
                           </span>
                         ))}
-                        {contact.bidangKeahlian.split(',').length > 2 && (
-                          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                            +{contact.bidangKeahlian.split(',').length - 2} lainnya
-                          </span>
-                        )}
                       </div>
                     </div>
                   )}

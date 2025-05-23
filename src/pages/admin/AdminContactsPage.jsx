@@ -17,6 +17,8 @@ import Toast from "../../components/Toast";
 import Button from "../../components/forms/Button";
 
 const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting }) => {
+  const [errors, setErrors] = useState({});
+
   // Convert file to Base64
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -36,6 +38,66 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
         reject(error);
       };
     });
+  };
+
+  // Validation functions
+  const validateField = (name, value) => {
+    let error = "";
+    
+    switch (name) {
+      case "nama":
+        if (!value.trim()) {
+          error = "Nama lengkap wajib diisi";
+        } else if (value.trim().length < 2) {
+          error = "Nama harus minimal 2 karakter";
+        }
+        break;
+        
+      case "email":
+        if (!value.trim()) {
+          error = "Email wajib diisi";
+        } else if (!/\S+@\S+\.\S+/.test(value)) {
+          error = "Format email tidak valid";
+        } else if (!value.endsWith("@telkomuniversity.ac.id")) {
+          error = "Email harus berakhiran @telkomuniversity.ac.id";
+        }
+        break;
+        
+      case "office":
+        if (!value.trim()) {
+          error = "Ruang kantor wajib diisi";
+        }
+        break;
+        
+      case "bidangKeahlian":
+        if (!value.trim()) {
+          error = "Bidang keahlian wajib diisi";
+        } else if (value.trim().length < 5) {
+          error = "Bidang keahlian harus minimal 5 karakter";
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    return error;
+  };
+
+  // Validate all fields
+  const validateForm = () => {
+    const newErrors = {};
+    const fieldsToValidate = ["nama", "email", "office", "bidangKeahlian"];
+    
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, formData[field] || "");
+      if (error) {
+        newErrors[field] = error;
+      }
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Handle form change
@@ -65,11 +127,41 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
         ...prev,
         [name]: value
       }));
+      
+      // Clear error for this field when user starts typing
+      if (errors[name]) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: ""
+        }));
+      }
     }
   };
 
+  // Handle form blur (validation on field exit)
+  const handleFieldBlur = (e) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
+  };
+
+  // Handle form submit with validation
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    onSubmit(e);
+  };
+
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -80,9 +172,17 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
             name="nama"
             value={formData.nama}
             onChange={handleFormChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onBlur={handleFieldBlur}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+              errors.nama 
+                ? "border-red-500 focus:ring-red-500" 
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             required
           />
+          {errors.nama && (
+            <p className="mt-1 text-sm text-red-600">{errors.nama}</p>
+          )}
         </div>
         
         <div>
@@ -94,37 +194,68 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
             name="email"
             value={formData.email}
             onChange={handleFormChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onBlur={handleFieldBlur}
+            placeholder="nama@telkomuniversity.ac.id"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+              errors.email 
+                ? "border-red-500 focus:ring-red-500" 
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
             required
           />
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+          )}
         </div>
         
         <div>
           <label className="block text-gray-700 text-sm font-medium mb-2">
-            Ruang Kantor
+            Ruang Kantor <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             name="office"
             value={formData.office}
             onChange={handleFormChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onBlur={handleFieldBlur}
+            placeholder="Contoh: Gedung A Lt. 2 Ruang 201"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+              errors.office 
+                ? "border-red-500 focus:ring-red-500" 
+                : "border-gray-300 focus:ring-blue-500"
+            }`}
+            required
           />
+          {errors.office && (
+            <p className="mt-1 text-sm text-red-600">{errors.office}</p>
+          )}
         </div>
       </div>
       
       <div className="mt-4">
         <label className="block text-gray-700 text-sm font-medium mb-2">
-          Bidang Keahlian
+          Bidang Keahlian <span className="text-red-500">*</span>
         </label>
         <textarea
           name="bidangKeahlian"
           value={formData.bidangKeahlian}
           onChange={handleFormChange}
-          rows="3"
-          placeholder="Pisahkan dengan koma jika lebih dari satu"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onBlur={handleFieldBlur}
+          rows="4"
+          placeholder="Contoh: Artificial Intelligence, Software Engineering, Machine Learning"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+            errors.bidangKeahlian 
+              ? "border-red-500 focus:ring-red-500" 
+              : "border-gray-300 focus:ring-blue-500"
+          }`}
+          required
         />
+        {errors.bidangKeahlian && (
+          <p className="mt-1 text-sm text-red-600">{errors.bidangKeahlian}</p>
+        )}
+        <p className="text-xs text-gray-500 mt-1">
+          <strong>Tips:</strong> Pisahkan setiap bidang keahlian dengan koma (,). Setiap bidang akan ditampilkan sebagai tag terpisah di halaman kontak.
+        </p>
       </div>
       
       <div className="mt-4">
@@ -206,8 +337,12 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting}
-          className="bg-blue-600 hover:bg-blue-700"
+          disabled={isSubmitting || Object.keys(errors).some(key => errors[key])}
+          className={`${
+            isSubmitting || Object.keys(errors).some(key => errors[key])
+              ? "bg-gray-400 cursor-not-allowed" 
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
           {isSubmitting ? "Menyimpan..." : submitText}
         </Button>
@@ -327,7 +462,7 @@ const AdminContactsPage = () => {
     contact.bidangKeahlian?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Reset form
+  // Reset form with errors
   const resetForm = () => {
     setFormData({
       nama: "",
@@ -342,17 +477,9 @@ const AdminContactsPage = () => {
     });
   };
 
-  // Add contact - simpan sebagai user dengan role "dosen_public"
+  // Handle add contact with improved validation
   const handleAddContact = async (e) => {
     e.preventDefault();
-    
-    if (!formData.nama || !formData.email) {
-      setToast({
-        message: "Nama dan email wajib diisi",
-        type: "error"
-      });
-      return;
-    }
     
     setIsSubmitting(true);
     
@@ -379,11 +506,11 @@ const AdminContactsPage = () => {
       }
       
       const contactData = {
-        name: formData.nama,
-        email: formData.email,
-        office: formData.office || "",
-        expertise: formData.bidangKeahlian || "",
-        bidangKeahlian: formData.bidangKeahlian || "",
+        name: formData.nama.trim(),
+        email: formData.email.trim().toLowerCase(),
+        office: formData.office.trim(),
+        expertise: formData.bidangKeahlian.trim(),
+        bidangKeahlian: formData.bidangKeahlian.trim(),
         photoBase64: photoBase64,
         photoType: photoType,
         photoName: photoName,
@@ -421,13 +548,13 @@ const AdminContactsPage = () => {
     }
   };
 
-  // Edit contact
+  // Handle edit contact with improved validation
   const handleEditContact = async (e) => {
     e.preventDefault();
     
-    if (!selectedContact || !formData.nama || !formData.email) {
+    if (!selectedContact) {
       setToast({
-        message: "Nama dan email wajib diisi",
+        message: "Kontak tidak ditemukan",
         type: "error"
       });
       return;
@@ -459,11 +586,11 @@ const AdminContactsPage = () => {
       
       const contactRef = doc(db, "users", selectedContact.id);
       const updatedData = {
-        name: formData.nama,
-        email: formData.email,
-        office: formData.office || "",
-        expertise: formData.bidangKeahlian || "",
-        bidangKeahlian: formData.bidangKeahlian || "",
+        name: formData.nama.trim(),
+        email: formData.email.trim().toLowerCase(),
+        office: formData.office.trim(),
+        expertise: formData.bidangKeahlian.trim(),
+        bidangKeahlian: formData.bidangKeahlian.trim(),
         photoBase64: photoBase64,
         photoType: photoType,
         photoName: photoName,
@@ -775,7 +902,7 @@ const AdminContactsPage = () => {
           <div className="flex justify-end space-x-3">
             <Button
               onClick={closeDeleteModal}
-              className="bg-gray-100 text-gray-700 hover:bg-red-500"
+              className="bg-gray-100 text-gray-700 hover:bg-gray-200"
             >
               Batal
             </Button>
