@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../contexts/AuthContexts";
+import { useAuth } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
 import { 
   collection, 
@@ -328,20 +328,20 @@ const ContactForm = ({ onSubmit, submitText, formData, setFormData, isSubmitting
       </div>
       
       <div className="flex justify-end space-x-3 mt-6">
-        <Button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent('closeModal'))}
-          className="bg-gray-100 text-gray-700 hover:bg-gray-200"
-        >
-          Batal
-        </Button>
+      <Button
+        type="button"
+        onClick={() => window.dispatchEvent(new CustomEvent('closeModal'))}
+        className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
+      >
+        Batal
+      </Button>
         <Button
           type="submit"
           disabled={isSubmitting || Object.keys(errors).some(key => errors[key])}
           className={`${
             isSubmitting || Object.keys(errors).some(key => errors[key])
               ? "bg-gray-400 cursor-not-allowed" 
-              : "bg-blue-600 hover:bg-blue-700"
+              : "bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"
           }`}
         >
           {isSubmitting ? "Menyimpan..." : submitText}
@@ -717,7 +717,7 @@ const AdminContactsPage = () => {
         <h1 className="text-2xl font-bold">Kelola Kontak Dosen</h1>
         <Button
           onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"
         >
           Tambah Kontak
         </Button>
@@ -859,13 +859,15 @@ const AdminContactsPage = () => {
         title="Tambah Kontak Dosen"
         size="lg"
       >
-        <ContactForm 
-          onSubmit={handleAddContact}
-          submitText="Tambah Kontak"
-          formData={formData}
-          setFormData={setFormData}
-          isSubmitting={isSubmitting}
-        />
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          <ContactForm 
+            onSubmit={handleAddContact}
+            submitText="Tambah Kontak"
+            formData={formData}
+            setFormData={setFormData}
+            isSubmitting={isSubmitting}
+          />
+        </div>
       </Modal>
       
       {/* Edit Contact Modal */}
@@ -875,13 +877,15 @@ const AdminContactsPage = () => {
         title="Edit Kontak Dosen"
         size="lg"
       >
-        <ContactForm 
-          onSubmit={handleEditContact}
-          submitText="Perbarui Kontak"
-          formData={formData}
-          setFormData={setFormData}
-          isSubmitting={isSubmitting}
-        />
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
+          <ContactForm 
+            onSubmit={handleEditContact}
+            submitText="Perbarui Kontak"
+            formData={formData}
+            setFormData={setFormData}
+            isSubmitting={isSubmitting}
+          />
+        </div>
       </Modal>
       
       {/* Delete Confirmation Modal */}

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import { useState } from "react";
 import Modal from "./Modal";
 import NotificationsSystem from "./NotificationsSystem";
@@ -59,18 +59,18 @@ const Navbar = () => {
       </p>
       
       <div className="flex justify-end space-x-3">
-        <button
-          onClick={closeLogoutModal}
-          className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
-        >
-          Logout
-        </button>
+      <button
+        onClick={closeLogoutModal}
+        className="px-4 py-2 border border-gray-300 rounded text-gray-700 bg-gray-100 hover:bg-white hover:text-gray-700 transition-colors duration-200"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleLogout}
+        className="px-4 py-2 bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 rounded transition-colors duration-200"
+      >
+        Logout
+      </button>
       </div>
     </>
   );
@@ -153,7 +153,7 @@ const Navbar = () => {
                   
                   <button
                     onClick={openLogoutModal}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                    className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-colors duration-200 px-4 py-2 rounded"
                   >
                     Logout
                   </button>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase-config";
 import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 
 const ContactsSection = () => {
   const [contacts, setContacts] = useState([]);
@@ -164,11 +164,11 @@ const ContactsSection = () => {
               ))}
             </div>
             
-            {/* View All Button */}
+            {/* View All Button - Updated with new styling */}
             <div className="text-center">
               <button
                 onClick={handleViewAllClick}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center bg-blue-600 border-2 border-blue-500 hover:bg-white hover:text-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
               >
                 Lihat Semua Kontak Dosen
                 <svg className="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

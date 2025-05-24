@@ -1,7 +1,7 @@
 // Improved TicketManagementPage.jsx with truncated titles
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
 import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
 import Button from "../../components/forms/Button";
@@ -480,19 +480,19 @@ const TicketManagementPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <div className="flex space-x-2">
-                          <Button
-                            onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                            className={isUnread ? "bg-blue-600 hover:bg-blue-700" : ""}
-                          >
-                            {isUnread ? "Lihat Tiket Baru" : "Detail"}
-                          </Button>
+                        <Button
+                          onClick={() => navigate(`/app/tickets/${ticket.id}`)}
+                          className={isUnread ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"}
+                        >
+                          {isUnread ? "Lihat Tiket Baru" : "Detail"}
+                        </Button>
                           
-                          <Button
-                            onClick={() => openDeleteModal(ticket)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Hapus
-                          </Button>
+                        <Button
+                          onClick={() => openDeleteModal(ticket)}
+                          className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
+                        >
+                          Hapus
+                        </Button>
                         </div>
                       </td>
                     </tr>

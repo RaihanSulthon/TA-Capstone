@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContexts";
+import { AuthProvider } from "./contexts/Authcontexts";
 import MainLayout from "./layouts/MainLayout";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/auth/AuthPage";
@@ -20,6 +20,7 @@ import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 // Contact Pages
 import ContactsPage from "./pages/ContactsPage";
 import AdminContactsPage from "./pages/admin/AdminContactsPage";
+import LAAKInfoPortal from "./pages/LAAKInfoPortal";
 
 import "./App.css";
 
@@ -35,6 +36,9 @@ function App() {
           
           {/* Public Contacts Route - Always accessible without login */}
           <Route path="/contacts" element={<ContactsPage />} />
+          
+          {/* LAAK Info Portal Route */}
+          <Route path="/laak-info" element={<LAAKInfoPortal />} />
           
           {/* Protected User Routes */}
           <Route path="app" element={<MainLayout />}>

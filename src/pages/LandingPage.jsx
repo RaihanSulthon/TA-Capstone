@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import Button from "../components/forms/Button";
 import ContactsSection from "../components/ContactsSection";
-import FAQSection from "../components/FAQSection"; // Import the new FAQ component
+import FAQSection from "../components/FAQSection";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -12,12 +12,12 @@ const LandingPage = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Refs for each section
+  // Refs for each section (removed featuresRef)
   const homeRef = useRef(null);
-  const featuresRef = useRef(null);
-  const contactsRef = useRef(null); // Contact Dosen section ref
-  const faqRef = useRef(null); // FAQ section ref
   const aboutRef = useRef(null);
+  const laakRef = useRef(null); // Added LAAK section ref
+  const contactsRef = useRef(null);
+  const faqRef = useRef(null);
   const contactRef = useRef(null);
 
   // Handle smooth scrolling
@@ -31,7 +31,7 @@ const LandingPage = () => {
     }
   };
 
-  // Update useEffect for scroll event
+  // Updated useEffect for scroll event (removed features references)
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -39,42 +39,42 @@ const LandingPage = () => {
       // Set isScrolled to true if scrolled more than 10px, false otherwise
       setIsScrolled(scrollPosition > 10);
       
-      // Check which section is in view
+      // Check which section is in view (updated without features)
       if (
         homeRef.current &&
-        featuresRef.current &&  // ✅ Add null check
+        aboutRef.current &&
         scrollPosition + 100 >= homeRef.current.offsetTop &&
-        scrollPosition + 100 < featuresRef.current.offsetTop
+        scrollPosition + 100 < aboutRef.current.offsetTop
       ) {
         setActiveSection("home");
       } else if (
-        featuresRef.current &&
-        contactsRef.current &&  // ✅ Add null check
-        scrollPosition + 100 >= featuresRef.current.offsetTop &&
+        aboutRef.current &&
+        laakRef.current &&
+        scrollPosition + 100 >= aboutRef.current.offsetTop &&
+        scrollPosition + 100 < laakRef.current.offsetTop
+      ) {
+        setActiveSection("about");
+      } else if (
+        laakRef.current &&
+        contactsRef.current &&
+        scrollPosition + 100 >= laakRef.current.offsetTop &&
         scrollPosition + 100 < contactsRef.current.offsetTop
       ) {
-        setActiveSection("features");
+        setActiveSection("laak");
       } else if (
         contactsRef.current &&
-        faqRef.current &&  // ✅ Add null check
+        faqRef.current &&
         scrollPosition + 100 >= contactsRef.current.offsetTop &&
         scrollPosition + 100 < faqRef.current.offsetTop
       ) {
         setActiveSection("contacts");
       } else if (
         faqRef.current &&
-        aboutRef.current &&  // ✅ Add null check
+        contactRef.current &&
         scrollPosition + 100 >= faqRef.current.offsetTop &&
-        scrollPosition + 100 < aboutRef.current.offsetTop
-      ) {
-        setActiveSection("faq");
-      } else if (
-        aboutRef.current &&
-        contactRef.current &&  // ✅ Add null check
-        scrollPosition + 100 >= aboutRef.current.offsetTop &&
         scrollPosition + 100 < contactRef.current.offsetTop
       ) {
-        setActiveSection("about");
+        setActiveSection("faq");
       } else if (
         contactRef.current &&
         scrollPosition + 100 >= contactRef.current.offsetTop
@@ -149,16 +149,17 @@ const LandingPage = () => {
               >
                 About
               </button>
+              {/* LAAK Menu Item - replacing Features */}
               <button
-                onClick={() => scrollToSection(featuresRef)}
+                onClick={() => scrollToSection(laakRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
                     ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
                     : 'text-white hover:bg-white/10'
-                } ${activeSection === "features" && (isScrolled ? "text-blue-600" : "font-semibold")}
+                } ${activeSection === "laak" && (isScrolled ? "text-blue-600" : "font-semibold")}
                 `}
               >
-                Features
+                LAAK
               </button>
               {/* Contact Dosen Menu Item */}
               <button
@@ -256,10 +257,16 @@ const LandingPage = () => {
                 Home
               </button>
               <button
-                onClick={() => scrollToSection(featuresRef)}
+                onClick={() => scrollToSection(aboutRef)}
                 className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
               >
-                Features
+                About
+              </button>
+              <button
+                onClick={() => scrollToSection(laakRef)}
+                className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
+              >
+                LAAK
               </button>
               <button
                 onClick={() => scrollToSection(contactsRef)}
@@ -272,18 +279,6 @@ const LandingPage = () => {
                 className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
               >
                 FAQ
-              </button>
-              <button
-                onClick={() => scrollToSection(aboutRef)}
-                className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
-              >
-                About
-              </button>
-              <button
-                onClick={() => scrollToSection(contactRef)}
-                className="block w-full text-left py-3 px-4 text-gray-800 hover:bg-gray-100"
-              >
-                Contact
               </button>
               <div className="border-t border-gray-200 py-3 px-4">
                 {isAuthenticated ? (
@@ -354,7 +349,7 @@ const LandingPage = () => {
                     Get Started
                   </Button>
                   <Button
-                    onClick={() => scrollToSection(featuresRef)}
+                    onClick={() => scrollToSection(laakRef)}
                     className="bg-transparent border-2 border-white hover:bg-white hover:text-blue-600 px-8 py-3 rounded-lg font-semibold transition-colors duration-300"
                   >
                     Learn More
@@ -406,86 +401,27 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* LAAK Info Section with borders like your second image */}
       <section
-        ref={featuresRef}
-        id="features"
-        className="py-16 bg-gray-50"
+        ref={laakRef}
+        id="laak-info"
+        className="py-16 bg-blue-50"
       >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Easy to Use</h3>
-              <p className="text-gray-600">
-                Our platform provides an intuitive interface for all users, making it simple to navigate and use.
-              </p>
-            </div>
-            
-            {/* Feature 2 */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                  ></path>
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Customizable</h3>
-              <p className="text-gray-600">
-                Tailor your experience with personalized settings and preferences based on your role.
-              </p>
-            </div>
-            
-            {/* Feature 3 */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  ></path>
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Fast & Reliable</h3>
-              <p className="text-gray-600">
-                Our platform is built on modern technologies ensuring speed and reliability.
-              </p>
-            </div>
+          <div className="bg-white rounded-xl shadow-lg border border-blue-200 p-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Informasi LAAK FIF</h2>
+            <p className="text-gray-600 mb-8">
+              Akses informasi dan layanan administrasi akademik & kemahasiswaan Fakultas Informatika
+            </p>
+            <button
+              onClick={() => navigate("/laak-info")}
+              className="inline-flex items-center bg-blue-600 border-2 border-blue-500 hover:bg-white hover:text-blue-600 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300"
+            >
+              Lihat Informasi LAAK
+              <svg className="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
           </div>
         </div>
       </section>
