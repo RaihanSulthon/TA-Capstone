@@ -1,6 +1,6 @@
 // src/pages/admin/AdminDashboardPage.jsx - Fixed to properly handle disposisi role
 import { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/AuthContexts";
+import { useAuth } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
 import { doc, getDoc, collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { Link } from "react-router-dom";

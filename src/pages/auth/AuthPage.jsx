@@ -4,8 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import TextField from "../../components/forms/TextField";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
-import { registerUser, loginUser } from "../../Services/authService";
-import { useAuth } from "../../contexts/AuthContexts";
+import { registerUser, loginUser } from "../../services/authService";
+import { useAuth } from "../../contexts/Authcontexts";
 
 const AuthPage = () => {
   const navigate = useNavigate();

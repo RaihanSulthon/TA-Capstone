@@ -1,7 +1,7 @@
 // src/pages/TicketDetailPage.jsx - Dengan fitur preview lampiran/gambar yang diupload
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth, useFirestoreListeners } from "../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../contexts/Authcontexts";
 import { db, storage } from "../firebase-config";
 import { 
   doc, 

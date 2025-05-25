@@ -1,6 +1,6 @@
 // Modified DashboardPage.jsx with truncated email addresses
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
 import { doc, getDoc } from "firebase/firestore";
 

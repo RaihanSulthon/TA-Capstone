@@ -1,7 +1,7 @@
 // src/pages/AccessDeniedPage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 
 const AccessDeniedPage = () => {
   const { currentUser } = useAuth();

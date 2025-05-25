@@ -1,7 +1,7 @@
 // Apply the same truncation to DisposisiTicketsPage.jsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
 import { collection, getDocs, query, orderBy, where, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import Button from "../../components/forms/Button";

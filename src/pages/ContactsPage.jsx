@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { db } from "../firebase-config";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 
 const ContactsPage = () => {
   const { isAuthenticated } = useAuth();

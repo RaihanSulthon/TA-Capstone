@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import Navbar from "../components/Navbar";
 import NavbarAdmin from "../components/admin/NavbarAdmin";
 
