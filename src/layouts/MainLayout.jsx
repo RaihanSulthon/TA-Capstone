@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import Navbar from "../components/Navbar";
 import NavbarAdmin from "../components/admin/NavbarAdmin";
 
@@ -149,7 +149,7 @@ const MainLayout = () => {
                     Manajemen Tiket
                   </Link>
 
-                  {/* Admin Contacts Management */}
+                  {/* Admin Content Management */}
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
                     Konten
                   </div>
@@ -162,6 +162,16 @@ const MainLayout = () => {
                     }`}
                   >
                     Kelola Kontak Dosen
+                  </Link>
+                  <Link
+                    to="/admin/faqs"
+                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
+                      isActive('/admin/faqs')
+                        ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
+                        : 'text-gray-700 hover:bg-blue-50'
+                    }`}
+                  >
+                    Kelola FAQ
                   </Link>
                 </>
               )}

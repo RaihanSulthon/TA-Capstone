@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContexts";
+import { useAuth } from "../../contexts/Authcontexts";
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
 import {db} from "../../firebase-config";
@@ -146,6 +146,13 @@ const NavbarAdmin = () => {
                 className="mr-4 text-white hover:text-red-200"
               >
                 Contacts
+              </Link>
+              {/* Add FAQ Menu */}
+              <Link 
+                to="/admin/faqs"
+                className="mr-4 text-white hover:text-red-200"
+              >
+                FAQ
               </Link>
               <Link 
                 to="/app/dashboard" 

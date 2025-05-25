@@ -21,6 +21,7 @@ import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 import ContactsPage from "./pages/ContactsPage";
 import AdminContactsPage from "./pages/admin/AdminContactsPage";
 import LAAKInfoPortal from "./pages/LAAKInfoPortal";
+import AdminFAQPage from "./pages/admin/AdminFAQPage";
 
 import "./App.css";
 
@@ -36,6 +37,8 @@ function App() {
           
           {/* Public Contacts Route - Always accessible without login */}
           <Route path="/contacts" element={<ContactsPage />} />
+
+
           
           {/* LAAK Info Portal Route */}
           <Route path="/laak-info" element={<LAAKInfoPortal />} />
@@ -136,6 +139,16 @@ function App() {
               element={
                 <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
                   <AdminContactsPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* Admin FAQ Management Route */}
+            <Route
+              path="faqs"
+              element={
+                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                  <AdminFAQPage />
                 </RoleBasedRoute>
               }
             />
