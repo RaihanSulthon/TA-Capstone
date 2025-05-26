@@ -1,7 +1,7 @@
 // Apply the same truncation to StudentTicketsPage.jsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth, useFirestoreListeners } from "../../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
 import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
 import Button from "../../components/forms/Button";
@@ -562,7 +562,7 @@ const StudentTicketsPage = () => {
           <div className="flex justify-end space-x-3">
             <button
               onClick={closeDeleteModal}
-              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
               disabled={isDeleting}
             >
               Batal

@@ -1,7 +1,7 @@
 // src/pages/TicketDetailPage.jsx - Dengan fitur preview lampiran/gambar yang diupload
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth, useFirestoreListeners } from "../contexts/AuthContexts";
+import { useAuth, useFirestoreListeners } from "../contexts/Authcontexts";
 import { db, storage } from "../firebase-config";
 import { 
   doc, 
@@ -1059,7 +1059,7 @@ const TicketDetailPage = () => {
         <div className="flex justify-end space-x-3 mt-6">
           <Button
             onClick={() => setIsAssignModalOpen(false)}
-            className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
           >
             Batal
           </Button>
@@ -1095,7 +1095,7 @@ const TicketDetailPage = () => {
         <div className="flex justify-end space-x-3 mt-6">
           <Button
             onClick={() => setIsFeedbackModalOpen(false)}
-            className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
           >
             Batal
           </Button>

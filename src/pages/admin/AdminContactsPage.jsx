@@ -906,7 +906,7 @@ const AdminContactsPage = () => {
           <div className="flex justify-end space-x-3">
             <Button
               onClick={closeDeleteModal}
-              className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+              className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
             >
               Batal
             </Button>
