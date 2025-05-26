@@ -505,14 +505,16 @@ const DisposisiTicketsPage = () => {
                         <div className="flex space-x-2">
                           <Button
                             onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                            className={isUnread ? "bg-blue-600 hover:bg-blue-700" : ""}
+                            className={isUnread 
+                              ? "bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200" 
+                            : "bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"}
                           >
                             {isUnread ? "Lihat Tiket Baru" : "Detail"}
                           </Button>
                           
                           <Button
                             onClick={() => openDeleteModal(ticket)}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
                           >
                             Hapus
                           </Button>

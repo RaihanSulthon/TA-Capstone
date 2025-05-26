@@ -963,7 +963,7 @@ const TicketDetailPage = () => {
             {userRole === "admin" && ticket.status === "new" && (
               <Button
                 onClick={() => setIsAssignModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"
               >
                 Disposisi ke Staff
               </Button>
@@ -975,7 +975,7 @@ const TicketDetailPage = () => {
                 {ticket.status === "new" && (
                   <Button
                     onClick={() => handleUpdateStatus("in_progress")}
-                    className="bg-yellow-500 hover:bg-yellow-600"
+                    className="bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border border-yellow-500 transition-colors duration-200"
                     disabled={isUpdatingStatus}
                   >
                     Tandai Diproses
@@ -985,7 +985,7 @@ const TicketDetailPage = () => {
                 {ticket.status === "in_progress" && (
                   <Button
                     onClick={() => handleUpdateStatus("done")}
-                    className="bg-green-600 hover:bg-green-700"
+                    className="bg-green-600 text-white hover:bg-white hover:text-green-600 border border-green-600 transition-colors duration-200"
                     disabled={isUpdatingStatus}
                   >
                     Tandai Selesai
@@ -995,7 +995,7 @@ const TicketDetailPage = () => {
                 {ticket.status === "done" && (
                   <Button
                     onClick={() => handleUpdateStatus("in_progress")}
-                    className="bg-yellow-500 hover:bg-yellow-600"
+                    className="bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border border-yellow-500 transition-colors duration-200"
                     disabled={isUpdatingStatus}
                   >
                     Buka Kembali
@@ -1009,7 +1009,7 @@ const TicketDetailPage = () => {
             (userRole === "disposisi" && ticket.assignedTo === currentUser.uid)) && (
             <Button
             onClick={() => setIsFeedbackModalOpen(true)}
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-purple-600 text-white hover:bg-white hover:text-purple-600 border border-purple-600 transition-colors duration-200"
             >
               Berikan Feedback
               </Button>
