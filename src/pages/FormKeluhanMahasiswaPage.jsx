@@ -134,7 +134,7 @@ const FormKeluhanMahasiswaPage = () => {
   const validateForm = () => {
     if (formData.anonymous) {
       // Validasi form anonymous
-      if (!formData.kategori || !formData.subKategori || !formData.judul || !formData.deskripsi) {
+      if (!formData.email || !formData.kategori || !formData.subKategori || !formData.judul || !formData.deskripsi) {
         setToast({
           message: "Harap isi semua kolom yang wajib diisi",
           type: "error"
@@ -209,8 +209,20 @@ const FormKeluhanMahasiswaPage = () => {
         lampiranBase64: lampiranBase64,
         lampiranType: lampiranType,
         userId: currentUser?.uid || "anonymous",
+        userEmail: formData.email,
         status: "new",
         assignedTo: null,
+        nama: formData.anonymous ? null : formData.nama,
+        nim: formData.anonymous ? null : formData.nim,
+        prodi: formData.anonymous ? null : formData.prodi,
+        semester: formData.anonymous ? null : formData.semester,
+        noHp: formData.anonymous ? null : formData.noHp,
+        email: formData.anonymous ? null : formData.email,
+        kategori: formData.kategori,
+        subKategori: formData.subKategori,
+        judul: formData.judul,
+        deskripsi: formData.deskripsi,
+        anonymous: formData.anonymous,
         feedback: [],
         readByStudent: false,
         readByAdmin: false,

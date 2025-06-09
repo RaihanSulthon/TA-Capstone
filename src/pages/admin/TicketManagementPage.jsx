@@ -1,4 +1,3 @@
-// Improved TicketManagementPage.jsx with truncated titles
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/Authcontexts";
@@ -444,14 +443,16 @@ const TicketManagementPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 truncate max-w-[150px]" title={ticket.anonymous ? "Anonymous" : ticket.nama || "Unknown"}>
-                          {ticket.anonymous ? "Anonymous" : truncateText(ticket.nama || "Unknown", 15)}
+                      <div className="text-sm text-gray-900 truncate max-w-[150px]" title={ticket.anonymous ? "Anonymous" : ticket.nama || "Unknown"}>
+                        {ticket.anonymous ? "Anonymous" : truncateText(ticket.nama || "Unknown", 15)}
+                      </div>
+                      {/* Admin always sees email, student sees email only if not anonymous */}
+                      {((userRole === "admin" && (ticket.userEmail || ticket.email)) || 
+                        (!ticket.anonymous && ticket.email)) && (
+                        <div className="text-xs text-gray-500 truncate max-w-[150px]" title={userRole === "admin" ? (ticket.userEmail || ticket.email) : ticket.email}>
+                          {truncateText(userRole === "admin" ? (ticket.userEmail || ticket.email) : ticket.email, 18)}
                         </div>
-                        {!ticket.anonymous && ticket.email && (
-                          <div className="text-xs text-gray-500 truncate max-w-[150px]" title={ticket.email}>
-                            {truncateText(ticket.email, 18)}
-                          </div>
-                        )}
+                      )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">

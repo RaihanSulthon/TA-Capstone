@@ -1,4 +1,3 @@
-// src/pages/TicketDetailPage.jsx - Dengan fitur preview lampiran/gambar yang diupload
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../contexts/Authcontexts";
@@ -154,6 +153,40 @@ const TicketDetailPage = () => {
     };
     
     return `${kategoriMap[kategori] || kategori} - ${subKategoriMap[subKategori] || subKategori}`;
+  };
+
+  // Function to get display email based on user role and anonymous status
+  const getDisplayEmail = () => {
+    if (!ticket) return "N/A";
+    
+    // Admin can always see the email (from userEmail field)
+    if (userRole === "admin") {
+      return ticket.userEmail || ticket.email || "N/A";
+    }
+    
+    // Student sees email only if not anonymous
+    if (userRole === "student") {
+      return ticket.anonymous ? "Tersembunyi (Mode Anonim)" : (ticket.email || "N/A");
+    }
+    
+    return "N/A";
+  };
+
+  // Function to get display name based on user role and anonymous status
+  const getDisplayName = () => {
+    if (!ticket) return "N/A";
+    
+    // If anonymous, show different text based on user role
+    if (ticket.anonymous) {
+      if (userRole === "admin") {
+        return "Anonymous User";
+      } else {
+        return "Anonim";
+      }
+    }
+    
+    // If not anonymous, show the name
+    return ticket.nama || "N/A";
   };
 
   // Check if user can view ticket
@@ -333,7 +366,6 @@ const TicketDetailPage = () => {
     }
   }
 
-
   // Handle update ticket status
   const handleUpdateStatus = async (newStatus) => {
     if (!ticket) return;
@@ -510,10 +542,6 @@ const TicketDetailPage = () => {
 
   const statusBadge = getStatusBadge(ticket.status);
   const fileType = ticket.lampiranURL ? getFileType(ticket.lampiranURL) : 'unknown';
-  console.log("Ticket data:", ticket);
-  console.log("Lampiran URL:", ticket.lampiranURL);
-  console.log("Lampiran Path:", ticket.lampiranStoragePath);
-  console.log("Loading Attachment:", loadingAttachment);
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -548,6 +576,11 @@ const TicketDetailPage = () => {
           </svg>
         </button>
         <h1 className="text-2xl font-bold">{ticket.judul}</h1>
+        {ticket.anonymous && (
+          <span className="ml-3 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+            Laporan Anonim
+          </span>
+        )}
       </div>
 
       {/* Ticket info line */}
@@ -573,42 +606,73 @@ const TicketDetailPage = () => {
               <p className="mt-1 text-sm text-gray-900">{getCategoryLabel(ticket.kategori, ticket.subKategori)}</p>
             </div>
             
-            {!ticket.anonymous && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Pengirim</h3>
+              <p className="mt-1 text-sm text-gray-900">{getDisplayName()}</p>
+              {ticket.anonymous && userRole === "admin" && (
+                <p className="text-xs text-purple-600 italic"></p>
+              )}
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Email</h3>
+              <p className="mt-1 text-sm text-gray-900">{getDisplayEmail()}</p>
+              {ticket.anonymous && userRole === "admin" && (
+                <p className="text-xs text-purple-600 italic"></p>
+              )}
+            </div>
+            
+            {/* Conditional fields - only show if not anonymous OR user is admin */}
+            {(!ticket.anonymous || userRole === "admin") && (
               <>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Pengirim</h3>
-                  <p className="mt-1 text-sm text-gray-900">{ticket.nama || "Anonymous"}</p>
-                </div>
+                {ticket.nim && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">NIM</h3>
+                    <p className="mt-1 text-sm text-gray-900">{ticket.nim}</p>
+                    {ticket.anonymous && userRole === "admin" && (
+                      <p className="text-xs text-purple-600 italic"></p>
+                    )}
+                  </div>
+                )}
                 
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                  <p className="mt-1 text-sm text-gray-900">{ticket.email || "N/A"}</p>
-                </div>
+                {(ticket.prodi || ticket.semester) && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Program Studi / Semester</h3>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {`${ticket.prodi || "N/A"} / Semester ${ticket.semester || "N/A"}`}
+                    </p>
+                    {ticket.anonymous && userRole === "admin" && (
+                      <p className="text-xs text-purple-600 italic"></p>
+                    )}
+                  </div>
+                )}
                 
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">NIM</h3>
-                  <p className="mt-1 text-sm text-gray-900">{ticket.nim || "N/A"}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Program Studi / Semester</h3>
-                  <p className="mt-1 text-sm text-gray-900">{`${ticket.prodi || "N/A"} / Semester ${ticket.semester || "N/A"}`}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Nomor HP</h3>
-                  <p className="mt-1 text-sm text-gray-900">{ticket.noHp || "N/A"}</p>
-                </div>
+                {ticket.noHp && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Nomor HP</h3>
+                    <p className="mt-1 text-sm text-gray-900">{ticket.noHp}</p>
+                    {ticket.anonymous && userRole === "admin" && (
+                      <p className="text-xs text-purple-600 italic"></p>
+                    )}
+                  </div>
+                )}
               </>
             )}
-            
-            {ticket.anonymous && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Pengirim</h3>
-                <p className="mt-1 text-sm text-gray-900">Anonymous</p>
-              </div>
-            )}
           </div>
+          
+          {/* Show anonymous notice for students */}
+          {ticket.anonymous && userRole === "student" && (
+            <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-md">
+              <div className="flex items-center">
+                <svg className="h-5 w-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-purple-800 text-sm">
+                  <strong>Laporan Anonim:</strong> Identitas Anda tidak ditampilkan dalam laporan ini untuk menjaga privasi.
+                </p>
+              </div>
+            </div>
+          )}
           
           {/* Ticket description */}
           <div className="mb-6">
@@ -625,7 +689,7 @@ const TicketDetailPage = () => {
             
             {loadingAttachment ? (
               <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <div className="animate-spin h-4 w-4 border--fulrder-blue-500 rounded-full border-t-transparent"></div>
+                <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
                 <span>Memuat lampiran...</span>
               </div>
             ) : ticket.lampiranBase64 ? (
