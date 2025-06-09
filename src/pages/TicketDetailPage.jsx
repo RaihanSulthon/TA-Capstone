@@ -18,6 +18,8 @@ import { ref, getDownloadURL } from "firebase/storage";
 import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import Button from "../components/forms/Button";
+import emailjs from '@emailjs/browser';
+import { EMAIL_CONFIG } from "../config/emailConfig";
 
 const TicketDetailPage = () => {
   const { ticketId } = useParams();
@@ -36,6 +38,12 @@ const TicketDetailPage = () => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [loadingStaff, setLoadingStaff] = useState(false);
   const [loadingAttachment, setLoadingAttachment] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailData, setEmailData] = useState({
+    recipientEmail: "",
+    additionalMessage: ""
+  });
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Format timestamp
   const formatDate = (timestamp) => {
@@ -477,6 +485,92 @@ const TicketDetailPage = () => {
       });
     }
   };
+
+  const handleSendEmail = async () => {
+    if (!emailData.recipientEmail.trim()) {
+      setToast({
+        message: "Silakan masukkan alamat email penerima",
+        type: "error"
+      });
+      return;
+    }
+    
+    // Validasi format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailData.recipientEmail)) {
+      setToast({
+        message: "Format email tidak valid",
+        type: "error"
+      });
+      return;
+    }
+    
+    setIsSendingEmail(true);
+    
+    try {
+      // Prepare email template parameters
+      const templateParams = {
+        to_email: emailData.recipientEmail,
+        ticket_id: ticket.id.substring(0, 8),
+        ticket_title: ticket.judul,
+        category: getCategoryLabel(ticket.kategori, ticket.subKategori),
+        sender_name: getDisplayName(),
+        sender_email: getDisplayEmail(),
+        status_label: getStatusBadge(ticket.status).label,
+        status_class: getStatusClass(ticket.status),
+        created_date: formatDate(ticket.createdAt),
+        description: ticket.deskripsi,
+        additional_message: emailData.additionalMessage || "Tidak ada pesan tambahan dari admin.",
+        assigned_to: ticket.assignedToName || "Belum ditugaskan",
+        
+        // ATTACHMENT TANPA BASE64
+        has_attachment: !!(ticket.lampiranBase64 || ticket.lampiranURL),
+        attachment_name: ticket.lampiran || "Lampiran",
+        attachment_url: ticket.lampiranURL || "",
+        attachment_type: ticket.lampiranType?.includes('image') ? 'image' : ticket.lampiranType?.includes('pdf') ? 'pdf' : 'default',
+        
+        // SYSTEM LINKS
+        ticket_detail_url: `${window.location.origin}/app/tickets/${ticket.id}`,
+        system_url: window.location.origin
+      };
+      
+      // Send email using EmailJS
+      await emailjs.send(
+        'service_2jo7enz', // Ganti dengan Service ID dari EmailJS
+        'template_zvywepm', // Template ID
+        templateParams,
+        'YaROFPye1dmERQTS9' // Ganti dengan Public Key dari EmailJS
+      );
+      
+      setToast({
+        message: "Email berhasil dikirim",
+        type: "success"
+      });
+      
+      // Reset form and close modal
+      setEmailData({ recipientEmail: "", additionalMessage: "" });
+      setIsEmailModalOpen(false);
+      
+    } catch (error) {
+      console.error("Error sending email:", error);
+      setToast({
+        message: "Gagal mengirim email. Silakan coba lagi.",
+        type: "error"
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+// Helper function untuk status class
+const getStatusClass = (status) => {
+  switch (status) {
+    case "new": return "status-new";
+    case "in_progress": return "status-progress";
+    case "done": return "status-done";
+    default: return "status-new";
+  }
+};
 
   // Handle go back
   const handleGoBack = () => {
@@ -924,6 +1018,17 @@ const TicketDetailPage = () => {
                     Tandai Diproses
                   </Button>
                 )}
+
+                {/* Email Button */}
+                <Button
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="bg-indigo-600 text-white hover:bg-white hover:text-indigo-600 border border-indigo-600 transition-colors duration-200"
+                >
+                  <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Kirim Email
+                </Button>
                 
                 {ticket.status === "in_progress" && (
                   <Button
@@ -991,6 +1096,73 @@ const TicketDetailPage = () => {
             onClick={handleSendFeedback}
           >
             Kirim
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Email Modal */}
+      <Modal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        title="Kirim Detail Tiket via Email"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Email Penerima <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              value={emailData.recipientEmail}
+              onChange={(e) => setEmailData({...emailData, recipientEmail: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="contoh@gmail.com"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-2">
+              Pesan Tambahan (Opsional)
+            </label>
+            <textarea
+              value={emailData.additionalMessage}
+              onChange={(e) => setEmailData({...emailData, additionalMessage: e.target.value})}
+              rows="3"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Tambahkan pesan khusus untuk penerima email..."
+            ></textarea>
+          </div>
+          
+          <div className="bg-blue-50 p-4 rounded-md">
+            <div className="flex items-start">
+              <svg className="h-5 w-5 text-blue-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-blue-800 text-sm font-medium">Info:</p>
+                <p className="text-blue-700 text-sm">
+                  Email akan berisi detail lengkap tiket dengan format yang rapi seperti yang Anda lihat di sistem ini.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button
+            onClick={() => setIsEmailModalOpen(false)}
+            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
+            disabled={isSendingEmail}
+          >
+            Batal
+          </Button>
+          <Button
+            onClick={handleSendEmail}
+            disabled={isSendingEmail}
+            className={isSendingEmail ? "bg-gray-400 cursor-not-allowed" : ""}
+          >
+            {isSendingEmail ? "Mengirim..." : "Kirim Email"}
           </Button>
         </div>
       </Modal>
