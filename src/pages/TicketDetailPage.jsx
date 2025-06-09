@@ -29,14 +29,9 @@ const TicketDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "success" });
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
-  const [selectedStaff, setSelectedStaff] = useState("");
-  const [feedback, setFeedback] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [loadingStaff, setLoadingStaff] = useState(false);
   const [loadingAttachment, setLoadingAttachment] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [emailData, setEmailData] = useState({
@@ -44,6 +39,8 @@ const TicketDetailPage = () => {
     additionalMessage: ""
   });
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [feedbackCount, setFeedbackCount] = useState(0);
+  const [unreadFeedbackCount, setUnreadFeedbackCount] = useState(0);
 
   // Format timestamp
   const formatDate = (timestamp) => {
@@ -272,6 +269,34 @@ const TicketDetailPage = () => {
     }
   };
 
+  // Fetch feedback count for this ticket
+  const fetchFeedbackCount = async () => {
+    try {
+      const feedbacksQuery = query(
+        collection(db, "feedbacks"),
+        where("ticketId", "==", ticketId)
+      );
+      
+      const feedbacksSnapshot = await getDocs(feedbacksQuery);
+      const totalCount = feedbacksSnapshot.size;
+      
+      // Count unread feedbacks for current user
+      let unreadCount = 0;
+      feedbacksSnapshot.docs.forEach(doc => {
+        const feedback = doc.data();
+        const readByCurrentUser = feedback.readBy && feedback.readBy[currentUser.uid];
+        if (!readByCurrentUser && feedback.createdBy !== currentUser.uid) {
+          unreadCount++;
+        }
+      });
+      
+      setFeedbackCount(totalCount);
+      setUnreadFeedbackCount(unreadCount);
+    } catch (error) {
+      console.error("Error fetching feedback count:", error);
+    }
+  };
+
   const markRelatedNotificationAsRead = async (ticketId) => {
     if(!currentUser) return;
 
@@ -349,6 +374,25 @@ const TicketDetailPage = () => {
     fetchTicket();
   }, [ticketId]);
 
+  // Fetch feedback count when component mounts and when ticket changes
+  useEffect(() => {
+    if (ticketId && currentUser) {
+      fetchFeedbackCount();
+      
+      // Listen for real-time feedback updates
+      const feedbacksQuery = query(
+        collection(db, "feedbacks"),
+        where("ticketId", "==", ticketId)
+      );
+      
+      const unsubscribe = onSnapshot(feedbacksQuery, () => {
+        fetchFeedbackCount();
+      });
+      
+      return () => unsubscribe();
+    }
+  }, [ticketId, currentUser]);
+
   const markTicketAsRead = async (ticketData) =>{
     if(!currentUser) return;
 
@@ -424,65 +468,6 @@ const TicketDetailPage = () => {
       });
     } finally {
       setIsUpdatingStatus(false);
-    }
-  };
-
-  // Handle send feedback
-  const handleSendFeedback = async () => {
-    if (!feedback.trim()) {
-      setToast({
-        message: "Silakan masukkan feedback terlebih dahulu",
-        type: "error"
-      });
-      return;
-    }
-    
-    try {
-      // Import notificationService
-      const { notifyNewFeedback } = await import("../services/notificationService");
-      
-      // Create feedback data
-      const feedbackData = {
-        text: feedback,
-        createdBy: currentUser.uid,
-        createdByName: currentUser.displayName || currentUser.email,
-        createdByRole: userRole,
-        timestamp: new Date()
-      };
-      
-      // Update ticket in Firestore
-      const ticketRef = doc(db, "tickets", ticketId);
-      
-      await updateDoc(ticketRef, {
-        // Add feedback to array
-        feedback: arrayUnion(feedbackData),
-        updatedAt: serverTimestamp()
-      });
-      
-      // Send notification
-      await notifyNewFeedback(
-        ticket,
-        feedbackData,
-        currentUser.uid,
-        currentUser.displayName || currentUser.email,
-        userRole
-      );
-      
-      setToast({
-        message: "Feedback berhasil dikirim",
-        type: "success"
-      });
-      
-      // Reset form and close modal
-      setFeedback("");
-      setIsFeedbackModalOpen(false);
-      
-    } catch (error) {
-      console.error("Error sending feedback:", error);
-      setToast({
-        message: "Gagal mengirim feedback. Silakan coba lagi.",
-        type: "error"
-      });
     }
   };
 
@@ -575,6 +560,11 @@ const getStatusClass = (status) => {
   // Handle go back
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  // Navigate to feedback page
+  const handleViewFeedback = () => {
+    navigate(`/app/tickets/${ticketId}/feedback`);
   };
 
   if (loading) {
@@ -962,41 +952,6 @@ const getStatusClass = (status) => {
             ): null}
           </div>
         )}
-          
-          {/* Feedback / Communication section */}
-          {ticket.feedback && ticket.feedback.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Feedback</h3>
-              <div className="border rounded-md">
-                {ticket.feedback.map((item, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-4 ${index < ticket.feedback.length - 1 ? 'border-b' : ''}`}
-                  >
-                    <div className="flex items-start mb-2">
-                      <div className="bg-gray-100 rounded-full p-2 mr-3">
-                        <svg className="h-4 w-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium">{item.createdByName || "Unknown"}</p>
-                          <p className="text-xs text-gray-500">{formatDate(item.timestamp)}</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {item.createdByRole === "admin" ? "Admin" : "Mahasiswa"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="pl-9 text-sm text-gray-700">
-                      {item.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
       
@@ -1006,7 +961,25 @@ const getStatusClass = (status) => {
           <h3 className="font-medium mb-4">Tindakan</h3>
           
           <div className="flex flex-wrap gap-3">
-            {/* Admin can change status */}
+            {/* Feedback Button - Available for both admin and student */}
+            <Button
+              onClick={handleViewFeedback}
+              className={`${
+                unreadFeedbackCount > 0 
+                  ? "bg-orange-600 text-white hover:bg-white hover:text-orange-600 border border-orange-600" 
+                  : "bg-purple-600 text-white hover:bg-white hover:text-purple-600 border border-purple-600"
+              } transition-colors duration-200`}
+            >
+              <svg className="h-4 w-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              {unreadFeedbackCount > 0 
+                ? `Feedback Baru (${unreadFeedbackCount}/${feedbackCount})` 
+                : `Lihat Feedback (${feedbackCount})`
+              }
+            </Button>
+
+            {/* Admin-only actions */}
             {userRole === "admin" && (
               <>
                 {ticket.status === "new" && (
@@ -1051,54 +1024,9 @@ const getStatusClass = (status) => {
                 )}
               </>
             )}
-            
-            {/* Only admin can give feedback */}
-            {userRole === "admin" && (
-            <Button
-            onClick={() => setIsFeedbackModalOpen(true)}
-            className="bg-purple-600 text-white hover:bg-white hover:text-purple-600 border border-purple-600 transition-colors duration-200"
-            >
-              Berikan Feedback
-              </Button>
-              )}
           </div>
         </div>
       </div>
-
-      {/* Feedback Modal */}
-      <Modal
-        isOpen={isFeedbackModalOpen}
-        onClose={() => setIsFeedbackModalOpen(false)}
-        title="Berikan Feedback"
-        size="md"
-      >
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-medium mb-2">
-            Feedback
-          </label>
-          <textarea
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            rows="4"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Tulis feedback Anda di sini..."
-          ></textarea>
-        </div>
-        
-        <div className="flex justify-end space-x-3 mt-6">
-          <Button
-            onClick={() => setIsFeedbackModalOpen(false)}
-            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
-          >
-            Batal
-          </Button>
-          <Button
-            onClick={handleSendFeedback}
-          >
-            Kirim
-          </Button>
-        </div>
-      </Modal>
 
       {/* Email Modal */}
       <Modal

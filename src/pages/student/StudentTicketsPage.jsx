@@ -24,6 +24,7 @@ const StudentTicketsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [feedbackCounts, setFeedbackCounts] = useState({});
   
   // Function to truncate text with ellipsis
   const truncateText = (text, maxLength = 25) => {
@@ -158,6 +159,66 @@ const StudentTicketsPage = () => {
       closeDeleteModal();
     }
   };
+
+  // Fetch feedback counts for all tickets
+const fetchFeedbackCounts = async () => {
+  try {
+    const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
+    const feedbacksSnapshot = await getDocs(feedbacksQuery);
+    
+    const counts = {};
+    
+    feedbacksSnapshot.docs.forEach(doc => {
+      const feedback = doc.data();
+      const ticketId = feedback.ticketId;
+      
+      if (!counts[ticketId]) {
+        counts[ticketId] = {
+          total: 0,
+          unreadByStudent: 0
+        };
+      }
+      
+      counts[ticketId].total++;
+      
+      // Count unread for current student
+      const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
+      if (!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student") {
+        counts[ticketId].unreadByStudent++;
+      }
+    });
+    
+    setFeedbackCounts(counts);
+  } catch (error) {
+    console.error("Error fetching feedback counts:", error);
+  }
+};
+
+// Get feedback info for a ticket
+const getFeedbackInfo = (ticketId) => {
+  const counts = feedbackCounts[ticketId] || { total: 0, unreadByStudent: 0 };
+  return {
+    total: counts.total,
+    unread: counts.unreadByStudent
+  };
+};
+
+// Fetch feedback counts when component mounts and when tickets change
+useEffect(() => {
+  if (currentUser && userRole === "student") {
+    fetchFeedbackCounts();
+    
+    // Listen for real-time feedback updates
+    const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
+    
+    const unsubscribe = onSnapshot(feedbacksQuery, () => {
+      fetchFeedbackCounts();
+    });
+    
+    // Register the listener for cleanup
+    addListener(unsubscribe);
+  }
+}, [currentUser, userRole, addListener]);
   
   // Fetch tickets
   useEffect(() => {
@@ -250,14 +311,16 @@ const StudentTicketsPage = () => {
     setFilterReadStatus("all"); // Reset read status filter too
     setSearchTerm("");
   };
-  
+
   // Get ticket statistics
   const ticketStats = {
     total: tickets.length,
     new: tickets.filter(t => t.status === "new").length,
     inProgress: tickets.filter(t => t.status === "in_progress").length,
     done: tickets.filter(t => t.status === "done").length,
-    unread: tickets.filter(t => t.readByStudent !== true).length // Add unread count
+    unread: tickets.filter(t => t.readByStudent !== true).length,
+    withFeedback: Object.keys(feedbackCounts).length,
+    totalFeedbacks: Object.values(feedbackCounts).reduce((total, count) => total + count.total, 0)
   };
 
   // Has unread feedback
@@ -368,8 +431,8 @@ const StudentTicketsPage = () => {
         </div>
       </div>
       
-      {/* Stats Summary with Unread count */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      {/* Enhanced Stats Summary with Feedback Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Tiket</p>
           <p className="text-2xl font-bold text-blue-600">{ticketStats.total}</p>
@@ -389,6 +452,14 @@ const StudentTicketsPage = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Belum Dibaca</p>
           <p className="text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Dengan Feedback</p>
+          <p className="text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Feedback</p>
+          <p className="text-2xl font-bold text-orange-600">{ticketStats.totalFeedbacks}</p>
         </div>
       </div>
       
@@ -438,7 +509,7 @@ const StudentTicketsPage = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center">
+                    <td colSpan="7" className="px-6 py-4 text-center">
                       <div className="flex justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                       </div>
@@ -446,7 +517,7 @@ const StudentTicketsPage = () => {
                   </tr>
                 ) : filteredTickets.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
                       Tidak ada tiket yang ditemukan
                     </td>
                   </tr>
@@ -498,38 +569,55 @@ const StudentTicketsPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {ticket.feedback && ticket.feedback.length > 0 ? (
-                            <div className="flex items-center">
-                              <svg
-                                className={`h-5 w-5 ${hasFeedback ? "text-purple-600" : "text-gray-400"}`}
-                                fill="currentColor" 
-                                viewBox="0 0 20 20"
-                              >
-                                <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-                              </svg>
-                              <span className={`ml-1 text-sm ${hasFeedback ? "font-medium text-purple-600" : "text-gray-500"}`}>
-                                {hasFeedback ? "Feedback baru" : `${ticket.feedback.length} feedback`}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500">Belum ada</span>
-                          )}
+                          {(() => {
+                            const feedbackInfo = getFeedbackInfo(ticket.id);
+                            return feedbackInfo.total > 0 ? (
+                              <div className="flex items-center">
+                                <svg
+                                  className={`h-5 w-5 ${feedbackInfo.unread > 0 ? "text-orange-600" : "text-purple-600"}`}
+                                  fill="currentColor" 
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                                </svg>
+                                <span className={`ml-1 text-sm ${feedbackInfo.unread > 0 ? "font-medium text-orange-600" : "text-purple-600"}`}>
+                                  {feedbackInfo.unread > 0 
+                                    ? `${feedbackInfo.unread} feedback baru` 
+                                    : `${feedbackInfo.total} feedback`
+                                  }
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-500">Belum ada</span>
+                            );
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <div className="flex space-x-2">
-                            <Button
-                              onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                              className={hasFeedback ? "bg-purple-600 hover:bg-purple-700" : ""}
-                            >
-                              {hasFeedback ? "Lihat Feedback" : "Detail"}
-                            </Button>
-                            
-                            <Button
-                              onClick={() => openDeleteModal(ticket)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Hapus
-                            </Button>
+                          <Button
+                            onClick={() => navigate(`/app/tickets/${ticket.id}`)}
+                            className={(() => {
+                              const feedbackInfo = getFeedbackInfo(ticket.id);
+                              if (feedbackInfo.unread > 0) {
+                                return "bg-orange-600 hover:bg-orange-700";
+                              } else if (isUnread) {
+                                return "bg-blue-600 hover:bg-blue-700";
+                              } else {
+                                return "";
+                              }
+                            })()}
+                          >
+                            {(() => {
+                              const feedbackInfo = getFeedbackInfo(ticket.id);
+                              if (feedbackInfo.unread > 0) {
+                                return "Feedback Baru";
+                              } else if (isUnread) {
+                                return "Lihat Tiket Baru";
+                              } else {
+                                return "Detail";
+                              }
+                            })()}
+                          </Button>
                           </div>
                         </td>
                       </tr>

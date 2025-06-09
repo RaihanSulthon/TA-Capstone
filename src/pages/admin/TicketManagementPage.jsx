@@ -23,6 +23,7 @@ const TicketManagementPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [feedbackCounts, setFeedbackCounts] = useState({});
   
   // Get status badge
   const getStatusBadge = (status) => {
@@ -99,6 +100,53 @@ const TicketManagementPage = () => {
     };
     
     return kategoriMap[kategori] || kategori;
+  };
+
+  // Fetch feedback counts for all tickets
+  const fetchFeedbackCounts = async () => {
+    try {
+      const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
+      const feedbacksSnapshot = await getDocs(feedbacksQuery);
+      
+      const counts = {};
+      
+      feedbacksSnapshot.docs.forEach(doc => {
+        const feedback = doc.data();
+        const ticketId = feedback.ticketId;
+        
+        if (!counts[ticketId]) {
+          counts[ticketId] = {
+            total: 0,
+            unreadByAdmin: 0,
+            unreadByStudent: 0
+          };
+        }
+        
+        counts[ticketId].total++;
+        
+        // Count unread for admin
+        const readByAdmin = feedback.readBy && feedback.readBy[currentUser?.uid];
+        if (!readByAdmin && feedback.createdBy !== currentUser?.uid && userRole === "admin") {
+          counts[ticketId].unreadByAdmin++;
+        }
+        
+        // Count unread for student (for future use)
+        // This logic can be extended when we know the student userId for each ticket
+      });
+      
+      setFeedbackCounts(counts);
+    } catch (error) {
+      console.error("Error fetching feedback counts:", error);
+    }
+  };
+
+  // Get feedback info for a ticket
+  const getFeedbackInfo = (ticketId) => {
+    const counts = feedbackCounts[ticketId] || { total: 0, unreadByAdmin: 0, unreadByStudent: 0 };
+    return {
+      total: counts.total,
+      unread: userRole === "admin" ? counts.unreadByAdmin : counts.unreadByStudent
+    };
   };
   
   // Delete ticket handlers
@@ -222,6 +270,23 @@ const TicketManagementPage = () => {
     
     fetchTickets();
   }, [currentUser, userRole, navigate, addListener]);
+
+  // Fetch feedback counts when component mounts and when tickets change
+  useEffect(() => {
+    if (currentUser && userRole === "admin") {
+      fetchFeedbackCounts();
+      
+      // Listen for real-time feedback updates
+      const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
+      
+      const unsubscribe = onSnapshot(feedbacksQuery, () => {
+        fetchFeedbackCounts();
+      });
+      
+      // Register the listener for cleanup
+      addListener(unsubscribe);
+    }
+  }, [currentUser, userRole, addListener]);
   
   // Filter tickets
   const filteredTickets = tickets.filter(ticket => {
@@ -265,7 +330,9 @@ const TicketManagementPage = () => {
     new: tickets.filter(t => t.status === "new").length,
     inProgress: tickets.filter(t => t.status === "in_progress").length,
     done: tickets.filter(t => t.status === "done").length,
-    unread: tickets.filter(t => t.readByAdmin !== true).length // Add unread count
+    unread: tickets.filter(t => t.readByAdmin !== true).length,
+    withFeedback: Object.keys(feedbackCounts).length,
+    totalFeedbacks: Object.values(feedbackCounts).reduce((total, count) => total + count.total, 0)
   };
 
   return (
@@ -354,8 +421,8 @@ const TicketManagementPage = () => {
         </div>
       </div>
       
-      {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      {/* Enhanced Stats Summary with Feedback Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Tiket</p>
           <p className="text-2xl font-bold text-blue-600">{ticketStats.total}</p>
@@ -375,6 +442,14 @@ const TicketManagementPage = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Belum Dibaca</p>
           <p className="text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Dengan Feedback</p>
+          <p className="text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Feedback</p>
+          <p className="text-2xl font-bold text-orange-600">{ticketStats.totalFeedbacks}</p>
         </div>
       </div>
       
@@ -399,6 +474,9 @@ const TicketManagementPage = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                   Tanggal & Waktu
                 </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                  Feedback
+                </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
@@ -407,7 +485,7 @@ const TicketManagementPage = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center">
+                  <td colSpan="7" className="px-6 py-4 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                     </div>
@@ -415,7 +493,7 @@ const TicketManagementPage = () => {
                 </tr>
               ) : filteredTickets.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
                     Tidak ada tiket yang ditemukan
                   </td>
                 </tr>
@@ -423,6 +501,7 @@ const TicketManagementPage = () => {
                 filteredTickets.map((ticket) => {
                   const statusBadge = getStatusBadge(ticket.status);
                   const isUnread = userRole === "admin" && !ticket.readByAdmin;
+                  const feedbackInfo = getFeedbackInfo(ticket.id);
                   
                   return (
                     <tr key={ticket.id} className={`hover:bg-gray-50 ${isUnread ? "bg-blue-50" : ""}`}>
@@ -478,6 +557,27 @@ const TicketManagementPage = () => {
                             {formatDate(ticket.createdAt).time}
                           </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {feedbackInfo.total > 0 ? (
+                          <div className="flex items-center">
+                            <svg
+                              className={`h-5 w-5 ${feedbackInfo.unread > 0 ? "text-orange-600" : "text-purple-600"}`}
+                              fill="currentColor" 
+                              viewBox="0 0 20 20"
+                            >
+                              <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                            </svg>
+                            <span className={`ml-1 text-sm ${feedbackInfo.unread > 0 ? "font-medium text-orange-600" : "text-purple-600"}`}>
+                              {feedbackInfo.unread > 0 
+                                ? `${feedbackInfo.unread} feedback baru` 
+                                : `${feedbackInfo.total} feedback`
+                              }
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500">Belum ada</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <div className="flex space-x-2">

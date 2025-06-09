@@ -13,6 +13,7 @@ import AccessDeniedPage from "./pages/AccessDeniedPage";
 // Ticketing System Pages
 import FormKeluhanMahasiswaPage from "./pages/FormKeluhanMahasiswaPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
+import FeedbackPage from "./pages/FeedbackPage";
 import TicketManagementPage from "./pages/admin/TicketManagementPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 
@@ -37,8 +38,6 @@ function App() {
           {/* Public Contacts Route - Always accessible without login */}
           <Route path="/contacts" element={<ContactsPage />} />
 
-
-          
           {/* LAAK Info Portal Route */}
           <Route path="/laak-info" element={<LAAKInfoPortal />} />
           
@@ -78,6 +77,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TicketDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Feedback Page - New route for feedback management */}
+            <Route
+              path="tickets/:ticketId/feedback"
+              element={
+                <ProtectedRoute>
+                  <FeedbackPage />
                 </ProtectedRoute>
               }
             />

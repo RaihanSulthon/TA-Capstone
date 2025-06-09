@@ -183,20 +183,31 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
  * @param {string} senderId - ID of the sender
  * @param {string} senderName - Name of the sender
  * @param {string} senderRole - Role of the sender
+ * * @param {boolean} hasAttachment - Whether feedback has attachment
  * @returns {Promise<Object>} - Object with success flag and data or error
  */
-export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, senderRole) => {
+export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, senderRole, hasAttachment = false) => {
+  // Create enhanced message based on attachment
+  const baseMessage = hasAttachment 
+    ? `feedback baru dengan lampiran untuk tiket: ${ticket.judul}`
+    : `feedback baru untuk tiket: ${ticket.judul}`;
+  
   // If feedback is from admin, notify student
   if (senderRole === "admin") {
     return createTicketNotification({
       ticketId: ticket.id,
       type: "feedback",
       title: "Feedback Baru",
-      message: `Anda menerima feedback baru untuk tiket: ${ticket.judul}`,
+      message: `Anda menerima ${baseMessage}`,
       recipientId: ticket.userId,
       senderId,
       senderName,
-      senderRole
+      senderRole,
+      metadata: {
+        hasAttachment,
+        feedbackId: feedback.id || null,
+        attachmentCount: feedback.attachments ? feedback.attachments.length : 0
+      }
     });
   }
   
@@ -207,11 +218,16 @@ export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, 
       ticketId: ticket.id,
       type: "feedback",
       title: "Feedback Baru",
-      message: `Feedback baru dari mahasiswa untuk tiket: ${ticket.judul}`,
+      message: `${baseMessage} dari mahasiswa`,
       recipientRoles: ["admin"],
       senderId,
       senderName,
-      senderRole
+      senderRole,
+      metadata: {
+        hasAttachment,
+        feedbackId: feedback.id || null,
+        attachmentCount: feedback.attachments ? feedback.attachments.length : 0
+      }
     })
   ];
   
@@ -221,11 +237,16 @@ export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, 
         ticketId: ticket.id,
         type: "feedback",
         title: "Feedback Baru",
-        message: `Feedback baru dari mahasiswa untuk tiket: ${ticket.judul}`,
+        message: `${baseMessage} dari mahasiswa`,
         recipientId: ticket.assignedTo,
         senderId,
         senderName,
-        senderRole
+        senderRole,
+        metadata: {
+          hasAttachment,
+          feedbackId: feedback.id || null,
+          attachmentCount: feedback.attachments ? feedback.attachments.length : 0
+        }
       })
     );
   }
