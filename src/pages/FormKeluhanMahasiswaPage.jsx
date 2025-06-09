@@ -1,6 +1,6 @@
 // src/pages/FormKeluhanMahasiswaPage.jsx
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import Button from "../components/forms/Button";
@@ -214,7 +214,6 @@ const FormKeluhanMahasiswaPage = () => {
         feedback: [],
         readByStudent: false,
         readByAdmin: false,
-        readByDisposisi: false,
         createdAt: new Date(),
         updatedAt: new Date()
       };

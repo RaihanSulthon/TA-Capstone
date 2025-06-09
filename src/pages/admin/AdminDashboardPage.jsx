@@ -1,6 +1,6 @@
-// src/pages/admin/AdminDashboardPage.jsx - Fixed to properly handle disposisi role
+// src/pages/admin/AdminDashboardPage.jsx - Fixed to properly handle role
 import { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/AuthContexts";
+import { useAuth } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
 import { doc, getDoc, collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { Link } from "react-router-dom";
@@ -12,7 +12,6 @@ const AdminDashboardPage = () => {
   const [userStats, setUserStats] = useState({
     total: 0,
     students: 0,
-    disposisi: 0 
   });
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +55,6 @@ const AdminDashboardPage = () => {
         const statsQuery = await getDocs(collection(db, "users"));
         let totalUsers = 0;
         let studentCount = 0;
-        let disposisiCount = 0;
         
         statsQuery.forEach((doc) => {
           const userData = doc.data();
@@ -64,16 +62,12 @@ const AdminDashboardPage = () => {
           
           if (userData.role === "student") {
             studentCount++;
-          } else if (userData.role === "disposisi") {
-            // Count only disposisi role
-            disposisiCount++;
           }
         });
         
         setUserStats({
           total: totalUsers,
           students: studentCount,
-          disposisi: disposisiCount
         });
         
       } catch (error) {
@@ -116,7 +110,6 @@ const AdminDashboardPage = () => {
 
   // Get proper role display name
   const getRoleDisplayName = (role) => {
-    if (role === "disposisi") return "Disposisi";
     return role.charAt(0).toUpperCase() + role.slice(1);
   };
 
@@ -179,11 +172,6 @@ const AdminDashboardPage = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">Students</h3>
           <p className="text-3xl font-bold text-green-600">{userStats.students}</p>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Disposisi</h3>
-          <p className="text-3xl font-bold text-purple-600">{userStats.disposisi}</p>
-        </div>
       </div>
       
       {/* Recent Users */}
@@ -227,11 +215,10 @@ const AdminDashboardPage = () => {
                       <div className="text-sm text-gray-500">{user.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                          user.role === 'disposisi' ? 'bg-purple-100 text-purple-800' : 
-                          'bg-green-100 text-green-800'}`}>
-                        {getRoleDisplayName(user.role)}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.role === 'admin' ? 'bg-red-100 text-red-800' 
+                        : 'bg-green-100 text-green-800'}`}>
+                          {getRoleDisplayName(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

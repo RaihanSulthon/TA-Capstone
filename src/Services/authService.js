@@ -41,9 +41,7 @@ export const registerUser = async (email, password, userData) => {
 
 
       let role = "student";
-      if (email.endsWith("@telkomuniversity.ac.id")) {
-        role = "disposisi";
-      } else if (email.endsWith("@adminhelpdesk.ac.id")) {
+      if (email.endsWith("@adminhelpdesk.ac.id")) {
         role = "admin";
       }
 

@@ -164,9 +164,6 @@ const TicketDetailPage = () => {
     // Admin can always view tickets
     if (userRole === "admin") return true;
     
-    // Disposisi can view if assigned to them
-    if (userRole === "disposisi" && ticket.assignedTo === currentUser.uid) return true;
-    
     // Student can view if they created the ticket
     if (userRole === "student" && ticket.userId === currentUser.uid) return true;
     
@@ -959,18 +956,8 @@ const TicketDetailPage = () => {
           <h3 className="font-medium mb-4">Tindakan</h3>
           
           <div className="flex flex-wrap gap-3">
-            {/* Admin can assign tickets to disposisi staff */}
-            {userRole === "admin" && ticket.status === "new" && (
-              <Button
-                onClick={() => setIsAssignModalOpen(true)}
-                className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"
-              >
-                Disposisi ke Staff
-              </Button>
-            )}
-            
             {/* Admin and Disposisi can change status */}
-            {(userRole === "admin" || (userRole === "disposisi" && ticket.assignedTo === currentUser.uid)) && (
+            {userRole === "admin" && (
               <>
                 {ticket.status === "new" && (
                   <Button
@@ -1005,8 +992,7 @@ const TicketDetailPage = () => {
             )}
             
             {/* Only admin and disposisi can give feedback */}
-            {(userRole === "admin" || 
-            (userRole === "disposisi" && ticket.assignedTo === currentUser.uid)) && (
+            {userRole === "admin" && (
             <Button
             onClick={() => setIsFeedbackModalOpen(true)}
             className="bg-purple-600 text-white hover:bg-white hover:text-purple-600 border border-purple-600 transition-colors duration-200"

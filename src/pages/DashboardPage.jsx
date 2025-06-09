@@ -1,6 +1,6 @@
 // Modified DashboardPage.jsx with truncated email addresses
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -114,8 +114,6 @@ const DashboardPage = () => {
     if (userData.email) {
       if (userData.email.endsWith("@student.telkomuniversity.ac.id")) {
         return "Student";
-      } else if (userData.email.endsWith("@telkomuniversity.ac.id")) {
-        return "Disposisi";
       } else if (userData.email.endsWith("@adminhelpdesk.ac.id")) {
         return "Administrator";
       }
@@ -184,13 +182,6 @@ const DashboardPage = () => {
           <div className="border-t pt-4 mt-4">
             <h3 className="font-medium mb-4 text-lg">Student Information</h3>
             <p className="text-gray-600">Welcome to the student dashboard. Here you can access your courses and assignments.</p>
-          </div>
-        )}
-        
-        {userData?.role === "disposisi" && (
-          <div className="border-t pt-4 mt-4">
-            <h3 className="font-medium mb-4 text-lg">Disposisi Information</h3>
-            <p className="text-gray-600">Welcome to the disposisi dashboard. Here you can manage your courses and students.</p>
           </div>
         )}
         

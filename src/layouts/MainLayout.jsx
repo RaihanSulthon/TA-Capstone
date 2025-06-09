@@ -74,25 +74,6 @@ const MainLayout = () => {
                     </>
                   )}
                   
-                  {/* Disposisi Specific Navigation */}
-                  {userRole === "disposisi" && (
-                    <>
-                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
-                        Helpdesk
-                      </div>
-                      <Link
-                        to="/app/disposisi-tickets"
-                        className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
-                          isActive('/app/disposisi-tickets')
-                            ? 'bg-blue-100 text-blue-700 font-medium shadow-md'
-                            : 'text-gray-700 hover:bg-blue-50'
-                        }`}
-                      >
-                        Kelola Tiket
-                      </Link>
-                    </>
-                  )}
-
                   {/* Public Links untuk semua user */}
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4">
                     Informasi

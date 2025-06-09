@@ -1,6 +1,6 @@
-// src/components/RoleBasedRoute.jsx - Fixed to handle disposisi role correctly
+// src/components/RoleBasedRoute.jsx - Fixed to handle role correctly
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 
 const RoleBasedRoute = ({
     children, 

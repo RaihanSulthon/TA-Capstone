@@ -265,11 +265,9 @@ const StudentTicketsPage = () => {
     if (!ticket.feedback || ticket.feedback.length === 0) return false;
     
     // If the ticket has feedback and the student hasn't read it
-    // Check if there's any feedback from admin or disposisi
     // and if there is, check if the student has read it
     const hasNewFeedback = ticket.feedback.some(f => 
-      (f.createdByRole === "admin" || f.createdByRole === "disposisi") && 
-      !ticket.feedbackReadByStudent
+      f.createdByRole === "admin" && !ticket.feedbackReadByStudent
     );
     
     return hasNewFeedback;

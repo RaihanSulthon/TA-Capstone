@@ -55,9 +55,8 @@ export const softDeleteTicket = async (ticketId, userId, userRole) => {
           message: "Ticket has been removed from your list" 
         };
       } 
-      // For admin or disposisi, perform a hard delete
-      else if (userRole === "admin" || userRole === "disposisi") {
-        // Instead of soft delete, perform actual delete for admin/disposisi
+      // For admin, perform a hard delete
+      else if (userRole === "admin") {
         await deleteDoc(ticketRef);
         
         return { 

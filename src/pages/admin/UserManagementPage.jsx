@@ -71,9 +71,7 @@ const UserManagementPage = () => {
     // Update filter logic to handle all roles including dosen_public
     let matchesRole = filterRole === "all";
     
-    if (filterRole === "disposisi") {
-      matchesRole = user.role === "disposisi";
-    } else if (filterRole === "student" || filterRole === "admin" || filterRole === "dosen_public") {
+    if (filterRole === "student" || filterRole === "admin" || filterRole === "dosen_public") {
       matchesRole = user.role === filterRole;
     }
     
@@ -238,7 +236,6 @@ const UserManagementPage = () => {
   const getRoleDisplayName = (role) => {
     switch(role) {
       case 'admin': return 'Admin';
-      case 'disposisi': return 'Disposisi';
       case 'student': return 'Student';
       case 'dosen_public': return 'Kontak Dosen';
       default: return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
@@ -273,7 +270,6 @@ const UserManagementPage = () => {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="student">Student</option>
-          <option value="disposisi">Disposisi</option>
           <option value="admin">Admin</option>
           <option value="dosen_public">Kontak Dosen</option>
         </select>
@@ -330,13 +326,11 @@ const UserManagementPage = () => {
   // Get user count by role
 const getUserCounts = () => {
   const studentCount = users.filter(user => user.role === 'student').length;
-  const disposisiCount = users.filter(user => user.role === 'disposisi').length;
   const adminCount = users.filter(user => user.role === 'admin').length;
   const dosenPublicCount = users.filter(user => user.role === 'dosen_public').length;
   
   return {
     students: studentCount,
-    disposisi: disposisiCount,
     admins: adminCount,
     dosenPublic: dosenPublicCount
   };
@@ -396,7 +390,6 @@ const getUserCounts = () => {
               >
                 <option value="all">All Roles</option>
                 <option value="student">Students</option>
-                <option value="disposisi">Disposisi</option>
                 <option value="admin">Admins</option>
                 <option value="dosen_public">Kontak Dosen</option>
               </select>
@@ -424,12 +417,6 @@ const getUserCounts = () => {
           <p className="text-sm text-gray-500">Students</p>
           <p className="text-2xl font-bold text-green-600">
             {userCounts.students}
-          </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Disposisi</p>
-          <p className="text-2xl font-bold text-purple-600">
-            {userCounts.disposisi}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
@@ -484,7 +471,6 @@ const getUserCounts = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                          user.role === 'disposisi' ? 'bg-purple-100 text-purple-800' : 
                           user.role === 'dosen_public' ? 'bg-orange-100 text-orange-800' :
                           'bg-green-100 text-green-800'}`}>
                         {getRoleDisplayName(user.role)}

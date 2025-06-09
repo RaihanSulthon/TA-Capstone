@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, useFirestoreListeners } from '../contexts/AuthContexts';
+import { useAuth, useFirestoreListeners } from '../contexts/Authcontexts';
 import { db } from '../firebase-config';
 import { collection, query, where, onSnapshot, orderBy, limit, doc, updateDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import Modal from './Modal';
@@ -79,14 +79,6 @@ const NotificationsSystem = () => {
       notificationsQuery = query(
         collection(db, 'notifications'),
         where('recipientRoles', 'array-contains', 'admin'),
-        orderBy('createdAt', 'desc'),
-        limit(10)
-      );
-    } else if (userRole === 'disposisi') {
-      // Disposisi notifications: assigned tickets and status changes
-      notificationsQuery = query(
-        collection(db, 'notifications'),
-        where('recipientId', '==', currentUser.uid),
         orderBy('createdAt', 'desc'),
         limit(10)
       );

@@ -37,8 +37,6 @@ const Navbar = () => {
     switch (userRole) {
       case 'admin':
         return 'bg-red-100 text-red-800';
-      case 'disposisi':
-        return 'bg-purple-100 text-purple-800';
       case 'student':
       default:
         return 'bg-green-100 text-green-800';
@@ -130,15 +128,6 @@ const Navbar = () => {
                       className="mr-4 text-gray-700 hover:text-blue-600"
                     >
                       Tiket Saya
-                    </Link>
-                  )}
-                  
-                  {userRole === 'disposisi' && (
-                    <Link 
-                      to="/app/disposisi-tickets" 
-                      className="mr-4 text-gray-700 hover:text-blue-600"
-                    >
-                      Kelola Tiket
                     </Link>
                   )}
                   

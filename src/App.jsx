@@ -14,7 +14,6 @@ import AccessDeniedPage from "./pages/AccessDeniedPage";
 import FormKeluhanMahasiswaPage from "./pages/FormKeluhanMahasiswaPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import TicketManagementPage from "./pages/admin/TicketManagementPage";
-import DisposisiTicketsPage from "./pages/disposisi/DisposisiTicketsPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 
 // Contact Pages
@@ -69,16 +68,6 @@ function App() {
               element={
                 <RoleBasedRoute allowedRoles={["student"]} fallbackPath="/access-denied">
                   <StudentTicketsPage />
-                </RoleBasedRoute>
-              }
-            />
-
-            {/* Ticket System Routes - Disposisi */}
-            <Route
-              path="disposisi-tickets"
-              element={
-                <RoleBasedRoute allowedRoles={["disposisi"]} fallbackPath="/access-denied">
-                  <DisposisiTicketsPage />
                 </RoleBasedRoute>
               }
             />
