@@ -32,7 +32,6 @@ const TicketDetailPage = () => {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
-  const [disposisiStaff, setDisposisiStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -320,10 +319,6 @@ const TicketDetailPage = () => {
         if(!ticketData.readByAdmin){
           updateField = {readByAdmin: true};
         }
-      }else if(userRole === "disposisi"){
-        if (ticketData.assignedTo === currentUser.uid && !ticketData.readByDisposisi) {
-          updateField = { readByDisposisi: true };
-        }
       }else if (userRole === "student"){
         if (ticketData.userId === currentUser.uid && !ticketData.readByStudent) {
           updateField = { readByStudent: true };
@@ -338,104 +333,6 @@ const TicketDetailPage = () => {
     }
   }
 
-  // Fetch disposisi staff for assignment
-  useEffect(() => {
-    const fetchDisposisiStaff = async () => {
-      if (userRole !== "admin") return;
-      
-      try {
-        setLoadingStaff(true);
-        
-        // Fetch actual disposisi staff from Firestore
-        const staffQuery = query(
-          collection(db, "users"),
-          where("role", "==", "disposisi")
-        );
-        
-        const staffSnapshot = await getDocs(staffQuery);
-        const staffData = staffSnapshot.docs.map(doc => ({
-          id: doc.id,
-          name: doc.data().name || "No Name",
-          email: doc.data().email,
-          ...doc.data()
-        }));
-        
-        console.log("Fetched disposisi staff:", staffData);
-        setDisposisiStaff(staffData);
-      } catch (error) {
-        console.error("Error fetching disposisi staff:", error);
-        // Fallback to empty array if there's an error
-        setDisposisiStaff([]);
-      } finally {
-        setLoadingStaff(false);
-      }
-    };
-    
-    fetchDisposisiStaff();
-  }, [userRole]);
-
-  // Handle assign ticket to disposisi staff
-  const handleAssignTicket = async () => {
-    if (!selectedStaff) {
-      setToast({
-        message: "Silakan pilih staff disposisi terlebih dahulu",
-        type: "error"
-      });
-      return;
-    }
-    
-    try {
-      // Import notificationService
-      const { notifyTicketAssignment } = await import("../services/notificationService");
-      
-      // Update ticket in Firestore
-      const ticketRef = doc(db, "tickets", ticketId);
-      
-      // Find selected disposisi staff data
-      const staff = disposisiStaff.find(s => s.id === selectedStaff);
-      
-      await updateDoc(ticketRef, {
-        assignedTo: selectedStaff,
-        assignedToName: staff?.name || "Unknown",
-        assignedToEmail: staff?.email || "Unknown",
-        status: "in_progress",
-        updatedAt: serverTimestamp(),
-        // Add assignment to history
-        history: arrayUnion({
-          action: "assigned",
-          assignedBy: currentUser.uid,
-          assignedByName: currentUser.displayName || currentUser.email,
-          assignedTo: selectedStaff,
-          assignedToName: staff?.name || "Unknown",
-          timestamp: new Date()
-        })
-      });
-      
-      // Send notification to assigned disposisi staff
-      await notifyTicketAssignment(
-        ticket,
-        selectedStaff,
-        staff?.name || "Unknown",
-        currentUser.uid,
-        currentUser.displayName || currentUser.email
-      );
-      
-      setToast({
-        message: "Tiket berhasil didisposisikan",
-        type: "success"
-      });
-      
-      // Close modal
-      setIsAssignModalOpen(false);
-      
-    } catch (error) {
-      console.error("Error assigning ticket:", error);
-      setToast({
-        message: "Gagal mendisposisikan tiket. Silakan coba lagi.",
-        type: "error"
-      });
-    }
-  };
 
   // Handle update ticket status
   const handleUpdateStatus = async (newStatus) => {
@@ -711,13 +608,6 @@ const TicketDetailPage = () => {
                 <p className="mt-1 text-sm text-gray-900">Anonymous</p>
               </div>
             )}
-            
-            {ticket.assignedTo && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Didisposisikan Kepada</h3>
-                <p className="mt-1 text-sm text-gray-900">{ticket.assignedToName || "Unknown"} ({ticket.assignedToEmail || "Unknown"})</p>
-              </div>
-            )}
           </div>
           
           {/* Ticket description */}
@@ -936,7 +826,9 @@ const TicketDetailPage = () => {
                           <p className="text-sm font-medium">{item.createdByName || "Unknown"}</p>
                           <p className="text-xs text-gray-500">{formatDate(item.timestamp)}</p>
                         </div>
-                        <p className="text-sm text-gray-600">{item.createdByRole === "admin" ? "Admin" : item.createdByRole === "disposisi" ? "Disposisi" : "Mahasiswa"}</p>
+                        <p className="text-sm text-gray-600">
+                          {item.createdByRole === "admin" ? "Admin" : "Mahasiswa"}
+                        </p>
                       </div>
                     </div>
                     <div className="pl-9 text-sm text-gray-700">
@@ -956,7 +848,7 @@ const TicketDetailPage = () => {
           <h3 className="font-medium mb-4">Tindakan</h3>
           
           <div className="flex flex-wrap gap-3">
-            {/* Admin and Disposisi can change status */}
+            {/* Admin can change status */}
             {userRole === "admin" && (
               <>
                 {ticket.status === "new" && (
@@ -991,7 +883,7 @@ const TicketDetailPage = () => {
               </>
             )}
             
-            {/* Only admin and disposisi can give feedback */}
+            {/* Only admin can give feedback */}
             {userRole === "admin" && (
             <Button
             onClick={() => setIsFeedbackModalOpen(true)}
@@ -1003,61 +895,7 @@ const TicketDetailPage = () => {
           </div>
         </div>
       </div>
-      
-      {/* Assign Ticket Modal */}
-      <Modal
-        isOpen={isAssignModalOpen}
-        onClose={() => setIsAssignModalOpen(false)}
-        title="Disposisi Tiket ke Staff"
-        size="md"
-      >
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-medium mb-2">
-            Pilih Staff Disposisi
-          </label>
-          
-          {loadingStaff ? (
-            <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            disposisiStaff.length > 0 ? (
-              <select
-                value={selectedStaff}
-                onChange={(e) => setSelectedStaff(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Pilih Staff Disposisi --</option>
-                {disposisiStaff.map(staff => (
-                  <option key={staff.id} value={staff.id}>
-                    {staff.name || staff.email} ({staff.email})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="py-2 text-yellow-600">
-                Tidak ada staff disposisi yang tersedia. Silakan tambahkan pengguna dengan role disposisi terlebih dahulu.
-              </div>
-            )
-          )}
-        </div>
-        
-        <div className="flex justify-end space-x-3 mt-6">
-          <Button
-            onClick={() => setIsAssignModalOpen(false)}
-            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
-          >
-            Batal
-          </Button>
-          <Button
-            onClick={handleAssignTicket}
-            disabled={!selectedStaff || loadingStaff}
-          >
-            Disposisi
-          </Button>
-        </div>
-      </Modal>
-      
+
       {/* Feedback Modal */}
       <Modal
         isOpen={isFeedbackModalOpen}
