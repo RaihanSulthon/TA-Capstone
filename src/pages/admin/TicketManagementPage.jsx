@@ -633,7 +633,7 @@ const TicketManagementPage = () => {
             </button>
             <button
               onClick={handleDeleteTicket}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+              className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
               disabled={isDeleting}
             >
               {isDeleting ? "Menghapus..." : "Hapus Permanen"}
