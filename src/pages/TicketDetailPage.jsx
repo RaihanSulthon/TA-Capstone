@@ -1108,32 +1108,109 @@ const getStatusClass = (status) => {
         isOpen={isImagePreviewOpen}
         onClose={closeImagePreview}
         title="Preview Gambar"
-        size="xl"
+        size="full"
       >
-        <div className="flex justify-center">
-          <img 
-            src={previewUrl} 
-            alt="Preview" 
-            className="max-w-full max-h-[70vh] object-contain"
-          />
-        </div>
-        <div className="flex justify-end mt-4 space-x-3">
-          <a 
-            href={previewUrl} 
-            download={ticket?.lampiran || "image"}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
-          >
-            <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
-            </svg>
-            Download
-          </a>
-          <button
-            onClick={closeImagePreview}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-white hover:text-red-600 border border-red-600 transition-colors"
-          >
-            Tutup
-          </button>
+        <div className="flex flex-col items-center max-w-full">
+          {/* Image Container with better sizing */}
+          <div className="w-full bg-gray-100 rounded-lg p-4 mb-6">
+            <img 
+              src={previewUrl} 
+              alt="Preview" 
+              className="w-full h-auto max-h-[60vh] object-contain rounded-lg shadow-lg mx-auto"
+              style={{ minHeight: '300px' }}
+            />
+          </div>
+          
+          {/* File Info */}
+          <div className="text-center mb-4">
+            <p className="text-gray-600 text-sm">
+              {ticket?.lampiran || "Gambar Lampiran"}
+            </p>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-wrap justify-center gap-3">
+            <a 
+              href={previewUrl} 
+              download={ticket?.lampiran || "image"}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+            >
+              <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
+              </svg>
+              Download Gambar
+            </a>
+            <button
+              onClick={() => {
+                // FIXED: Open image in new window/tab with proper HTML content
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                  newWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>${ticket?.lampiran || 'Preview Gambar'}</title>
+                        <style>
+                          body { 
+                            margin: 0; 
+                            padding: 20px;
+                            display: flex; 
+                            justify-content: center; 
+                            align-items: center; 
+                            min-height: 100vh; 
+                            background-color: #f3f4f6;
+                            font-family: system-ui, -apple-system, sans-serif;
+                          }
+                          .container {
+                            text-align: center;
+                            max-width: 90vw;
+                            max-height: 90vh;
+                          }
+                          img { 
+                            max-width: 100%; 
+                            max-height: 80vh; 
+                            object-fit: contain;
+                            border-radius: 8px;
+                            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                          }
+                          .filename {
+                            margin-top: 16px;
+                            padding: 8px 16px;
+                            background: white;
+                            border-radius: 6px;
+                            color: #374151;
+                            font-size: 14px;
+                            display: inline-block;
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="container">
+                          <img src="${previewUrl}" alt="${ticket?.lampiran || 'Preview'}" />
+                          <div class="filename">${ticket?.lampiran || 'Gambar Lampiran'}</div>
+                        </div>
+                      </body>
+                    </html>
+                  `);
+                  newWindow.document.close();
+                }
+              }}
+              className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm"
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Buka di Tab Baru
+            </button>
+            <button
+              onClick={closeImagePreview}
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-white hover:text-red-600 border border-red-600 transition-colors font-medium text-sm"
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Tutup
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

@@ -451,7 +451,7 @@ const FeedbackPage = () => {
                           <span className={`text-xs font-medium ${
                             isFromMe || isFromAdmin ? 'text-white' : 'text-gray-600'
                           }`}>
-                            {isFromMe ? 'Anda' : feedback.createdByName}
+                            {isFromMe ? 'Anda ' : feedback.createdByName}
                             {isFromAdmin && !isFromMe && (
                               <span className="ml-1 bg-white text-purple-500 px-1 rounded text-xs">
                                 Admin

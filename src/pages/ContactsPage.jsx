@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { db } from "../firebase-config";
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
-import { useAuth } from "../contexts/AuthContexts";
+import { useAuth } from "../contexts/Authcontexts";
 
 const ContactsPage = () => {
   const { isAuthenticated } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterKeahlian, setFilterKeahlian] = useState("all");
@@ -104,15 +105,15 @@ const ContactsPage = () => {
                 </p>
               </div>
               
-              <Link
-                to="/"
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+              <button
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-lg font-medium transition-colors duration-300"
               >
                 <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Kembali ke Beranda
-              </Link>
+                Kembali
+              </button>
             </div>
           </div>
         </div>
@@ -159,15 +160,15 @@ const ContactsPage = () => {
             </div>
             
             {/* Back to Home Button */}
-            <Link
-              to="/"
-              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-lg font-medium transition-colors duration-300"
             >
               <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Kembali ke Beranda
-            </Link>
+              Kembali
+            </button>
           </div>
         </div>
       </div>

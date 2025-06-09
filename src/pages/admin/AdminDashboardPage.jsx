@@ -154,8 +154,8 @@ const AdminDashboardPage = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium">Manage Users</h4>
-              <p className="text-sm text-gray-600">View, edit and delete user accounts</p>
+              <h4 className="font-medium">Manage Users Statistics</h4>
+              <p className="text-sm text-gray-600">View User Ticket Statistics</p>
             </div>
           </Link>
         </div>
