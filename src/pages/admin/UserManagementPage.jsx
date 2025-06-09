@@ -1,20 +1,13 @@
 // Modified UserManagementPage.jsx with improved confirmation modal
 import { useState, useEffect } from "react";
 import { db } from "../../firebase-config";
-import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import Modal from "../../components/Modal";
+import { collection, getDocs } from "firebase/firestore";
 import Toast from "../../components/Toast";
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    role: ""
-  });
+  const [userTicketStats, setUserTicketStats] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [toast, setToast] = useState({ message: "", type: "success" });
@@ -27,8 +20,9 @@ const UserManagementPage = () => {
 
   // Fetch all users
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUsersAndStats = async () => {
       try {
+        // Fetch users
         const usersCollection = collection(db, "users");
         const usersSnapshot = await getDocs(usersCollection);
         const usersList = usersSnapshot.docs.map(doc => ({
@@ -37,8 +31,51 @@ const UserManagementPage = () => {
         }));
         
         setUsers(usersList);
+  
+        // Fetch ticket statistics for each user
+        const ticketsCollection = collection(db, "tickets");
+        const ticketsSnapshot = await getDocs(ticketsCollection);
+        
+        const stats = {};
+        
+        // Initialize stats for all users
+        usersList.forEach(user => {
+          stats[user.id] = {
+            total: 0,
+            new: 0,
+            in_progress: 0,
+            done: 0,
+            lastSubmission: null
+          };
+        });
+        
+        // Count tickets for each user
+        ticketsSnapshot.docs.forEach(doc => {
+          const ticket = doc.data();
+          const userId = ticket.userId;
+          
+          if (userId && userId !== "anonymous" && stats[userId]) {
+            stats[userId].total++;
+            
+            // Count by status
+            if (ticket.status === "new") stats[userId].new++;
+            else if (ticket.status === "in_progress") stats[userId].in_progress++;
+            else if (ticket.status === "done") stats[userId].done++;
+            
+            // Track last submission
+            if (ticket.createdAt) {
+              const ticketDate = ticket.createdAt.toDate ? ticket.createdAt.toDate() : new Date(ticket.createdAt);
+              if (!stats[userId].lastSubmission || ticketDate > stats[userId].lastSubmission) {
+                stats[userId].lastSubmission = ticketDate;
+              }
+            }
+          }
+        });
+        
+        setUserTicketStats(stats);
+        
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching users and stats:", error);
         setToast({
           message: "Failed to load users. Please try again.",
           type: "error"
@@ -48,7 +85,7 @@ const UserManagementPage = () => {
       }
     };
     
-    fetchUsers();
+    fetchUsersAndStats();
   }, []);
 
   // Clear toast after timeout
@@ -64,14 +101,19 @@ const UserManagementPage = () => {
 
   // Handle search and filtering
   const filteredUsers = users.filter(user => {
+    // Exclude dosen_public from the list
+    if (user.role === "dosen_public") {
+      return false;
+    }
+    
     const matchesSearch = 
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Update filter logic to handle all roles including dosen_public
+    // Update filter logic to handle only student and admin
     let matchesRole = filterRole === "all";
     
-    if (filterRole === "student" || filterRole === "admin" || filterRole === "dosen_public") {
+    if (filterRole === "student" || filterRole === "admin") {
       matchesRole = user.role === filterRole;
     }
     
@@ -82,126 +124,6 @@ const UserManagementPage = () => {
   const resetFilters = () => {
     setSearchTerm("");
     setFilterRole("all");
-  };
-
-  // Delete user handlers
-  const openDeleteModal = (user) => {
-    setSelectedUser(user);
-    setIsDeleteModalOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
-    
-    try {
-      // Check if trying to delete the last admin
-      if (selectedUser.role === 'admin') {
-        const adminUsers = users.filter(user => user.role === 'admin');
-        if (adminUsers.length === 1) {
-          setToast({
-            message: "Cannot delete the last admin account.",
-            type: "error"
-          });
-          closeDeleteModal();
-          return;
-        }
-      }
-      
-      // Delete user from Firestore
-      await deleteDoc(doc(db, "users", selectedUser.id));
-      
-      // Update state
-      setUsers(users.filter(user => user.id !== selectedUser.id));
-      
-      // Show success message
-      setToast({
-        message: `User ${selectedUser.email} deleted successfully.`,
-        type: "success"
-      });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      setToast({
-        message: "Failed to delete user. Please try again.",
-        type: "error"
-      });
-    } finally {
-      closeDeleteModal();
-    }
-  };
-
-  // Edit user handlers
-  const openEditModal = (user) => {
-    setSelectedUser(user);
-    setEditForm({
-      name: user.name || "",
-      role: user.role || "student"
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleEditFormChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm({
-      ...editForm,
-      [name]: value
-    });
-  };
-
-  const handleUpdateUser = async (e) => {
-    e.preventDefault();
-    if (!selectedUser) return;
-    
-    try {
-      // Check if trying to remove the last admin role
-      if (selectedUser.role === 'admin' && editForm.role !== 'admin') {
-        const adminUsers = users.filter(user => user.role === 'admin');
-        if (adminUsers.length === 1) {
-          setToast({
-            message: "Cannot change role of the last admin account.",
-            type: "error"
-          });
-          return;
-        }
-      }
-      
-      // Update user in Firestore
-      const userRef = doc(db, "users", selectedUser.id);
-      await updateDoc(userRef, {
-        name: editForm.name,
-        role: editForm.role
-      });
-      
-      // Update state
-      setUsers(users.map(user => 
-        user.id === selectedUser.id 
-          ? { ...user, name: editForm.name, role: editForm.role }
-          : user
-      ));
-      
-      // Show success message
-      setToast({
-        message: `User ${selectedUser.email} updated successfully.`,
-        type: "success"
-      });
-      
-      closeEditModal();
-    } catch (error) {
-      console.error("Error updating user:", error);
-      setToast({
-        message: "Failed to update user. Please try again.",
-        type: "error"
-      });
-    }
   };
 
   // Format date helper function
@@ -242,99 +164,31 @@ const UserManagementPage = () => {
     }
   };
 
-  // Edit User Modal Content
-  const editUserModalContent = (
-    <form onSubmit={handleUpdateUser}>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-medium mb-2">
-          Full Name
-        </label>
-        <input
-          type="text"
-          name="name"
-          value={editForm.name}
-          onChange={handleEditFormChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="User's full name"
-        />
-      </div>
-      
-      <div className="mb-6">
-        <label className="block text-gray-700 text-sm font-medium mb-2">
-          Role
-        </label>
-        <select
-          name="role"
-          value={editForm.role}
-          onChange={handleEditFormChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="student">Student</option>
-          <option value="admin">Admin</option>
-          <option value="dosen_public">Kontak Dosen</option>
-        </select>
-      </div>
-      
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={closeEditModal}
-          className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
-        >
-          Update User
-        </button>
-      </div>
-    </form>
-  );
-
-  // Delete User Modal Content with improved email handling
-  const deleteUserModalContent = (
-    <>
-      <p className="text-gray-600 mb-4">
-        Are you sure you want to delete user: 
-      </p>
-      <p className="text-gray-800 font-medium mb-2 break-words overflow-hidden">
-        {selectedUser?.email}
-      </p>
-      <p className="text-gray-600 mb-6">
-        This action cannot be undone.
-      </p>
-      
-      <div className="flex justify-end space-x-3">
-        <button
-          onClick={closeDeleteModal}
-          className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleDeleteUser}
-          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
-        >
-          Delete User
-        </button>
-      </div>
-    </>
-  );
+  // Format last submission date
+  const formatLastSubmission = (date) => {
+    if (!date) return "Belum pernah";
+    
+    try {
+      return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return "N/A";
+    }
+  };
 
   // Get user count by role
-const getUserCounts = () => {
-  const studentCount = users.filter(user => user.role === 'student').length;
-  const adminCount = users.filter(user => user.role === 'admin').length;
-  const dosenPublicCount = users.filter(user => user.role === 'dosen_public').length;
-  
-  return {
-    students: studentCount,
-    admins: adminCount,
-    dosenPublic: dosenPublicCount
+  const getUserCounts = () => {
+    const studentCount = users.filter(user => user.role === 'student').length;
+    const adminCount = users.filter(user => user.role === 'admin').length;
+    
+    return {
+      students: studentCount,
+      admins: adminCount
+    };
   };
-};
 
   // Get user counts for display
   const userCounts = getUserCounts();
@@ -391,7 +245,6 @@ const getUserCounts = () => {
                 <option value="all">All Roles</option>
                 <option value="student">Students</option>
                 <option value="admin">Admins</option>
-                <option value="dosen_public">Kontak Dosen</option>
               </select>
             </div>
           </div>
@@ -408,10 +261,10 @@ const getUserCounts = () => {
       </div>
       
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Users</p>
-          <p className="text-2xl font-bold text-blue-600">{users.length}</p>
+          <p className="text-2xl font-bold text-blue-600">{users.filter(u => u.role !== 'dosen_public').length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Students</p>
@@ -420,15 +273,15 @@ const getUserCounts = () => {
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Admins</p>
-          <p className="text-2xl font-bold text-red-600">
-            {userCounts.admins}
+          <p className="text-sm text-gray-500">Active Students</p>
+          <p className="text-2xl font-bold text-purple-600">
+            {Object.values(userTicketStats).filter(stat => stat.total > 0).length}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Kontak Dosen</p>
-          <p className="text-2xl font-bold text-orange-600">
-            {userCounts.dosenPublic}
+          <p className="text-sm text-gray-500">Total Laporan</p>
+          <p className="text-2xl font-bold text-indigo-600">
+            {Object.values(userTicketStats).reduce((total, stat) => total + stat.total, 0)}
           </p>
         </div>
       </div>
@@ -436,68 +289,88 @@ const getUserCounts = () => {
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Registered
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Role
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total Laporan
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status Laporan
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Terakhir Submit
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.name || "N/A"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500 truncate max-w-xs" title={user.email}>
-                        {truncateText(user.email, 30)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                          user.role === 'dosen_public' ? 'bg-orange-100 text-orange-800' :
-                          'bg-green-100 text-green-800'}`}>
-                        {getRoleDisplayName(user.role)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(user.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => openEditModal(user)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(user)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                filteredUsers.map((user) => {
+                  const stats = userTicketStats[user.id] || { total: 0, new: 0, in_progress: 0, done: 0, lastSubmission: null };
+                  
+                  return (
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{user.name || "N/A"}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500 truncate max-w-xs" title={user.email}>
+                          {truncateText(user.email, 30)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
+                            user.role === 'dosen_public' ? 'bg-orange-100 text-orange-800' :
+                            'bg-green-100 text-green-800'}`}>
+                          {getRoleDisplayName(user.role)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 font-medium">{stats.total}</div>
+                        {stats.total > 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {stats.total > 0 ? (
+                          <div className="flex space-x-1">
+                            {stats.new > 0 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                {stats.new} Baru
+                              </span>
+                            )}
+                            {stats.in_progress > 0 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {stats.in_progress} Proses
+                              </span>
+                            )}
+                            {stats.done > 0 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                {stats.done} Selesai
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatLastSubmission(stats.lastSubmission)}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
                     No users found
                   </td>
                 </tr>
@@ -506,26 +379,6 @@ const getUserCounts = () => {
           </table>
         </div>
       </div>
-      
-      {/* User Edit Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={closeEditModal}
-        title="Edit User"
-        size="md"
-      >
-        {editUserModalContent}
-      </Modal>
-      
-      {/* User Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={closeDeleteModal}
-        title="Confirm Deletion"
-        size="sm"
-      >
-        {deleteUserModalContent}
-      </Modal>
     </div>
   );
 };
