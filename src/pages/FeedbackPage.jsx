@@ -1,4 +1,3 @@
-// src/pages/FeedbackPage.jsx
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../contexts/Authcontexts";
@@ -38,7 +37,7 @@ const FeedbackPage = () => {
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
 
-  // Format timestamp
+  // Format timestamp - FIXED: Improve date logic
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
     
@@ -53,26 +52,36 @@ const FeedbackPage = () => {
       }
       
       const now = new Date();
-      const diffTime = Math.abs(now - date);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Get today's date at midnight for accurate comparison
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      // Calculate difference in days
+      const diffTime = today.getTime() - messageDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       
       if (diffDays === 0) {
+        // Same day - show time only
         return date.toLocaleTimeString('id-ID', { 
           hour: '2-digit', 
           minute: '2-digit' 
         });
       } else if (diffDays === 1) {
+        // Yesterday
         return `Kemarin ${date.toLocaleTimeString('id-ID', { 
           hour: '2-digit', 
           minute: '2-digit' 
         })}`;
       } else if (diffDays < 7) {
+        // Within a week - show day name
         return date.toLocaleDateString('id-ID', { 
           weekday: 'long',
           hour: '2-digit', 
           minute: '2-digit' 
         });
       } else {
+        // Older than a week - show full date
         return date.toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'short',
@@ -252,7 +261,7 @@ const FeedbackPage = () => {
     setAttachments(files);
   };
 
-  // Render attachment
+  // FIXED: Render attachment with proper image click handling
   const renderAttachment = (attachment) => {
     const isImage = attachment.type.startsWith('image/');
     
@@ -264,7 +273,38 @@ const FeedbackPage = () => {
               src={attachment.base64}
               alt={attachment.name}
               className="max-w-xs max-h-48 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => window.open(attachment.base64, '_blank')}
+              onClick={() => {
+                // FIXED: Open image in new window/tab instead of navigating
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                  newWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>${attachment.name}</title>
+                        <style>
+                          body { 
+                            margin: 0; 
+                            display: flex; 
+                            justify-content: center; 
+                            align-items: center; 
+                            min-height: 100vh; 
+                            background-color: #f0f0f0;
+                          }
+                          img { 
+                            max-width: 100%; 
+                            max-height: 100vh; 
+                            object-fit: contain;
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <img src="${attachment.base64}" alt="${attachment.name}" />
+                      </body>
+                    </html>
+                  `);
+                  newWindow.document.close();
+                }
+              }}
             />
             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg">
               {attachment.name}
