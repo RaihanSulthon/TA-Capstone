@@ -559,9 +559,17 @@ const getStatusClass = (status) => {
 
   // Handle go back
   const handleGoBack = () => {
-    navigate(-1);
+    if (userRole === "admin") {
+      // Admin should go back to ticket management
+      navigate("/admin/tickets");
+    } else if (userRole === "student") {
+      // Student should go back to their tickets
+      navigate("/app/my-tickets");
+    } else {
+      // Fallback to browser history
+      navigate(-1);
+    }
   };
-
   // Navigate to feedback page
   const handleViewFeedback = () => {
     navigate(`/app/tickets/${ticketId}/feedback`);
