@@ -129,9 +129,6 @@ const TicketManagementPage = () => {
         if (!readByAdmin && feedback.createdBy !== currentUser?.uid && userRole === "admin") {
           counts[ticketId].unreadByAdmin++;
         }
-        
-        // Count unread for student (for future use)
-        // This logic can be extended when we know the student userId for each ticket
       });
       
       setFeedbackCounts(counts);
@@ -173,7 +170,6 @@ const TicketManagementPage = () => {
       );
       
       if (result.success) {
-        // Remove the ticket from the local state
         setTickets(prevTickets => 
           prevTickets.filter(t => t.id !== ticketToDelete.id)
         );
@@ -217,16 +213,12 @@ const TicketManagementPage = () => {
       try {
         let ticketsQuery;
         
-        // Admin can see all tickets
         ticketsQuery = query(
           collection(db, "tickets"),
           orderBy("createdAt", "desc")
         );
         
-        // Use onSnapshot for real-time updates
         const unsubscribe = onSnapshot(ticketsQuery, async (snapshot) => {
-          // For admin, we don't need to filter out any tickets 
-          // (admin sees all tickets that haven't been hard deleted)
           const ticketList = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -236,7 +228,6 @@ const TicketManagementPage = () => {
           setLoading(false);
         }, (error) => {
           console.error("Error in tickets listener:", error);
-          // Fallback to one-time get if listener fails
           getDocs(ticketsQuery).then((querySnapshot) => {
             const ticketList = querySnapshot.docs.map(doc => ({
               id: doc.id,
@@ -255,7 +246,6 @@ const TicketManagementPage = () => {
           });
         });
         
-        // Register the listener for cleanup
         addListener(unsubscribe);
         
       } catch (error) {
@@ -276,27 +266,21 @@ const TicketManagementPage = () => {
     if (currentUser && userRole === "admin") {
       fetchFeedbackCounts();
       
-      // Listen for real-time feedback updates
       const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
       
       const unsubscribe = onSnapshot(feedbacksQuery, () => {
         fetchFeedbackCounts();
       });
       
-      // Register the listener for cleanup
       addListener(unsubscribe);
     }
   }, [currentUser, userRole, addListener]);
   
   // Filter tickets
   const filteredTickets = tickets.filter(ticket => {
-    // Filter by status
     const matchesStatus = filterStatus === "all" || ticket.status === filterStatus;
-    
-    // Filter by category
     const matchesCategory = filterCategory === "all" || ticket.kategori === filterCategory;
     
-    // Filter by read status - this is the new filter
     let matchesReadStatus = true;
     if (filterReadStatus === "read") {
       matchesReadStatus = ticket.readByAdmin === true;
@@ -304,7 +288,6 @@ const TicketManagementPage = () => {
       matchesReadStatus = ticket.readByAdmin !== true;
     }
     
-    // Filter by search term
     const matchesSearch = 
       ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.deskripsi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -348,72 +331,69 @@ const TicketManagementPage = () => {
         />
       )}
       
-      {/* Filters and Search */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex flex-col md:flex-row gap-4 md:items-center">
-            <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                id="status-filter"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full md:w-40 px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="all">Semua Status</option>
-                <option value="new">Baru</option>
-                <option value="in_progress">Diproses</option>
-                <option value="done">Selesai</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-1">
-                Kategori
-              </label>
-              <select
-                id="category-filter"
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="all">Semua Kategori</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {getCategoryLabel(category)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Add Read Status Filter */}
-            <ReadStatusFilter 
-              readStatus={filterReadStatus}
-              setReadStatus={setFilterReadStatus}
-              userRole={userRole}
-            />
-            
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                Cari
-              </label>
-              <input
-                type="text"
-                id="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari judul atau deskripsi"
-                className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+      {/* Filters and Search - IMPROVED LAYOUT */}
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end">
+          <div>
+            <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
+            <select
+              id="status-filter"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Semua Status</option>
+              <option value="new">Baru</option>
+              <option value="in_progress">Diproses</option>
+              <option value="done">Selesai</option>
+            </select>
           </div>
           
-          <div className="flex items-end">
+          <div>
+            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Kategori
+            </label>
+            <select
+              id="category-filter"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Semua Kategori</option>
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {getCategoryLabel(category)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <ReadStatusFilter 
+            readStatus={filterReadStatus}
+            setReadStatus={setFilterReadStatus}
+            userRole={userRole}
+          />
+          
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+              Cari
+            </label>
+            <input
+              type="text"
+              id="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Cari judul atau deskripsi"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          
+          <div className="flex justify-end">
             <button
               onClick={resetFilters}
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors"
             >
               Reset Filter
             </button>
@@ -421,63 +401,59 @@ const TicketManagementPage = () => {
         </div>
       </div>
       
-      {/* Enhanced Stats Summary with Feedback Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Total Tiket</p>
-          <p className="text-2xl font-bold text-blue-600">{ticketStats.total}</p>
+      {/* Enhanced Stats Summary - IMPROVED GRID */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+          <p className="text-xs text-gray-500 mb-1">Total Tiket</p>
+          <p className="text-xl md:text-2xl font-bold text-blue-600">{ticketStats.total}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Tiket Baru</p>
-          <p className="text-2xl font-bold text-blue-600">{ticketStats.new}</p>
+        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+          <p className="text-xs text-gray-500 mb-1">Tiket Baru</p>
+          <p className="text-xl md:text-2xl font-bold text-blue-600">{ticketStats.new}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Sedang Diproses</p>
-          <p className="text-2xl font-bold text-yellow-600">{ticketStats.inProgress}</p>
+        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+          <p className="text-xs text-gray-500 mb-1">Sedang Diproses</p>
+          <p className="text-xl md:text-2xl font-bold text-yellow-600">{ticketStats.inProgress}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Selesai</p>
-          <p className="text-2xl font-bold text-green-600">{ticketStats.done}</p>
+        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+          <p className="text-xs text-gray-500 mb-1">Selesai</p>
+          <p className="text-xl md:text-2xl font-bold text-green-600">{ticketStats.done}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Belum Dibaca</p>
-          <p className="text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
+        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+          <p className="text-xs text-gray-500 mb-1">Belum Dibaca</p>
+          <p className="text-xl md:text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Dengan Feedback</p>
-          <p className="text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Total Feedback</p>
-          <p className="text-2xl font-bold text-orange-600">{ticketStats.totalFeedbacks}</p>
+        <div className="bg-white p-4 rounded-lg shadow-md text-center">
+          <p className="text-xs text-gray-500 mb-1">Dengan Feedback</p>
+          <p className="text-xl md:text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
         </div>
       </div>
       
-      {/* Tickets Table */}
+      {/* Tickets Table - IMPROVED RESPONSIVE DESIGN */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ID & Judul
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Pengirim
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Kategori
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tanggal & Waktu
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Feedback
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -485,7 +461,7 @@ const TicketManagementPage = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center">
+                  <td colSpan="7" className="px-4 py-8 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                     </div>
@@ -493,7 +469,7 @@ const TicketManagementPage = () => {
                 </tr>
               ) : filteredTickets.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
                     Tidak ada tiket yang ditemukan
                   </td>
                 </tr>
@@ -504,79 +480,77 @@ const TicketManagementPage = () => {
                   const feedbackInfo = getFeedbackInfo(ticket.id);
                   
                   return (
-                    <tr key={ticket.id} className={`hover:bg-gray-50 ${isUnread ? "bg-blue-50" : ""}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={ticket.id} className={`hover:bg-gray-50 transition-colors ${isUnread ? "bg-blue-50" : ""}`}>
+                      <td className="px-4 py-4">
                         <div className="flex flex-col">
-                          <div className="text-xs text-gray-500 mb-1">#{ticket.id.substring(0, 8)}</div>
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs text-gray-500 font-mono">#{ticket.id.substring(0, 8)}</span>
                             {isUnread && (
-                              <span 
-                                className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2" 
-                                title="Belum dibaca"
-                              ></span>
+                              <span className="inline-block h-2 w-2 rounded-full bg-blue-600" title="Belum dibaca"></span>
                             )}
-                            <span className="text-sm font-medium text-gray-900 truncate max-w-xs" title={ticket.judul}>
-                              {truncateText(ticket.judul, 30)}
-                            </span>
+                          </div>
+                          <div className="text-sm font-medium text-gray-900 leading-tight" title={ticket.judul}>
+                            {truncateText(ticket.judul, 40)}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 truncate max-w-[150px]" title={ticket.anonymous ? "Anonymous" : ticket.nama || "Unknown"}>
-                        {ticket.anonymous ? "Anonymous" : truncateText(ticket.nama || "Unknown", 15)}
-                      </div>
-                      {/* Admin always sees email, student sees email only if not anonymous */}
-                      {((userRole === "admin" && (ticket.userEmail || ticket.email)) || 
-                        (!ticket.anonymous && ticket.email)) && (
-                        <div className="text-xs text-gray-500 truncate max-w-[150px]" title={userRole === "admin" ? (ticket.userEmail || ticket.email) : ticket.email}>
-                          {truncateText(userRole === "admin" ? (ticket.userEmail || ticket.email) : ticket.email, 18)}
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900" title={ticket.anonymous ? "Anonymous" : ticket.nama || "Unknown"}>
+                          {ticket.anonymous ? "Anonymous" : truncateText(ticket.nama || "Unknown", 20)}
                         </div>
-                      )}
+                        {((userRole === "admin" && (ticket.userEmail || ticket.email)) || 
+                          (!ticket.anonymous && ticket.email)) && (
+                          <div className="text-xs text-gray-500 truncate" style={{maxWidth: '150px'}} title={userRole === "admin" ? (ticket.userEmail || ticket.email) : ticket.email}>
+                            {truncateText(userRole === "admin" ? (ticket.userEmail || ticket.email) : ticket.email, 25)}
+                          </div>
+                        )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4">
                         <div className="text-sm text-gray-900">
                           {getCategoryLabel(ticket.kategori)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge.className}`}>
+                      <td className="px-4 py-4">
+                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge.className}`}>
                           {statusBadge.label}
                         </span>
                         {ticket.assignedToName && (
-                          <div className="text-xs text-gray-500 mt-1 truncate max-w-[120px]" title={`Staff: ${ticket.assignedToName}`}>
-                            Staff: {truncateText(ticket.assignedToName, 12)}
+                          <div className="text-xs text-gray-500 mt-1" title={`Staff: ${ticket.assignedToName}`}>
+                            Staff: {truncateText(ticket.assignedToName, 15)}
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col">
-                          <div className="text-sm text-gray-900">
-                            {formatDate(ticket.createdAt).date}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {formatDate(ticket.createdAt).time}
-                          </div>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">
+                          {formatDate(ticket.createdAt).date}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {formatDate(ticket.createdAt).time}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4">
                         {feedbackInfo.total > 0 ? (
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-1">
                             <svg
-                              className={`h-5 w-5 ${feedbackInfo.unread > 0 ? "text-orange-600" : "text-purple-600"}`}
-                              fill="currentColor" 
+                              className={`h-4 w-4 ${feedbackInfo.unread > 0 ? "text-orange-600" : "text-purple-600"}`}
+                              fill="currentColor"
                               viewBox="0 0 20 20"
                             >
-                              <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                              <path
+                                fillRule="evenodd"
+                                d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                                clipRule="evenodd"
+                              />
                             </svg>
-                            <span className={`ml-1 text-sm ${feedbackInfo.unread > 0 ? "font-medium text-orange-600" : "text-purple-600"}`}>
+                            <span className={`text-xs whitespace-nowrap ${feedbackInfo.unread > 0 ? "font-medium text-orange-600" : "text-purple-600"}`}>
                               {feedbackInfo.unread > 0 
-                                ? `${feedbackInfo.unread} feedback baru` 
-                                : `${feedbackInfo.total} feedback`
+                                ? `${feedbackInfo.unread} Feedback` 
+                                : `${feedbackInfo.total} Feedback`
                               }
                             </span>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-500">Belum ada</span>
+                          <span className="text-xs text-gray-400">Belum ada</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -626,14 +600,14 @@ const TicketManagementPage = () => {
           <div className="flex justify-end space-x-3">
             <button
               onClick={closeDeleteModal}
-              className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
+              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
               disabled={isDeleting}
             >
               Batal
             </button>
             <button
               onClick={handleDeleteTicket}
-              className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
+              className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded transition-colors"
               disabled={isDeleting}
             >
               {isDeleting ? "Menghapus..." : "Hapus Permanen"}
