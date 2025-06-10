@@ -405,8 +405,7 @@ const AdminContactsPage = () => {
       try {
         // Query user dengan role "dosen_public" - ini akan bisa dibaca publik
         const contactsQuery = query(
-          collection(db, "users"),
-          where("role", "==", "dosen_public"),
+          collection(db, "contacts"),
           orderBy("name", "asc")
         );
         
@@ -514,13 +513,12 @@ const AdminContactsPage = () => {
         photoBase64: photoBase64,
         photoType: photoType,
         photoName: photoName,
-        role: "dosen_public",
-        isPublicContact: true,
+        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date()
       };
       
-      const docRef = await addDoc(collection(db, "users"), contactData);
+      const docRef = await addDoc(collection(db, "contacts"), contactData);
       
       // Update local state
       const newContact = { 
@@ -584,7 +582,7 @@ const AdminContactsPage = () => {
         }
       }
       
-      const contactRef = doc(db, "users", selectedContact.id);
+      const contactRef = doc(db, "contacts", selectedContact.id);
       const updatedData = {
         name: formData.nama.trim(),
         email: formData.email.trim().toLowerCase(),
@@ -630,7 +628,7 @@ const AdminContactsPage = () => {
     if (!selectedContact) return;
     
     try {
-      await deleteDoc(doc(db, "users", selectedContact.id));
+      await deleteDoc(doc(db, "contacts", selectedContact.id));
       
       setContacts(prev => prev.filter(contact => contact.id !== selectedContact.id));
       

@@ -18,9 +18,10 @@ const ContactsPage = () => {
     const fetchContacts = async () => {
       try {
         // Query users with role "dosen_public" - accessible without auth
+        // Query contacts collection - accessible without auth
         const contactsQuery = query(
-          collection(db, "users"),
-          where("role", "==", "dosen_public"),
+          collection(db, "contacts"),
+          where("isActive", "==", true),
           orderBy("name", "asc")
         );
         

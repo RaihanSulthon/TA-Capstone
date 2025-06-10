@@ -103,18 +103,13 @@ const UserManagementPage = () => {
     }
   }, [toast]);
 
-  // Handle search and filtering
+  // Filter users based on search term - no need to exclude dosen_public anymore
   const filteredUsers = users.filter(user => {
-    // Exclude dosen_public from the list
-    if (user.role === "dosen_public") {
-      return false;
-    }
-    
     const matchesSearch = 
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Update filter logic to handle only student and admin
+    // Filter logic to handle only student and admin
     let matchesRole = filterRole === "all";
     
     if (filterRole === "student" || filterRole === "admin") {
@@ -163,7 +158,6 @@ const UserManagementPage = () => {
     switch(role) {
       case 'admin': return 'Admin';
       case 'student': return 'Student';
-      case 'dosen_public': return 'Kontak Dosen';
       default: return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
     }
   };
@@ -269,7 +263,7 @@ const UserManagementPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Users</p>
-          <p className="text-2xl font-bold text-blue-600">{users.filter(u => u.role !== 'dosen_public').length}</p>
+          <p className="text-2xl font-bold text-blue-600">{users.length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Students</p>

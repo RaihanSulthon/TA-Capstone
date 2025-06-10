@@ -16,8 +16,8 @@ const ContactsSection = () => {
     const fetchFeaturedContacts = async () => {
       try {
         const contactsQuery = query(
-          collection(db, "users"),
-          where("role", "==", "dosen_public"),
+          collection(db, "contacts"),
+          where("isActive", "==", true),
           orderBy("name", "asc"),
           limit(6)
         );
