@@ -1,8 +1,8 @@
-// Modified UserManagementPage.jsx with improved confirmation modal
 import { useState, useEffect } from "react";
 import { db } from "../../firebase-config";
 import { collection, getDocs } from "firebase/firestore";
 import Toast from "../../components/Toast";
+import EnhancedAnalytics from "../../components/admin/EnhancedAnalytics";
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
@@ -11,6 +11,7 @@ const UserManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [toast, setToast] = useState({ message: "", type: "success" });
+  const [tickets, setTickets] = useState([]);
 
   // Function to truncate text with ellipsis
   const truncateText = (text, maxLength = 25) => {
@@ -18,23 +19,26 @@ const UserManagementPage = () => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
-  // Fetch all users
+  // Fetch all users and tickets
   useEffect(() => {
     const fetchUsersAndStats = async () => {
       try {
         // Fetch users
         const usersCollection = collection(db, "users");
         const usersSnapshot = await getDocs(usersCollection);
+        
+        // Fetch tickets for analytics
+        const ticketsCollection = collection(db, "tickets");
+        const ticketsSnapshot = await getDocs(ticketsCollection);
+        const ticketsList = ticketsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setTickets(ticketsList);
+
         const usersList = usersSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         
         setUsers(usersList);
-  
-        // Fetch ticket statistics for each user
-        const ticketsCollection = collection(db, "tickets");
-        const ticketsSnapshot = await getDocs(ticketsCollection);
         
         const stats = {};
         
@@ -193,6 +197,7 @@ const UserManagementPage = () => {
   // Get user counts for display
   const userCounts = getUserCounts();
 
+  // Loading state
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -228,7 +233,7 @@ const UserManagementPage = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name or email"
-                className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
@@ -240,7 +245,7 @@ const UserManagementPage = () => {
                 id="role-filter"
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Roles</option>
                 <option value="student">Students</option>
@@ -252,7 +257,7 @@ const UserManagementPage = () => {
           <div className="flex items-end">
             <button
               onClick={resetFilters}
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
             >
               Reset Filters
             </button>
@@ -285,45 +290,59 @@ const UserManagementPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Enhanced Analytics Charts Section */}
+      <EnhancedAnalytics tickets={tickets} users={users} />
       
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Role
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total Laporan
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status Laporan
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Terakhir Submit
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Laporan
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status Laporan
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Terakhir Submit
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => {
-                  const stats = userTicketStats[user.id] || { total: 0, new: 0, in_progress: 0, done: 0, lastSubmission: null };
+                  const stats = userTicketStats[user.id] || { 
+                    total: 0, 
+                    new: 0, 
+                    in_progress: 0, 
+                    done: 0, 
+                    lastSubmission: null 
+                  };
                   
                   return (
-                    <tr key={user.id}>
+                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{user.name || "N/A"}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name || "N/A"}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 truncate max-w-xs" title={user.email}>
+                        <div 
+                          className="text-sm text-gray-500 truncate max-w-xs" 
+                          title={user.email}
+                        >
                           {truncateText(user.email, 30)}
                         </div>
                       </td>
@@ -336,12 +355,13 @@ const UserManagementPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 font-medium">{stats.total}</div>
-                        {stats.total > 0}
+                        <div className="text-sm text-gray-900 font-medium">
+                          {stats.total}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {stats.total > 0 ? (
-                          <div className="flex space-x-1">
+                          <div className="flex flex-wrap gap-1">
                             {stats.new > 0 && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                                 {stats.new} Baru
@@ -371,12 +391,45 @@ const UserManagementPage = () => {
               ) : (
                 <tr>
                   <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No users found
+                    {loading ? (
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+                      </div>
+                    ) : (
+                      "No users found"
+                    )}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Additional Information */}
+      <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Summary Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="text-gray-600">
+              <span className="font-medium">Total Users Displayed:</span> {filteredUsers.length}
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-600">
+              <span className="font-medium">Users with Activity:</span> {
+                filteredUsers.filter(user => {
+                  const stats = userTicketStats[user.id];
+                  return stats && stats.total > 0;
+                }).length
+              }
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-600">
+              <span className="font-medium">Total System Tickets:</span> {tickets.length}
+            </p>
+          </div>
         </div>
       </div>
     </div>
