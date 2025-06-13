@@ -712,7 +712,7 @@ const AdminContactsPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Kelola Kontak Dosen</h1>
+        <h1 className="text-2xl font-bold">Contact Management</h1>
         <Button
           onClick={openAddModal}
           className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"

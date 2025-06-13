@@ -12,6 +12,7 @@ const AdminDashboardPage = () => {
   const [userStats, setUserStats] = useState({
     total: 0,
     students: 0,
+    admins: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -51,24 +52,28 @@ const AdminDashboardPage = () => {
         
         setRecentUsers(usersData);
         
-        // Calculate user statistics
-        const statsQuery = await getDocs(collection(db, "users"));
-        let totalUsers = 0;
-        let studentCount = 0;
+      // Calculate user statistics
+      const statsQuery = await getDocs(collection(db, "users"));
+      let totalUsers = 0;
+      let studentCount = 0;
+      let adminCount = 0;
+
+      statsQuery.forEach((doc) => {
+        const userData = doc.data();
+        totalUsers++;
         
-        statsQuery.forEach((doc) => {
-          const userData = doc.data();
-          totalUsers++;
-          
-          if (userData.role === "student") {
-            studentCount++;
-          }
-        });
-        
-        setUserStats({
-          total: totalUsers,
-          students: studentCount,
-        });
+        if (userData.role === "student") {
+          studentCount++;
+        } else if (userData.role === "admin") {
+          adminCount++;
+        }
+      });
+
+      setUserStats({
+        total: totalUsers,
+        students: studentCount,
+        admins: adminCount,
+      });
         
       } catch (error) {
         console.error("Error fetching admin data:", error);
@@ -154,8 +159,8 @@ const AdminDashboardPage = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium">Manage Users Statistics</h4>
-              <p className="text-sm text-gray-600">View User Ticket Statistics</p>
+              <h4 className="font-medium">Analyze Ticket Statistics</h4>
+              <p className="text-sm text-gray-600">View Ticket Statistics</p>
             </div>
           </Link>
         </div>
@@ -171,6 +176,11 @@ const AdminDashboardPage = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-medium text-gray-900 mb-2">Students</h3>
           <p className="text-3xl font-bold text-green-600">{userStats.students}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Admin</h3>
+          <p className="text-3xl font-bold text-red-600">{userStats.admins}</p>
         </div>
       </div>
       

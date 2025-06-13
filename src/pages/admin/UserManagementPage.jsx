@@ -202,7 +202,7 @@ const UserManagementPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">User Management</h1>
+      <h1 className="text-2xl font-bold mb-6">Ticket Statistics</h1>
       
       {/* Toast notification */}
       {toast.message && (

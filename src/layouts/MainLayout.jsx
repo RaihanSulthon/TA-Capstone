@@ -112,7 +112,7 @@ const MainLayout = () => {
                         : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
-                    Manage Users
+                    Ticket Statistics
                   </Link>
                   
                   {/* Admin Ticket Management */}
@@ -127,7 +127,7 @@ const MainLayout = () => {
                         : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
-                    Manajemen Tiket
+                    Ticket Management
                   </Link>
 
                   {/* Admin Content Management */}
@@ -142,7 +142,7 @@ const MainLayout = () => {
                         : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
-                    Kelola Kontak Dosen
+                    Contact Management
                   </Link>
                   <Link
                     to="/admin/faqs"
@@ -152,7 +152,7 @@ const MainLayout = () => {
                         : 'text-gray-700 hover:bg-blue-50'
                     }`}
                   >
-                    Kelola FAQ
+                    FAQ Management
                   </Link>
                 </>
               )}
