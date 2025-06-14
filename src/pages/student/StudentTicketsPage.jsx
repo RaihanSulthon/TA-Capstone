@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
-import { collection, getDocs, query, orderBy, where, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where, onSnapshot, doc } from "firebase/firestore";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
 import Modal from "../../components/Modal";
@@ -163,32 +163,71 @@ const StudentTicketsPage = () => {
   // Fetch feedback counts for all tickets
 const fetchFeedbackCounts = async () => {
   try {
-    const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
-    const feedbacksSnapshot = await getDocs(feedbacksQuery);
-    
-    const counts = {};
-    
-    feedbacksSnapshot.docs.forEach(doc => {
+    if(tickets.length === 0){
+      setFeedbackCounts({});
+      return;
+    }
+
+    const userTicketIds = tickets.map(ticket => ticket.id);
+    const counts = {}
+
+    userTicketIds.forEach(ticketId => {
+      counts[ticketId] = {
+        total: 0,
+        unreadByStudent: 0
+      };
+    });
+
+    const feedbacksQuery = query(
+      collection(db, "feedbacks"),
+      where("ticketId", "in", userTicketIds.slice(0,10)),
+      orderBy("createdAt", "desc")
+    );
+
+    const feedbacsSnapshot = await getDocs(feedbacksQuery);
+
+    feedbacsSnapshot.docs.forEach(doc => {
       const feedback = doc.data();
       const ticketId = feedback.ticketId;
-      
-      if (!counts[ticketId]) {
-        counts[ticketId] = {
-          total: 0,
-          unreadByStudent: 0
-        };
-      }
-      
-      counts[ticketId].total++;
-      
-      // Count unread for current student
-      const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
-      if (!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student") {
-        counts[ticketId].unreadByStudent++;
+
+      if(counts[ticketId]){
+        counts[ticketId].total++;
+
+        const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
+        if(!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student"){
+          counts[ticketId].unreadByStudent++;
+        }
       }
     });
-    
+
+    if (userTicketIds.length > 10){
+      for(let i = 10; i < userTicketIds; i += 10){
+        const batch = userTicketIds.slice(i, i+10);
+        const batchQuery = query(
+          collection(db, "feedbacks"),
+          where("ticketId", "in", batch),
+          orderBy("createdAt", "desc")
+        );
+
+        const batchSnapshot = await getDocs(batchQuery);
+
+        batchSnapshot.docs.forEach(doc => {
+          const feedback = doc.data();
+          const ticketId = feedback.ticketId;
+
+          if (counts[ticketId]){
+            counts[ticketId].total++;
+
+            const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
+            if(!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student"){
+              counts[ticketId].unreadByStudent++;
+            }
+          }
+        });
+      }
+    }
     setFeedbackCounts(counts);
+
   } catch (error) {
     console.error("Error fetching feedback counts:", error);
   }
@@ -205,20 +244,30 @@ const getFeedbackInfo = (ticketId) => {
 
 // Fetch feedback counts when component mounts and when tickets change
 useEffect(() => {
-  if (currentUser && userRole === "student") {
+  if (currentUser && userRole === "student" && tickets.length > 0) {
     fetchFeedbackCounts();
     
-    // Listen for real-time feedback updates
-    const feedbacksQuery = query(collection(db, "feedbacks"), orderBy("createdAt", "desc"));
+    // Listen for real-time feedback updates hanya untuk tiket user
+    const userTicketIds = tickets.map(ticket => ticket.id);
     
-    const unsubscribe = onSnapshot(feedbacksQuery, () => {
-      fetchFeedbackCounts();
-    });
-    
-    // Register the listener for cleanup
-    addListener(unsubscribe);
+    if (userTicketIds.length > 0) {
+      // Karena onSnapshot juga punya batasan where-in 10 items, kita gunakan approach yang sama
+      const feedbacksQuery = query(
+        collection(db, "feedbacks"), 
+        where("ticketId", "in", userTicketIds.slice(0, 10)),
+        orderBy("createdAt", "desc")
+      );
+      
+      const unsubscribe = onSnapshot(feedbacksQuery, () => {
+        fetchFeedbackCounts();
+      });
+      
+      // Register the listener for cleanup
+      addListener(unsubscribe);
+    }
   }
-}, [currentUser, userRole, addListener]);
+}, [currentUser, userRole, tickets, addListener]); // Tambahkan tickets sebagai dependency
+
   
   // Fetch tickets
   useEffect(() => {
@@ -319,7 +368,7 @@ useEffect(() => {
     inProgress: tickets.filter(t => t.status === "in_progress").length,
     done: tickets.filter(t => t.status === "done").length,
     unread: tickets.filter(t => t.readByStudent !== true).length,
-    withFeedback: Object.keys(feedbackCounts).length,
+    withFeedback: Object.keys(feedbackCounts).filter(ticketId => feedbackCounts[ticketId].total > 0).length,
     totalFeedbacks: Object.values(feedbackCounts).reduce((total, count) => total + count.total, 0)
   };
 

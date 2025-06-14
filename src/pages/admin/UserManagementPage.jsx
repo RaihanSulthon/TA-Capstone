@@ -5,6 +5,7 @@ import Toast from "../../components/Toast";
 import EnhancedAnalytics from "../../components/admin/EnhancedAnalytics";
 
 const UserManagementPage = () => {
+  // State declarations
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userTicketStats, setUserTicketStats] = useState({});
@@ -12,12 +13,8 @@ const UserManagementPage = () => {
   const [filterRole, setFilterRole] = useState("all");
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [tickets, setTickets] = useState([]);
-
-  // Function to truncate text with ellipsis
-  const truncateText = (text, maxLength = 25) => {
-    if (!text) return '';
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(6);
 
   // Fetch all users and tickets
   useEffect(() => {
@@ -103,29 +100,17 @@ const UserManagementPage = () => {
     }
   }, [toast]);
 
-  // Filter users based on search term - no need to exclude dosen_public anymore
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Filter logic to handle only student and admin
-    let matchesRole = filterRole === "all";
-    
-    if (filterRole === "student" || filterRole === "admin") {
-      matchesRole = user.role === filterRole;
-    }
-    
-    return matchesSearch && matchesRole;
-  });
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterRole]);
 
-  // Reset search and filters
-  const resetFilters = () => {
-    setSearchTerm("");
-    setFilterRole("all");
+  // Helper functions
+  const truncateText = (text, maxLength = 25) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
-  // Format date helper function
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
     
@@ -153,7 +138,6 @@ const UserManagementPage = () => {
     }
   };
 
-  // Get role display name
   const getRoleDisplayName = (role) => {
     switch(role) {
       case 'admin': return 'Admin';
@@ -162,7 +146,6 @@ const UserManagementPage = () => {
     }
   };
 
-  // Format last submission date
   const formatLastSubmission = (date) => {
     if (!date) return "Belum pernah";
     
@@ -177,19 +160,43 @@ const UserManagementPage = () => {
     }
   };
 
-  // Get user count by role
-  const getUserCounts = () => {
-    const studentCount = users.filter(user => user.role === 'student').length;
-    const adminCount = users.filter(user => user.role === 'admin').length;
-    
-    return {
-      students: studentCount,
-      admins: adminCount
-    };
+  const resetFilters = () => {
+    setSearchTerm("");
+    setFilterRole("all");
   };
 
-  // Get user counts for display
-  const userCounts = getUserCounts();
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Data processing (IMPORTANT: Order matters here!)
+  
+  // 1. Filter users first
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = 
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesRole = filterRole === "all";
+    
+    if (filterRole === "student" || filterRole === "admin") {
+      matchesRole = user.role === filterRole;
+    }
+    
+    return matchesSearch && matchesRole;
+  });
+
+  // 2. Calculate user counts
+  const userCounts = {
+    students: users.filter(user => user.role === 'student').length,
+    admins: users.filter(user => user.role === 'admin').length
+  };
+
+  // 3. Pagination logic (must be after filteredUsers)
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   // Loading state
   if (loading) {
@@ -267,15 +274,11 @@ const UserManagementPage = () => {
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Students</p>
-          <p className="text-2xl font-bold text-green-600">
-            {userCounts.students}
-          </p>
+          <p className="text-2xl font-bold text-green-600">{userCounts.students}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Active Students</p>
-          <p className="text-2xl font-bold text-purple-600">
-            {Object.values(userTicketStats).filter(stat => stat.total > 0).length}
-          </p>
+          <p className="text-sm text-gray-500">Admins</p>
+          <p className="text-2xl font-bold text-red-600">{userCounts.admins}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Laporan</p>
@@ -315,8 +318,8 @@ const UserManagementPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => {
+              {currentUsers && currentUsers.length > 0 ? (
+                currentUsers.map((user) => {
                   const stats = userTicketStats[user.id] || { 
                     total: 0, 
                     new: 0, 
@@ -398,6 +401,81 @@ const UserManagementPage = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(indexOfLastUser, filteredUsers.length)}
+                  </span>{' '}
+                  of <span className="font-medium">{filteredUsers.length}</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          currentPage === pageNum
+                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Next</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Additional Information */}
@@ -406,7 +484,7 @@ const UserManagementPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-gray-600">
-              <span className="font-medium">Total Users Displayed:</span> {filteredUsers.length}
+              <span className="font-medium">Total Users Displayed:</span> {currentUsers.length} of {filteredUsers.length}
             </p>
           </div>
           <div>
