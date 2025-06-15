@@ -290,7 +290,7 @@ const TicketManagementPage = () => {
     
     const matchesSearch = 
       ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.deskripsi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.id?.toLowerCase().includes(searchTerm.toLowerCase());
       (ticket.nama && ticket.nama.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch;
@@ -386,7 +386,7 @@ const TicketManagementPage = () => {
               id="search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari judul atau deskripsi"
+              placeholder="Cari judul atau ID laporan"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

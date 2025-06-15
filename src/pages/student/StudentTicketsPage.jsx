@@ -344,8 +344,8 @@ useEffect(() => {
     
     // Filter by search term
     const matchesSearch = 
-      ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.deskripsi?.toLowerCase().includes(searchTerm.toLowerCase());
+    ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.id?.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch;
   });
@@ -463,7 +463,7 @@ useEffect(() => {
                 id="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari judul atau deskripsi"
+                placeholder="Cari judul atau ID laporan"
                 className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
