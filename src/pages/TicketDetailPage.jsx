@@ -15,6 +15,7 @@ import {
   getDocs 
 } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
+import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import Toast from "../components/Toast";
 import Modal from "../components/Modal";
 import Button from "../components/forms/Button";
@@ -23,6 +24,7 @@ import { EMAIL_CONFIG } from "../config/emailConfig";
 
 const TicketDetailPage = () => {
   const { ticketId } = useParams();
+  const { addListener } = useFirestoreListeners();
   const { currentUser, userRole } = useAuth();
   const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
@@ -41,6 +43,22 @@ const TicketDetailPage = () => {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [unreadFeedbackCount, setUnreadFeedbackCount] = useState(0);
+
+  // Token reveal states
+  const [showToken, setShowToken] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [tokenTimer, setTokenTimer] = useState(null);
+
+  // Cleanup timer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (tokenTimer) {
+        clearTimeout(tokenTimer);
+      }
+    };
+  }, [tokenTimer]);
 
   // Format timestamp
   const formatDate = (timestamp) => {
@@ -363,6 +381,9 @@ const TicketDetailPage = () => {
           }
         });
         
+        // Register listener untuk cleanup
+        addListener(unsubscribe);
+        
         return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching ticket:", error);
@@ -372,7 +393,7 @@ const TicketDetailPage = () => {
     };
     
     fetchTicket();
-  }, [ticketId]);
+  }, [ticketId, addListener]);
 
   // Fetch feedback count when component mounts and when ticket changes
   useEffect(() => {
@@ -547,15 +568,15 @@ const TicketDetailPage = () => {
     }
   };
 
-// Helper function untuk status class
-const getStatusClass = (status) => {
-  switch (status) {
-    case "new": return "status-new";
-    case "in_progress": return "status-progress";
-    case "done": return "status-done";
-    default: return "status-new";
-  }
-};
+  // Helper function untuk status class
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "new": return "status-new";
+      case "in_progress": return "status-progress";
+      case "done": return "status-done";
+      default: return "status-new";
+    }
+  };
 
   // Handle go back
   const handleGoBack = () => {
@@ -570,9 +591,145 @@ const getStatusClass = (status) => {
       navigate(-1);
     }
   };
+
   // Navigate to feedback page
   const handleViewFeedback = () => {
     navigate(`/app/tickets/${ticketId}/feedback`);
+  };
+
+  // Token reveal component
+  const TokenRevealComponent = ({ ticket }) => {
+    const handleRevealToken = async () => {
+      if (!password.trim()) {
+        setToast({
+          message: "Masukkan password Anda",
+          type: "error"
+        });
+        return;
+      }
+
+      setIsVerifying(true);
+      try {
+        // Verify password dengan Firebase Auth
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+        
+        // Password benar, tampilkan token
+        setShowToken(true);
+        setShowPasswordModal(false);
+        setPassword("");
+        
+        // Update token view count
+        await updateDoc(doc(db, "tickets", ticket.id), {
+          tokenViewCount: (ticket.tokenViewCount || 0) + 1,
+          tokenLastViewed: serverTimestamp()
+        });
+        
+        // Auto hide setelah 10 detik
+        const timer = setTimeout(() => {
+          setShowToken(false);
+        }, 10000);
+        setTokenTimer(timer);
+        
+        setToast({
+          message: "Token berhasil ditampilkan. Token akan hilang dalam 10 detik.",
+          type: "success"
+        });
+        
+      } catch (error) {
+        setToast({
+          message: "Password salah. Silakan coba lagi.",
+          type: "error"
+        });
+      }
+      setIsVerifying(false);
+    };
+
+    const copyToken = () => {
+      navigator.clipboard.writeText(ticket.secretToken);
+      setToast({
+        message: "Token berhasil disalin. Jangan bagikan ke orang lain!",
+        type: "success"
+      });
+    };
+
+    return (
+      <>
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-sm font-medium text-purple-800 mb-1">Token Rahasia</h4>
+            <p className="text-xs text-purple-600 mb-2">
+              Token ini diperlukan jika Anda ingin verifikasi tiket secara langsung dengan admin
+            </p>
+            <div className="flex items-center space-x-2">
+              <code className="bg-white px-3 py-1 rounded border text-sm">
+                {showToken ? ticket.secretToken : "********"}
+              </code>
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="text-purple-600 hover:text-purple-800 transition-colors"
+                title="Lihat Token"
+              >
+                👁️
+              </button>
+              {showToken && (
+                <button
+                  onClick={copyToken}
+                  className="text-purple-600 hover:text-purple-800 transition-colors text-sm"
+                  title="Salin Token"
+                >
+                  📋
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Password Modal */}
+        <Modal
+          isOpen={showPasswordModal}
+          onClose={() => {
+            setShowPasswordModal(false);
+            setPassword("");
+          }}
+          title="Verifikasi Password"
+          size="sm"
+        >
+          <div>
+            <p className="text-sm text-gray-600 mb-4">
+              Masukkan password akun Anda untuk melihat token rahasia
+            </p>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password akun Anda"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-6"
+              onKeyPress={(e) => e.key === 'Enter' && handleRevealToken()}
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPassword("");
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+                disabled={isVerifying}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRevealToken}
+                disabled={isVerifying}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
+              >
+                {isVerifying ? "Memverifikasi..." : "Tampilkan Token"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      </>
+    );
   };
 
   if (loading) {
@@ -633,7 +790,10 @@ const getStatusClass = (status) => {
   }
 
   const statusBadge = getStatusBadge(ticket.status);
-  const fileType = ticket.lampiranURL ? getFileType(ticket.lampiranURL) : 'unknown';
+  // Perbaiki perhitungan fileType - prioritaskan dari nama file
+  const fileType = ticket.lampiran ? 
+    getFileType(ticket.lampiran) : 
+    (ticket.lampiranURL ? getFileType(ticket.lampiranURL) : 'unknown');
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -751,6 +911,44 @@ const getStatusClass = (status) => {
               </>
             )}
           </div>
+
+          {/* Token Section for Admin - Anonymous Tickets */}
+          {ticket.anonymous && ticket.secretToken && userRole === "admin" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Token Rahasia</h3>
+                <div className="mt-1">
+                  <code className="bg-yellow-100 px-2 py-1 rounded text-sm font-mono">
+                    {ticket.secretToken}
+                  </code>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Untuk verifikasi ownership tiket anonymous
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Verification Guide for Admin - Anonymous Tickets */}
+          {ticket.anonymous && userRole === "admin" && (
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <h4 className="text-sm font-medium text-yellow-800 mb-2">
+                📋 Panduan Verifikasi Tiket Anonymous
+              </h4>
+              <p className="text-sm text-yellow-700 mb-2">
+                Jika mahasiswa datang untuk verifikasi tiket ini, minta mereka menyebutkan:
+              </p>
+              <ul className="text-sm text-yellow-700 list-disc list-inside space-y-1">
+                <li><strong>ID Tiket:</strong> {ticket.id}</li>
+                <li><strong>Judul:</strong> {ticket.judul}</li>
+                <li><strong>NIM:</strong> {ticket.nim || "N/A"}</li>
+                <li><strong>Token Rahasia:</strong> {ticket.secretToken}</li>
+              </ul>
+              <p className="text-xs text-yellow-600 mt-2">
+                Semua data harus sesuai untuk memverifikasi ownership tiket
+              </p>
+            </div>
+          )}
           
           {/* Show anonymous notice for students */}
           {ticket.anonymous && userRole === "student" && (
@@ -762,6 +960,11 @@ const getStatusClass = (status) => {
                 <p className="text-purple-800 text-sm">
                   <strong>Laporan Anonim:</strong> Identitas Anda tidak ditampilkan dalam laporan ini untuk menjaga privasi.
                 </p>
+              </div>
+              
+              {/* Token Section for Anonymous Tickets */}
+              <div className="mt-4 pt-4 border-t border-purple-200">
+                <TokenRevealComponent ticket={ticket} />
               </div>
             </div>
           )}
@@ -775,191 +978,74 @@ const getStatusClass = (status) => {
           </div>
           
           {/* Lampiran preview improved */}
-          {(ticket.lampiranBase64 || ticket.lampiranURL || ticket.lampiranStoragePath || loadingAttachment) && (
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Lampiran</h3>
-            
-            {loadingAttachment ? (
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-                <span>Memuat lampiran...</span>
-              </div>
-            ) : ticket.lampiranBase64 ? (
-              <div className="border rounded-md p-4 bg-gray-50">
-                {ticket.lampiranType && ticket.lampiranType.startsWith('image/') ? (
-                  <div className="flex flex-col items-center">
-                    <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
+          {(ticket.lampiran && (ticket.lampiranBase64 || ticket.lampiranURL || ticket.lampiranStoragePath || loadingAttachment)) && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Lampiran</h3>
+              
+              {loadingAttachment ? (
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                  <span>Memuat lampiran...</span>
+                </div>
+              ) : (ticket.lampiranBase64 || ticket.lampiranURL) ? (
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  {fileType === 'image' ? (
+                    <div>
                       <img 
-                        src={ticket.lampiranBase64} 
-                        alt="Lampiran"
-                        className="w-full h-full object-contain cursor-pointer"
-                        onClick={() => openImagePreview(ticket.lampiranBase64)}
+                        src={ticket.lampiranBase64 || ticket.lampiranURL} 
+                        alt="Lampiran" 
+                        className="max-w-full h-64 object-contain rounded cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => openImagePreview(ticket.lampiranBase64 || ticket.lampiranURL)}
                       />
-                      <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
-                        Klik untuk memperbesar
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-sm text-gray-600">{ticket.lampiran}</span>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openImagePreview(ticket.lampiranBase64 || ticket.lampiranURL)}
+                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 transition-colors"
+                          >
+                            👁️ Preview
+                          </button>
+                          <a 
+                            href={ticket.lampiranBase64 || ticket.lampiranURL} 
+                            download={ticket.lampiran}
+                            className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200 transition-colors"
+                          >
+                            📥 Download
+                          </a>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <a 
-                        href={ticket.lampiranBase64} 
-                        download={ticket.lampiran || "lampiran"}
-                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
-                        </svg>
-                        Download
-                      </a>
-                      <button
-                        onClick={() => openImagePreview(ticket.lampiranBase64)}
-                        className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors"
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                        </svg>
-                        Preview
-                      </button>
-                    </div>
-                  </div>
-                ) : ticket.lampiranType === 'application/pdf' ? (
-                  <div className="flex flex-col">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm font-medium">Dokumen PDF</span>
-                    </div>
-                    <div>
-                      <a 
-                        href={ticket.lampiranBase64} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                        download={ticket.lampiran || "document.pdf"}
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        Download PDF
-                      </a>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm">{ticket.lampiran || "Lampiran"}</span>
-                    </div>
-                    <a 
-                      href={ticket.lampiranBase64} 
-                      download={ticket.lampiran || "file"}
-                      className="text-blue-600 text-sm hover:underline"
-                    >
-                      Download
-                    </a>
-                  </div>
-                )}
-              </div>
-            ) : ticket.lampiranURL ? (
-              <div className="border rounded-md p-4 bg-gray-50">
-                {getFileType(ticket.lampiranURL) === 'image' ? (
-                  <div className="flex flex-col items-center">
-                    <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
-                      <img 
-                        src={ticket.lampiranURL} 
-                        alt="Lampiran"
-                        className="w-full h-full object-contain cursor-pointer"
-                        onClick={() => openImagePreview(ticket.lampiranURL)}
-                      />
-                      <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
-                        Klik untuk memperbesar
+                  ) : (
+                    <div className="flex items-center space-x-3 p-3 bg-white rounded border">
+                      <div className="flex-shrink-0">
+                        {fileType === 'pdf' ? (
+                          <svg className="h-8 w-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 18h12V6l-4-4H4a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                        ) : (
+                          <svg className="h-8 w-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                          </svg>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex space-x-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">{ticket.lampiran}</p>
+                        <p className="text-xs text-gray-500">Klik untuk download</p>
+                      </div>
                       <a 
-                        href={ticket.lampiranURL} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                        href={ticket.lampiranBase64 || ticket.lampiranURL} 
+                        download={ticket.lampiran}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 transition-colors"
                       >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 100-2H5z" />
-                        </svg>
-                        Buka di Tab Baru
-                      </a>
-                      <button
-                        onClick={() => openImagePreview(ticket.lampiranURL)}
-                        className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                        </svg>
-                        Preview
-                      </button>
-                    </div>
-                  </div>
-                ) : getFileType(ticket.lampiranURL) === 'pdf' ? (
-                  <div className="flex flex-col">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm font-medium">Dokumen PDF</span>
-                    </div>
-                    <div className="embed-responsive relative w-full h-64 mb-3">
-                      <iframe 
-                        src={`${ticket.lampiranURL}#view=FitH`} 
-                        className="embed-responsive-item absolute w-full h-full border rounded"
-                        title="PDF Preview"
-                        sandbox="allow-scripts allow-same-origin"
-                      ></iframe>
-                    </div>
-                    <div>
-                      <a 
-                        href={ticket.lampiranURL} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        Download PDF
+                        📥 Download
                       </a>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm">{ticket.lampiran || "Lampiran"}</span>
-                    </div>
-                    <a 
-                      href={ticket.lampiranURL} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 text-sm hover:underline"
-                    >
-                      Download
-                    </a>
-                  </div>
-                )}
-              </div>
-            ) : ticket.lampiranStoragePath ? (
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>Lampiran tidak dapat diakses. Coba refresh halaman atau hubungi admin.</span>
-              </div>
-            ): null}
-          </div>
-        )}
+                  )}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
       
@@ -990,17 +1076,39 @@ const getStatusClass = (status) => {
             {/* Admin-only actions */}
             {userRole === "admin" && (
               <>
+                {/* POSISI 1 (KIRI): Button Tandai Diproses/Buka Kembali */}
                 {ticket.status === "new" && (
                   <Button
                     onClick={() => handleUpdateStatus("in_progress")}
-                    className="bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border border-yellow-500 transition-colors duration-200"
+                    className="bg-yellow-600 text-white hover:bg-white hover:text-yellow-600 border border-yellow-600 transition-colors duration-200"
                     disabled={isUpdatingStatus}
                   >
                     Tandai Diproses
                   </Button>
                 )}
+                
+                {ticket.status === "done" && (
+                  <Button
+                    onClick={() => handleUpdateStatus("in_progress")}
+                    className="bg-yellow-600 text-white hover:bg-white hover:text-yellow-600 border border-yellow-600 transition-colors duration-200"
+                    disabled={isUpdatingStatus}
+                  >
+                    Buka Kembali
+                  </Button>
+                )}
 
-                {/* Email Button */}
+                {/* POSISI 2 (TENGAH): Button Selesai */}
+                {ticket.status !== "done" && (
+                  <Button
+                    onClick={() => handleUpdateStatus("done")}
+                    className="bg-green-600 text-white hover:bg-white hover:text-green-600 border border-green-600 transition-colors duration-200"
+                    disabled={isUpdatingStatus}
+                  >
+                    Selesai
+                  </Button>
+                )}
+
+                {/* POSISI 3 (KANAN): Button Kirim Email */}
                 <Button
                   onClick={() => setIsEmailModalOpen(true)}
                   className="bg-indigo-600 text-white hover:bg-white hover:text-indigo-600 border border-indigo-600 transition-colors duration-200"
@@ -1010,26 +1118,6 @@ const getStatusClass = (status) => {
                   </svg>
                   Kirim Email
                 </Button>
-                
-                {ticket.status === "in_progress" && (
-                  <Button
-                    onClick={() => handleUpdateStatus("done")}
-                    className="bg-green-600 text-white hover:bg-white hover:text-green-600 border border-green-600 transition-colors duration-200"
-                    disabled={isUpdatingStatus}
-                  >
-                    Tandai Selesai
-                  </Button>
-                )}
-                
-                {ticket.status === "done" && (
-                  <Button
-                    onClick={() => handleUpdateStatus("in_progress")}
-                    className="bg-yellow-500 text-white hover:bg-white hover:text-yellow-500 border border-yellow-500 transition-colors duration-200"
-                    disabled={isUpdatingStatus}
-                  >
-                    Buka Kembali
-                  </Button>
-                )}
               </>
             )}
           </div>
