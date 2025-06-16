@@ -405,8 +405,7 @@ const AdminContactsPage = () => {
       try {
         // Query user dengan role "dosen_public" - ini akan bisa dibaca publik
         const contactsQuery = query(
-          collection(db, "users"),
-          where("role", "==", "dosen_public"),
+          collection(db, "contacts"),
           orderBy("name", "asc")
         );
         
@@ -514,13 +513,12 @@ const AdminContactsPage = () => {
         photoBase64: photoBase64,
         photoType: photoType,
         photoName: photoName,
-        role: "dosen_public",
-        isPublicContact: true,
+        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date()
       };
       
-      const docRef = await addDoc(collection(db, "users"), contactData);
+      const docRef = await addDoc(collection(db, "contacts"), contactData);
       
       // Update local state
       const newContact = { 
@@ -584,7 +582,7 @@ const AdminContactsPage = () => {
         }
       }
       
-      const contactRef = doc(db, "users", selectedContact.id);
+      const contactRef = doc(db, "contacts", selectedContact.id);
       const updatedData = {
         name: formData.nama.trim(),
         email: formData.email.trim().toLowerCase(),
@@ -630,7 +628,7 @@ const AdminContactsPage = () => {
     if (!selectedContact) return;
     
     try {
-      await deleteDoc(doc(db, "users", selectedContact.id));
+      await deleteDoc(doc(db, "contacts", selectedContact.id));
       
       setContacts(prev => prev.filter(contact => contact.id !== selectedContact.id));
       
@@ -714,7 +712,7 @@ const AdminContactsPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Kelola Kontak Dosen</h1>
+        <h1 className="text-2xl font-bold">Contact Management</h1>
         <Button
           onClick={openAddModal}
           className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"
@@ -906,7 +904,7 @@ const AdminContactsPage = () => {
           <div className="flex justify-end space-x-3">
             <Button
               onClick={closeDeleteModal}
-              className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+              className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-colors duration-200"
             >
               Batal
             </Button>

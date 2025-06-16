@@ -147,6 +147,13 @@ const NavbarAdmin = () => {
               >
                 Contacts
               </Link>
+              {/* Add FAQ Menu */}
+              <Link 
+                to="/admin/faqs"
+                className="mr-4 text-white hover:text-red-200"
+              >
+                FAQ
+              </Link>
               <Link 
                 to="/app/dashboard" 
                 className="mr-4 text-white hover:text-red-200"

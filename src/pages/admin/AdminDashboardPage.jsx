@@ -1,4 +1,4 @@
-// src/pages/admin/AdminDashboardPage.jsx - Fixed to properly handle disposisi role
+// src/pages/admin/AdminDashboardPage.jsx - Fixed to properly handle role
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/Authcontexts";
 import { db } from "../../firebase-config";
@@ -12,7 +12,7 @@ const AdminDashboardPage = () => {
   const [userStats, setUserStats] = useState({
     total: 0,
     students: 0,
-    disposisi: 0 
+    admins: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -52,29 +52,28 @@ const AdminDashboardPage = () => {
         
         setRecentUsers(usersData);
         
-        // Calculate user statistics
-        const statsQuery = await getDocs(collection(db, "users"));
-        let totalUsers = 0;
-        let studentCount = 0;
-        let disposisiCount = 0;
+      // Calculate user statistics
+      const statsQuery = await getDocs(collection(db, "users"));
+      let totalUsers = 0;
+      let studentCount = 0;
+      let adminCount = 0;
+
+      statsQuery.forEach((doc) => {
+        const userData = doc.data();
+        totalUsers++;
         
-        statsQuery.forEach((doc) => {
-          const userData = doc.data();
-          totalUsers++;
-          
-          if (userData.role === "student") {
-            studentCount++;
-          } else if (userData.role === "disposisi") {
-            // Count only disposisi role
-            disposisiCount++;
-          }
-        });
-        
-        setUserStats({
-          total: totalUsers,
-          students: studentCount,
-          disposisi: disposisiCount
-        });
+        if (userData.role === "student") {
+          studentCount++;
+        } else if (userData.role === "admin") {
+          adminCount++;
+        }
+      });
+
+      setUserStats({
+        total: totalUsers,
+        students: studentCount,
+        admins: adminCount,
+      });
         
       } catch (error) {
         console.error("Error fetching admin data:", error);
@@ -116,7 +115,6 @@ const AdminDashboardPage = () => {
 
   // Get proper role display name
   const getRoleDisplayName = (role) => {
-    if (role === "disposisi") return "Disposisi";
     return role.charAt(0).toUpperCase() + role.slice(1);
   };
 
@@ -161,8 +159,8 @@ const AdminDashboardPage = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium">Manage Users</h4>
-              <p className="text-sm text-gray-600">View, edit and delete user accounts</p>
+              <h4 className="font-medium">Analyze Ticket Statistics</h4>
+              <p className="text-sm text-gray-600">View Ticket Statistics</p>
             </div>
           </Link>
         </div>
@@ -179,10 +177,10 @@ const AdminDashboardPage = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">Students</h3>
           <p className="text-3xl font-bold text-green-600">{userStats.students}</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Disposisi</h3>
-          <p className="text-3xl font-bold text-purple-600">{userStats.disposisi}</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Admin</h3>
+          <p className="text-3xl font-bold text-red-600">{userStats.admins}</p>
         </div>
       </div>
       
@@ -227,11 +225,10 @@ const AdminDashboardPage = () => {
                       <div className="text-sm text-gray-500">{user.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                          user.role === 'disposisi' ? 'bg-purple-100 text-purple-800' : 
-                          'bg-green-100 text-green-800'}`}>
-                        {getRoleDisplayName(user.role)}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.role === 'admin' ? 'bg-red-100 text-red-800' 
+                        : 'bg-green-100 text-green-800'}`}>
+                          {getRoleDisplayName(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

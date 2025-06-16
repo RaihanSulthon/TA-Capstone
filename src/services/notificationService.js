@@ -95,24 +95,10 @@ export const notifyNewTicket = async (ticket, senderId, senderName) => {
 /**
  * Create a notification for ticket assignment
  * @param {Object} ticket - Ticket data
- * @param {string} disposisiId - ID of the assigned disposisi staff
- * @param {string} disposisiName - Name of the assigned disposisi staff
  * @param {string} adminId - ID of the admin who made the assignment
  * @param {string} adminName - Name of the admin who made the assignment
  * @returns {Promise<Object>} - Object with success flag and data or error
  */
-export const notifyTicketAssignment = async (ticket, disposisiId, disposisiName, adminId, adminName) => {
-  return createTicketNotification({
-    ticketId: ticket.id,
-    type: "assignment",
-    title: "Tiket Didisposisikan",
-    message: `Tiket telah didisposisikan kepada Anda: ${ticket.judul}`,
-    recipientId: disposisiId,
-    senderId: adminId,
-    senderName: adminName,
-    senderRole: "admin"
-  });
-};
 
 /**
  * Create a notification for ticket status change
@@ -141,8 +127,8 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
   // Create notifications for different recipients based on roles
   const notifications = [];
   
-  // If updated by admin or disposisi, notify student
-  if (updaterRole === "admin" || updaterRole === "disposisi") {
+  // If updated by admin, notify student
+  if (updaterRole === "admin") {
     notifications.push(
       createTicketNotification({
         ticketId: ticket.id,
@@ -157,23 +143,7 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
     );
   }
   
-  // If updated by disposisi, notify admin
-  if (updaterRole === "disposisi") {
-    notifications.push(
-      createTicketNotification({
-        ticketId: ticket.id,
-        type: "status_change",
-        title: "Status Tiket Diperbarui",
-        message: `Status tiket telah diperbarui dari ${oldStatusLabel} menjadi ${newStatusLabel} oleh ${updaterName}`,
-        recipientRoles: ["admin"],
-        senderId: updaterId,
-        senderName: updaterName,
-        senderRole: updaterRole
-      })
-    );
-  }
-  
-  // If updated by admin and ticket is assigned to disposisi, notify them
+  // If updated by admin, notify them
   if (updaterRole === "admin" && ticket.assignedTo) {
     notifications.push(
       createTicketNotification({
@@ -213,50 +183,70 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
  * @param {string} senderId - ID of the sender
  * @param {string} senderName - Name of the sender
  * @param {string} senderRole - Role of the sender
+ * * @param {boolean} hasAttachment - Whether feedback has attachment
  * @returns {Promise<Object>} - Object with success flag and data or error
  */
-export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, senderRole) => {
-  // If feedback is from admin or disposisi, notify student
-  if (senderRole === "admin" || senderRole === "disposisi") {
+export const notifyNewFeedback = async (ticket, feedback, senderId, senderName, senderRole, hasAttachment = false) => {
+  // Create enhanced message based on attachment
+  const baseMessage = hasAttachment 
+    ? `feedback baru dengan lampiran untuk tiket: ${ticket.judul}`
+    : `feedback baru untuk tiket: ${ticket.judul}`;
+  
+  // If feedback is from admin, notify student
+  if (senderRole === "admin") {
     return createTicketNotification({
       ticketId: ticket.id,
       type: "feedback",
       title: "Feedback Baru",
-      message: `Anda menerima feedback baru untuk tiket: ${ticket.judul}`,
+      message: `Anda menerima ${baseMessage}`,
       recipientId: ticket.userId,
       senderId,
       senderName,
-      senderRole
+      senderRole,
+      metadata: {
+        hasAttachment,
+        feedbackId: feedback.id || null,
+        attachmentCount: feedback.attachments ? feedback.attachments.length : 0
+      }
     });
   }
   
-  // If feedback is from student, notify admin and assigned disposisi
+  // If feedback is from student, notify admin and assigned
   const notifications = [
     // Notify admin
     createTicketNotification({
       ticketId: ticket.id,
       type: "feedback",
       title: "Feedback Baru",
-      message: `Feedback baru dari mahasiswa untuk tiket: ${ticket.judul}`,
+      message: `${baseMessage} dari mahasiswa`,
       recipientRoles: ["admin"],
       senderId,
       senderName,
-      senderRole
+      senderRole,
+      metadata: {
+        hasAttachment,
+        feedbackId: feedback.id || null,
+        attachmentCount: feedback.attachments ? feedback.attachments.length : 0
+      }
     })
   ];
   
-  // If assigned to disposisi, also notify disposisi
   if (ticket.assignedTo) {
     notifications.push(
       createTicketNotification({
         ticketId: ticket.id,
         type: "feedback",
         title: "Feedback Baru",
-        message: `Feedback baru dari mahasiswa untuk tiket: ${ticket.judul}`,
+        message: `${baseMessage} dari mahasiswa`,
         recipientId: ticket.assignedTo,
         senderId,
         senderName,
-        senderRole
+        senderRole,
+        metadata: {
+          hasAttachment,
+          feedbackId: feedback.id || null,
+          attachmentCount: feedback.attachments ? feedback.attachments.length : 0
+        }
       })
     );
   }

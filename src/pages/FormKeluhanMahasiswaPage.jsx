@@ -1,4 +1,3 @@
-// src/pages/FormKeluhanMahasiswaPage.jsx
 import { useState } from "react";
 import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
@@ -90,6 +89,11 @@ const FormKeluhanMahasiswaPage = () => {
     lampiranURL: "",
   });
 
+  // Helper function untuk generate token
+  const generateSecureToken = () => {
+    return Math.random().toString(36).substring(2, 10).toUpperCase();
+  };
+
   // Handle perubahan input
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -134,7 +138,7 @@ const FormKeluhanMahasiswaPage = () => {
   const validateForm = () => {
     if (formData.anonymous) {
       // Validasi form anonymous
-      if (!formData.kategori || !formData.subKategori || !formData.judul || !formData.deskripsi) {
+      if (!formData.email || !formData.kategori || !formData.subKategori || !formData.judul || !formData.deskripsi) {
         setToast({
           message: "Harap isi semua kolom yang wajib diisi",
           type: "error"
@@ -209,39 +213,48 @@ const FormKeluhanMahasiswaPage = () => {
         lampiranBase64: lampiranBase64,
         lampiranType: lampiranType,
         userId: currentUser?.uid || "anonymous",
+        userEmail: formData.email,
         status: "new",
         assignedTo: null,
-        feedback: [],
-        readByStudent: false,
-        readByAdmin: false,
-        readByDisposisi: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        nama: formData.anonymous ? null : formData.nama,
+        nim: formData.anonymous ? null : formData.nim,
+        prodi: formData.anonymous ? null : formData.prodi,
+        semester: formData.anonymous ? null : formData.semester,
+        noHp: formData.anonymous ? null : formData.noHp,
+        email: formData.anonymous ? formData.email : formData.email,
+        // Tambahan fields untuk token system
+        anonymous: formData.anonymous,
+        secretToken: formData.anonymous ? generateSecureToken() : null,
+        tokenGeneratedAt: formData.anonymous ? serverTimestamp() : null,
+        tokenViewCount: formData.anonymous ? 0 : null,
+        tokenLastViewed: null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        deletedAt: null,
+        deletedBy: null,
+        isDeleted: false
       };
-      
+
       // Simpan ke Firestore
-      const ticketsCollection = collection(db, "tickets");
-      const docRef = await addDoc(ticketsCollection, ticketData);
+      const docRef = await addDoc(collection(db, "tickets"), ticketData);
       
-      // Get ticket with ID
-      const newTicket = {
-        id: docRef.id,
-        ...ticketData
-      };
+      // Tambahkan ID document ke data
+      const finalTicketData = { ...ticketData, id: docRef.id };
       
-      // Send notification to admins
-      await notifyNewTicket(
-        newTicket,
-        currentUser?.uid || "anonymous",
-        currentUser?.displayName || formData.nama || "Anonymous"
-      );
-      
-      // TODO: Upload lampiran ke Firebase Storage jika ada
-      // Jika lampiran ada, upload ke Firebase Storage
-      // dan update dokumen dengan URL lampiran
+      // Kirim notifikasi ke admin
+      if (currentUser?.displayName) {
+        await notifyNewTicket(
+          finalTicketData,
+          currentUser.uid,
+          currentUser.displayName,
+          userRole || "student"
+        );
+      }
       
       setToast({
-        message: "Laporan Anda berhasil dikirim dan akan segera ditindaklanjuti.",
+        message: formData.anonymous 
+          ? "Laporan anonymous berhasil dikirim! Token rahasia telah dibuat. Anda bisa melihat token di halaman 'My Tickets' → Detail Tiket untuk verifikasi dengan admin jika diperlukan." 
+          : "Laporan berhasil dikirim!",
         type: "success"
       });
       
@@ -259,18 +272,18 @@ const FormKeluhanMahasiswaPage = () => {
         deskripsi: "",
         anonymous: false,
         lampiran: null,
-        lampiranURL: ""
+        lampiranURL: "",
       });
       
-      // Redirect ke halaman tracking ticket setelah beberapa detik
+      // Redirect ke halaman my-tickets setelah 2 detik
       setTimeout(() => {
-        navigate(`/app/tickets/${docRef.id}`);
+        navigate("/app/my-tickets");
       }, 2000);
       
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Error creating ticket:", error);
       setToast({
-        message: "Terjadi kesalahan. Silakan coba lagi nanti.",
+        message: "Gagal mengirim laporan. Silakan coba lagi nanti.",
         type: "error"
       });
     } finally {
@@ -322,7 +335,34 @@ const FormKeluhanMahasiswaPage = () => {
             {/* Bagian Identitas */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">Identitas Pelapor</h2>
-              
+              {/* Checkbox Anonymous */}
+              <div className="mb-2 p-4 bg-purple-50 border border-purple-200 rounded-md">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="anonymous"
+                    name="anonymous"
+                    checked={formData.anonymous}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="anonymous" className="ml-2 block text-sm text-gray-900">
+                    <strong>Kirim laporan secara anonim</strong>
+                  </label>
+                </div>
+                <p className="text-xs text-gray-600 mt-1 ml-6">
+                  Jika dicentang, identitas Anda tidak akan ditampilkan dalam laporan. 
+                  {formData.anonymous && " Token rahasia akan dibuat untuk verifikasi."}
+                </p>
+              </div>
+              <div className="mb-4 text-sm text-gray-600">
+                {formData.anonymous && (
+                  <p className="mt-1 text-purple-600 font-medium">
+                    ⚠️ Token rahasia akan dibuat untuk verifikasi kepemilikan tiket anonymous.
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="mb-4">
                   <label htmlFor="nama" className="block text-gray-700 font-medium mb-2">
@@ -382,7 +422,7 @@ const FormKeluhanMahasiswaPage = () => {
                     disabled={formData.anonymous}
                   >
                     <option value="">Pilih Semester</option>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(sem => (
+                    {[1,2,3,4,5,6,7,8].map(sem => (
                       <option key={sem} value={sem}>{sem}</option>
                     ))}
                   </select>
@@ -399,12 +439,13 @@ const FormKeluhanMahasiswaPage = () => {
                     value={formData.email} 
                     onChange={handleChange} 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={formData.anonymous}
                   />
                 </div>
                 
                 <div className="mb-4">
-                  <label htmlFor="noHp" className="block text-gray-700 font-medium mb-2">Nomor HP</label>
+                  <label htmlFor="noHp" className="block text-gray-700 font-medium mb-2">
+                    Nomor HP
+                  </label>
                   <input 
                     type="tel" 
                     id="noHp" 
@@ -416,24 +457,12 @@ const FormKeluhanMahasiswaPage = () => {
                   />
                 </div>
               </div>
-              
-              <div className="mt-2">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    name="anonymous" 
-                    checked={formData.anonymous} 
-                    onChange={handleChange} 
-                    className="h-5 w-5 text-blue-600"
-                  />
-                  <span className="ml-2 text-gray-700">Kirim sebagai Anonim (Identitas tidak akan ditampilkan)</span>
-                </label>
-              </div>
+              <p className="mb-2 text-sm text-gray-600">Catatan: Kolom bertanda <span className="text-red-500">*</span> wajib diisi</p>
             </div>
             
-            {/* Bagian Detail Laporan */}
+            {/* Bagian Keluhan */}
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">Detail Laporan</h2>
+              <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200">Detail Keluhan</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -448,7 +477,9 @@ const FormKeluhanMahasiswaPage = () => {
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {kategoriOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -467,7 +498,9 @@ const FormKeluhanMahasiswaPage = () => {
                   >
                     <option value="">Pilih Sub Kategori</option>
                     {formData.kategori && subKategoriOptions[formData.kategori]?.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -475,7 +508,7 @@ const FormKeluhanMahasiswaPage = () => {
               
               <div className="mb-4">
                 <label htmlFor="judul" className="block text-gray-700 font-medium mb-2">
-                  Judul Laporan <span className="text-red-500">*</span>
+                  Judul Keluhan <span className="text-red-500">*</span>
                 </label>
                 <input 
                   type="text" 
@@ -483,30 +516,30 @@ const FormKeluhanMahasiswaPage = () => {
                   name="judul" 
                   value={formData.judul} 
                   onChange={handleChange} 
-                  placeholder="Berikan judul yang singkat dan jelas"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Tuliskan judul keluhan secara singkat"
                 />
               </div>
               
               <div className="mb-4">
                 <label htmlFor="deskripsi" className="block text-gray-700 font-medium mb-2">
-                  Deskripsi <span className="text-red-500">*</span>
+                  Deskripsi Keluhan <span className="text-red-500">*</span>
                 </label>
                 <textarea 
                   id="deskripsi" 
                   name="deskripsi" 
                   value={formData.deskripsi} 
                   onChange={handleChange} 
-                  rows="6" 
-                  placeholder="Jelaskan secara detail keluhan atau laporan Anda..."
+                  rows="5"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                ></textarea>
+                  placeholder="Jelaskan keluhan Anda secara detail..."
+                />
               </div>
               
-              <div>
+              {/* Lampiran */}
+              <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">
-                  Lampiran (opsional)
-                  <span className="text-sm text-gray-500 ml-2">Maksimal 5 MB (.jpg, .png, .pdf)</span>
+                  Lampiran (Opsional)
                 </label>
                 
                 {!formData.lampiran ? (
@@ -533,94 +566,30 @@ const FormKeluhanMahasiswaPage = () => {
                   // Preview section when file is selected
                   <div className="border rounded-md p-4 bg-gray-50">
                     {formData.lampiran.type.startsWith('image/') ? (
-                      // Image preview
-                      <div className="flex flex-col">
-                        <div className="w-full h-48 bg-gray-200 rounded-md mb-2 overflow-hidden relative">
-                          <img 
-                            src={URL.createObjectURL(formData.lampiran)} 
-                            alt="Lampiran"
-                            className="w-full h-full object-contain"
-                          />
-                          <div className="absolute bottom-0 right-0 p-2 bg-black bg-opacity-50 text-white rounded-tl-md text-xs">
-                            Preview image
-                          </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                          <div className="text-sm font-medium text-gray-900">
-                            {formData.lampiran.name}
-                            <span className="ml-2 text-xs text-gray-500">
-                              ({(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB)
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => setFormData({...formData, lampiran: null})}
-                            className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-                          >
-                            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                            Hapus File
-                          </button>
-                        </div>
-                      </div>
-                    ) : formData.lampiran.type === 'application/pdf' ? (
-                      // PDF preview
-                      <div className="flex flex-col">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112.414 3H16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                          </svg>
-                          <div>
-                            <span className="text-sm font-medium text-gray-900">Dokumen PDF</span>
-                            <p className="text-xs text-gray-500">
-                              {formData.lampiran.name}
-                              <span className="ml-2">
-                                ({(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB)
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
-                          <span className="text-sm text-gray-600">File PDF siap diupload</span>
-                          <button
-                            onClick={() => setFormData({...formData, lampiran: null})}
-                            className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-                          >
-                            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                            Hapus File
-                          </button>
-                        </div>
-                      </div>
+                      <img 
+                        src={URL.createObjectURL(formData.lampiran)} 
+                        alt="Preview" 
+                        className="max-w-full h-48 object-contain mx-auto mb-2"
+                      />
                     ) : (
-                      // Other file types
-                      <div className="flex flex-col">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <svg className="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                          </svg>
-                          <div>
-                            <span className="text-sm font-medium text-gray-900">{formData.lampiran.name}</span>
-                            <p className="text-xs text-gray-500">
-                              ({(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB)
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
-                          <span className="text-sm text-gray-600">File siap diupload</span>
-                          <button
-                            onClick={() => setFormData({...formData, lampiran: null})}
-                            className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-                          >
-                            <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                            Hapus File
-                          </button>
-                        </div>
+                      <div className="flex items-center justify-center h-24 bg-gray-200 rounded">
+                        <svg className="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                        </svg>
                       </div>
                     )}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
+                      <span className="text-sm text-gray-600">File siap diupload</span>
+                      <button
+                        onClick={() => setFormData({...formData, lampiran: null})}
+                        className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                      >
+                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Hapus File
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -635,11 +604,6 @@ const FormKeluhanMahasiswaPage = () => {
               >
                 {loading ? "Mengirim..." : "Kirim Laporan"}
               </Button>
-            </div>
-            
-            <div className="mt-4 text-sm text-gray-600">
-              <p>Catatan: Kolom bertanda <span className="text-red-500">*</span> wajib diisi</p>
-              <p className="mt-1">Laporan Anda akan ditindaklanjuti dalam waktu 3x24 jam kerja.</p>
             </div>
           </form>
         </div>

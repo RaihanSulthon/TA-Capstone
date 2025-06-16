@@ -82,14 +82,6 @@ const NotificationsSystem = () => {
         orderBy('createdAt', 'desc'),
         limit(10)
       );
-    } else if (userRole === 'disposisi') {
-      // Disposisi notifications: assigned tickets and status changes
-      notificationsQuery = query(
-        collection(db, 'notifications'),
-        where('recipientId', '==', currentUser.uid),
-        orderBy('createdAt', 'desc'),
-        limit(10)
-      );
     } else if (userRole === 'student') {
       // Student notifications: ticket status updates and feedback
       notificationsQuery = query(

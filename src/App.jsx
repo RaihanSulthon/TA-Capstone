@@ -13,14 +13,15 @@ import AccessDeniedPage from "./pages/AccessDeniedPage";
 // Ticketing System Pages
 import FormKeluhanMahasiswaPage from "./pages/FormKeluhanMahasiswaPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
+import FeedbackPage from "./pages/FeedbackPage";
 import TicketManagementPage from "./pages/admin/TicketManagementPage";
-import DisposisiTicketsPage from "./pages/disposisi/DisposisiTicketsPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
 
 // Contact Pages
 import ContactsPage from "./pages/ContactsPage";
 import AdminContactsPage from "./pages/admin/AdminContactsPage";
 import LAAKInfoPortal from "./pages/LAAKInfoPortal";
+import AdminFAQPage from "./pages/admin/AdminFAQPage";
 
 import "./App.css";
 
@@ -36,7 +37,7 @@ function App() {
           
           {/* Public Contacts Route - Always accessible without login */}
           <Route path="/contacts" element={<ContactsPage />} />
-          
+
           {/* LAAK Info Portal Route */}
           <Route path="/laak-info" element={<LAAKInfoPortal />} />
           
@@ -70,22 +71,22 @@ function App() {
               }
             />
 
-            {/* Ticket System Routes - Disposisi */}
-            <Route
-              path="disposisi-tickets"
-              element={
-                <RoleBasedRoute allowedRoles={["disposisi"]} fallbackPath="/access-denied">
-                  <DisposisiTicketsPage />
-                </RoleBasedRoute>
-              }
-            />
-
             {/* Ticket Detail - Can be viewed by all roles based on permissions */}
             <Route
               path="tickets/:ticketId"
               element={
                 <ProtectedRoute>
                   <TicketDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Feedback Page - New route for feedback management */}
+            <Route
+              path="tickets/:ticketId/feedback"
+              element={
+                <ProtectedRoute>
+                  <FeedbackPage />
                 </ProtectedRoute>
               }
             />
@@ -136,6 +137,16 @@ function App() {
               element={
                 <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
                   <AdminContactsPage />
+                </RoleBasedRoute>
+              }
+            />
+
+            {/* Admin FAQ Management Route */}
+            <Route
+              path="faqs"
+              element={
+                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                  <AdminFAQPage />
                 </RoleBasedRoute>
               }
             />

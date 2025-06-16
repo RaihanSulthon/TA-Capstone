@@ -11,8 +11,6 @@ const ReadStatusFilter = ({ readStatus, setReadStatus, userRole }) => {
     switch (userRole) {
       case "admin":
         return "readByAdmin";
-      case "disposisi":
-        return "readByDisposisi";
       case "student":
       default:
         return "readByStudent";
