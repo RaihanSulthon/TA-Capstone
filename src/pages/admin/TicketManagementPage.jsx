@@ -425,7 +425,7 @@ const TicketManagementPage = () => {
           <p className="text-xl md:text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
-          <p className="text-xs text-gray-500 mb-1">Dengan Feedback</p>
+          <p className="text-xs text-gray-500 mb-1">Tiket Dengan Feedback</p>
           <p className="text-xl md:text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md text-center">
