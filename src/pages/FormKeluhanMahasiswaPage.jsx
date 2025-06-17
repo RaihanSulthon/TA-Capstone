@@ -270,7 +270,7 @@ const FormKeluhanMahasiswaPage = () => {
         status: "new",
         assignedTo: null,
         nama: formData.anonymous ? null : formData.nama,
-        nim: formData.nim,
+        nim: formData.anonymous ? null: formData.nim,
         prodi: formData.anonymous ? null : formData.prodi,
         semester: formData.anonymous ? null : formData.semester,
         noHp: formData.anonymous ? null : formData.noHp,
@@ -452,6 +452,7 @@ const FormKeluhanMahasiswaPage = () => {
                     value={formData.nim} 
                     onChange={handleChange} 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={formData.anonymous}
                   />
                 </div>
                 
