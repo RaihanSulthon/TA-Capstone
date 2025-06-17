@@ -443,7 +443,7 @@ const AuthPage = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-4"
+                className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300 w-full mt-4"
               >
                 {loading ? "Logging In..." : "Log In"}
               </Button>
@@ -508,7 +508,7 @@ const AuthPage = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-4"
+                className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300 w-full mt-4"
               >
                 {loading ? "Creating Account..." : "Sign Up"}
               </Button>

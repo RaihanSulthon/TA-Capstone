@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -6,6 +6,7 @@ import Button from "../components/forms/Button";
 import TextField from "../components/forms/TextField";
 import Toast from "../components/Toast";
 import { useNavigate } from "react-router-dom";
+import Modal from "../components/Modal";
 import { resolve } from "styled-jsx/css";
 
 const FormKeluhanMahasiswaPage = () => {
@@ -13,6 +14,8 @@ const FormKeluhanMahasiswaPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "success" });
+  const [isFilePreviewOpen, setIsFilePreviewOpen] = useState(false);
+  const [previewFileUrl, setPreviewFileUrl] = useState("");
   
   // Kategori laporan
   const kategoriOptions = [
@@ -134,6 +137,56 @@ const FormKeluhanMahasiswaPage = () => {
     }
   };
 
+  const getFileType = (file) => {
+    if (!file) return 'unknown';
+    
+    const fileType = file.type;
+    
+    // File gambar
+    if (fileType.startsWith('image/')) {
+      return 'image';
+    }
+    
+    // File PDF
+    if (fileType === 'application/pdf') {
+      return 'pdf';
+    }
+    
+    // File dokumen
+    if (fileType.includes('document') || fileType.includes('text') || 
+        fileType.includes('spreadsheet') || fileType.includes('presentation')) {
+      return 'document';
+    }
+    
+    return 'unknown';
+  };
+
+  const openFilePreview = (file) => {
+    const url = URL.createObjectURL(file);
+    setPreviewFileUrl(url);
+    setIsFilePreviewOpen(true);
+  };
+  
+  const closeFilePreview = () => {
+    setIsFilePreviewOpen(false);
+    if (previewFileUrl) {
+      URL.revokeObjectURL(previewFileUrl);
+      setPreviewFileUrl("");
+    }
+  };
+  
+  const downloadFile = (file) => {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  
+
   // Validate form
   const validateForm = () => {
     if (formData.anonymous) {
@@ -217,7 +270,7 @@ const FormKeluhanMahasiswaPage = () => {
         status: "new",
         assignedTo: null,
         nama: formData.anonymous ? null : formData.nama,
-        nim: formData.anonymous ? null : formData.nim,
+        nim: formData.nim,
         prodi: formData.anonymous ? null : formData.prodi,
         semester: formData.anonymous ? null : formData.semester,
         noHp: formData.anonymous ? null : formData.noHp,
@@ -290,6 +343,15 @@ const FormKeluhanMahasiswaPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Cleanup function to revoke object URLs when component unmounts
+    return () => {
+      if (previewFileUrl) {
+        URL.revokeObjectURL(previewFileUrl);
+      }
+    };
+  }, [previewFileUrl]);
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -390,7 +452,6 @@ const FormKeluhanMahasiswaPage = () => {
                     value={formData.nim} 
                     onChange={handleChange} 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={formData.anonymous}
                   />
                 </div>
                 
@@ -563,44 +624,248 @@ const FormKeluhanMahasiswaPage = () => {
                     </label>
                   </div>
                 ) : (
-                  // Preview section when file is selected
-                  <div className="border rounded-md p-4 bg-gray-50">
-                    {formData.lampiran.type.startsWith('image/') ? (
-                      <img 
-                        src={URL.createObjectURL(formData.lampiran)} 
-                        alt="Preview" 
-                        className="max-w-full h-48 object-contain mx-auto mb-2"
-                      />
+                  // Enhanced preview section when file is selected
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    {getFileType(formData.lampiran) === 'image' ? (
+                      <div>
+                        <img 
+                          src={URL.createObjectURL(formData.lampiran)} 
+                          alt="Preview" 
+                          className="max-w-full h-64 object-contain rounded cursor-pointer hover:opacity-90 transition-opacity mx-auto"
+                          onClick={() => openFilePreview(formData.lampiran)}
+                        />
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-sm text-gray-600">{formData.lampiran.name}</span>
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => openFilePreview(formData.lampiran)}
+                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 transition-colors"
+                            >
+                              👁️ Preview
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => downloadFile(formData.lampiran)}
+                              className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200 transition-colors"
+                            >
+                              📥 Download
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData({...formData, lampiran: null})}
+                              className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200 transition-colors"
+                            >
+                              🗑️ Hapus
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
-                      <div className="flex items-center justify-center h-24 bg-gray-200 rounded">
-                        <svg className="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                        </svg>
+                      <div className="flex items-center space-x-3 p-3 bg-white rounded border">
+                        <div className="flex-shrink-0">
+                          {getFileType(formData.lampiran) === 'pdf' ? (
+                            <svg className="h-8 w-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M4 18h12V6l-4-4H4a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          ) : (
+                            <svg className="h-8 w-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">{formData.lampiran.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {getFileType(formData.lampiran) === 'pdf' ? 'PDF Document' : 'File Document'}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => downloadFile(formData.lampiran)}
+                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 transition-colors"
+                          >
+                            📥 Download
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setFormData({...formData, lampiran: null})}
+                            className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200 transition-colors"
+                          >
+                            🗑️ Hapus
+                          </button>
+                        </div>
                       </div>
                     )}
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
-                      <span className="text-sm text-gray-600">File siap diupload</span>
-                      <button
-                        onClick={() => setFormData({...formData, lampiran: null})}
-                        className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        Hapus File
-                      </button>
+                    
+                    {/* File info */}
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <div className="flex justify-between items-center text-xs text-gray-500">
+                        <span>Ukuran: {(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB</span>
+                        <span>Tipe: {formData.lampiran.type}</span>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             </div>
+
+            <Modal
+              isOpen={isFilePreviewOpen}
+              onClose={closeFilePreview}
+              title="Preview File"
+              size="full"
+            >
+              <div className="flex flex-col items-center max-w-full">
+                {/* File Container */}
+                <div className="w-full bg-gray-100 rounded-lg p-4 mb-6">
+                  {getFileType(formData.lampiran) === 'image' ? (
+                    <img 
+                      src={previewFileUrl} 
+                      alt="Preview" 
+                      className="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-lg mx-auto"
+                      style={{ minHeight: '300px' }}
+                    />
+                  ) : getFileType(formData.lampiran) === 'pdf' ? (
+                    <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg border-2 border-dashed border-gray-300">
+                      <svg className="h-16 w-16 text-red-600 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 18h12V6l-4-4H4a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                      <p className="text-gray-600 text-center mb-4">
+                        Preview PDF tidak tersedia di browser ini.<br/>
+                        Silakan download file untuk melihat isinya.
+                      </p>
+                      <button
+                        onClick={() => downloadFile(formData.lampiran)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        📥 Download PDF
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg border-2 border-dashed border-gray-300">
+                      <svg className="h-16 w-16 text-blue-600 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-gray-600 text-center mb-4">
+                        Preview tidak tersedia untuk tipe file ini.<br/>
+                        Silakan download file untuk melihat isinya.
+                      </p>
+                      <button
+                        onClick={() => downloadFile(formData.lampiran)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        📥 Download File
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                {/* File Info */}
+                <div className="text-center mb-4">
+                  <p className="text-gray-600 text-sm font-medium">
+                    {formData.lampiran?.name || "File"}
+                  </p>
+                  <p className="text-gray-500 text-xs">
+                    {formData.lampiran ? `${(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB` : ''}
+                  </p>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex flex-wrap justify-center gap-3">
+                  <button
+                    onClick={() => downloadFile(formData.lampiran)}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                  >
+                    <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
+                    </svg>
+                    Download File
+                  </button>
+                  
+                  {getFileType(formData.lampiran) === 'image' && (
+                    <button
+                      onClick={() => {
+                        const newWindow = window.open('', '_blank');
+                        if (newWindow) {
+                          newWindow.document.write(`
+                            <html>
+                              <head>
+                                <title>${formData.lampiran?.name || 'Preview Gambar'}</title>
+                                <style>
+                                  body { 
+                                    margin: 0; 
+                                    padding: 20px;
+                                    display: flex; 
+                                    justify-content: center; 
+                                    align-items: center; 
+                                    min-height: 100vh; 
+                                    background-color: #f3f4f6;
+                                    font-family: system-ui, -apple-system, sans-serif;
+                                  }
+                                  .container {
+                                    text-align: center;
+                                    max-width: 90vw;
+                                    max-height: 90vh;
+                                  }
+                                  img { 
+                                    max-width: 100%; 
+                                    max-height: 80vh; 
+                                    object-fit: contain;
+                                    border-radius: 8px;
+                                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                                  }
+                                  .filename {
+                                    margin-top: 16px;
+                                    padding: 8px 16px;
+                                    background: white;
+                                    border-radius: 6px;
+                                    color: #374151;
+                                    font-size: 14px;
+                                    display: inline-block;
+                                  }
+                                </style>
+                              </head>
+                              <body>
+                                <div class="container">
+                                  <img src="${previewFileUrl}" alt="${formData.lampiran?.name || 'Preview'}" />
+                                  <div class="filename">${formData.lampiran?.name || 'Gambar Preview'}</div>
+                                </div>
+                              </body>
+                            </html>
+                          `);
+                          newWindow.document.close();
+                        }
+                      }}
+                      className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm"
+                    >
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      Buka di Tab Baru
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={closeFilePreview}
+                    className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-white hover:text-red-600 border border-red-600 transition-colors font-medium text-sm"
+                  >
+                    <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </Modal>
             
             {/* Tombol Submit */}
             <div className="mt-6 flex justify-end">
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow"
+                className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300 px-6 py-3"
               >
                 {loading ? "Mengirim..." : "Kirim Laporan"}
               </Button>

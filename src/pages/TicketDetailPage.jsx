@@ -977,7 +977,7 @@ const TicketDetailPage = () => {
             </div>
           </div>
           
-          {/* Lampiran preview improved */}
+          {/* Lampiran preview */}
           {(ticket.lampiran && (ticket.lampiranBase64 || ticket.lampiranURL || ticket.lampiranStoragePath || loadingAttachment)) && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-500 mb-2">Lampiran</h3>
