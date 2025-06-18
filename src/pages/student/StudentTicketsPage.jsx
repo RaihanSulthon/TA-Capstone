@@ -637,7 +637,7 @@ useEffect(() => {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-sm text-gray-500">Belum ada</span>
+                              <span className="text-sm text-gray-500">Tidak ada</span>
                             );
                           })()}
                         </td>

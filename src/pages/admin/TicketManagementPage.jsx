@@ -555,7 +555,7 @@ const TicketManagementPage = () => {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">Belum ada</span>
+                          <span className="text-xs text-gray-400">Tidak ada</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
