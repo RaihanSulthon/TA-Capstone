@@ -79,7 +79,7 @@ const NavbarAdmin = () => {
         </button>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+          className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-colors duration-200 px-4 py-2 rounded"
         >
           Logout
         </button>
@@ -162,7 +162,7 @@ const NavbarAdmin = () => {
               </Link>
               <button
                 onClick={openLogoutModal}
-                className="bg-white text-red-700 hover:bg-red-100 px-4 py-2 rounded"
+                className="bg-red-700 border-1 border-white hover:bg-white hover:text-red-700 px-5 py-2 rounded-lg font-semibold transition-colors duration-300"
               >
                 Logout
               </button>

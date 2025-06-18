@@ -131,7 +131,7 @@ const LandingPage = () => {
                 onClick={() => scrollToSection(homeRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-300'
                     : 'text-white hover:bg-white/10'
                 } ${activeSection === "home" && (isScrolled ? "text-blue-600" : "font-semibold")}
                 `}
@@ -142,7 +142,7 @@ const LandingPage = () => {
                 onClick={() => scrollToSection(aboutRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-300'
                     : 'text-white hover:bg-white/10'
                 } ${activeSection === "about" && (isScrolled ? "text-blue-600" : "font-semibold")}
                 `}
@@ -154,7 +154,7 @@ const LandingPage = () => {
                 onClick={() => scrollToSection(laakRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-300'
                     : 'text-white hover:bg-white/10'
                 } ${activeSection === "laak" && (isScrolled ? "text-blue-600" : "font-semibold")}
                 `}
@@ -166,7 +166,7 @@ const LandingPage = () => {
                 onClick={() => scrollToSection(contactsRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-300'
                     : 'text-white hover:bg-white/10'
                 } ${activeSection === "contacts" && (isScrolled ? "text-blue-600" : "font-semibold")}
                 `}
@@ -178,7 +178,7 @@ const LandingPage = () => {
                 onClick={() => scrollToSection(faqRef)}
                 className={`font-medium transition-all duration-300 px-3 py-2 rounded hover:shadow-md ${
                   isScrolled 
-                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-100'
+                    ? 'text-gray-600 hover:text-blue-600 hover:shadow-blue-300'
                     : 'text-white hover:bg-white/10'
                 } ${activeSection === "faq" && (isScrolled ? "text-blue-600" : "font-semibold")}
                 `}
