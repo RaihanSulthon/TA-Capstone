@@ -481,7 +481,7 @@ useEffect(() => {
       </div>
       
       {/* Enhanced Stats Summary with Feedback Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Tiket</p>
           <p className="text-2xl font-bold text-blue-600">{ticketStats.total}</p>
@@ -501,10 +501,6 @@ useEffect(() => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Belum Dibaca</p>
           <p className="text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-sm text-gray-500">Tiket Dengan Feedback</p>
-          <p className="text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-sm text-gray-500">Total Feedback</p>
