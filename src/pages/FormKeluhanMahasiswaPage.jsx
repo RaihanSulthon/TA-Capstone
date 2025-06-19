@@ -7,7 +7,6 @@ import TextField from "../components/forms/TextField";
 import Toast from "../components/Toast";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
-import { resolve } from "styled-jsx/css";
 
 const FormKeluhanMahasiswaPage = () => {
   const { currentUser, userRole } = useAuth();
@@ -97,6 +96,17 @@ const FormKeluhanMahasiswaPage = () => {
     return Math.random().toString(36).substring(2, 10).toUpperCase();
   };
 
+  // Helper function untuk format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   // Handle perubahan input
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -108,17 +118,53 @@ const FormKeluhanMahasiswaPage = () => {
       });
     } else if (type === 'file') {
       if (files && files[0]) {
-        // Validasi ukuran file (5MB)
-        if (files[0].size > 5 * 1024 * 1024) {
+        const file = files[0];
+        const fileSizeMB = file.size / (1024 * 1024);
+        
+        // Validasi ukuran file - Max 750KB untuk menghindari error Firestore
+        const maxSizeKB = 750; // 750KB limit untuk base64
+        const maxSizeBytes = maxSizeKB * 1024;
+        
+        if (file.size > maxSizeBytes) {
           setToast({
-            message: "Ukuran file terlalu besar. Maksimal 5MB",
+            message: `Ukuran file terlalu besar. Maksimal ${maxSizeKB}KB (${(maxSizeKB/1024).toFixed(1)}MB). File Anda: ${formatFileSize(file.size)}`,
             type: "error"
           });
+          // Reset file input
+          e.target.value = '';
           return;
         }
+
+        // Validasi tipe file
+        const allowedTypes = [
+          'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+          'application/pdf',
+          'application/msword', 
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel', 
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'text/plain'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+          setToast({
+            message: "Tipe file tidak didukung. Gunakan: gambar (JPG, PNG, GIF), PDF, Word, Excel, atau text.",
+            type: "error"
+          });
+          e.target.value = '';
+          return;
+        }
+
+        console.log("File accepted:", {
+          name: file.name,
+          size: formatFileSize(file.size),
+          type: file.type,
+          sizeStatus: file.size <= maxSizeBytes ? "OK" : "Too Large"
+        });
+
         setFormData({
           ...formData,
-          lampiran: files[0]
+          lampiran: file
         });
       }
     } else {
@@ -185,32 +231,43 @@ const FormKeluhanMahasiswaPage = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-  
 
   // Validate form
   const validateForm = () => {
+    // Validasi fields yang wajib untuk semua jenis form
+    const requiredFields = ['kategori', 'subKategori', 'judul', 'deskripsi'];
+    
     if (formData.anonymous) {
-      // Validasi form anonymous
-      if (!formData.email || !formData.kategori || !formData.subKategori || !formData.judul || !formData.deskripsi) {
-        setToast({
-          message: "Harap isi semua kolom yang wajib diisi",
-          type: "error"
-        });
-        return false;
+      // Validasi form anonymous - hanya email yang wajib untuk identitas
+      requiredFields.push('email');
+      
+      for (const field of requiredFields) {
+        if (!formData[field] || formData[field].toString().trim() === '') {
+          setToast({
+            message: `Field ${field} wajib diisi`,
+            type: "error"
+          });
+          return false;
+        }
       }
     } else {
-      // Validasi form non-anonymous
-      if (!formData.nama || !formData.nim || !formData.prodi || !formData.semester || 
-          !formData.email || !formData.kategori || !formData.subKategori || 
-          !formData.judul || !formData.deskripsi) {
-        setToast({
-          message: "Harap isi semua kolom yang wajib diisi",
-          type: "error"
-        });
-        return false;
-      }
+      // Validasi form non-anonymous - semua field identitas wajib
+      const identityFields = ['nama', 'nim', 'prodi', 'semester', 'email', 'noHp'];
+      const allRequiredFields = [...requiredFields, ...identityFields];
       
-      // Validasi format email
+      for (const field of allRequiredFields) {
+        if (!formData[field] || formData[field].toString().trim() === '') {
+          setToast({
+            message: `Field ${field} wajib diisi`,
+            type: "error"
+          });
+          return false;
+        }
+      }
+    }
+    
+    // Validasi format email
+    if (formData.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         setToast({
@@ -221,37 +278,142 @@ const FormKeluhanMahasiswaPage = () => {
       }
     }
     
+    // Validasi NIM (hanya untuk non-anonymous)
+    if (!formData.anonymous && formData.nim) {
+      // NIM harus berupa angka dan minimal 8 digit
+      if (!/^\d{8,}$/.test(formData.nim)) {
+        setToast({
+          message: "NIM harus berupa angka minimal 8 digit",
+          type: "error"
+        });
+        return false;
+      }
+    }
+    
+    // Validasi nomor HP (hanya untuk non-anonymous)
+    if (!formData.anonymous && formData.noHp) {
+      // Nomor HP harus berupa angka dan minimal 10 digit
+      if (!/^\d{10,}$/.test(formData.noHp.replace(/[\s\-\+]/g, ''))) {
+        setToast({
+          message: "Nomor HP harus berupa angka minimal 10 digit",
+          type: "error"
+        });
+        return false;
+      }
+    }
+
+    // Validasi ukuran file sebelum submit
+    if (formData.lampiran) {
+      const maxSizeBytes = 750 * 1024; // 750KB
+      if (formData.lampiran.size > maxSizeBytes) {
+        setToast({
+          message: `File terlalu besar. Maksimal 750KB. File Anda: ${formatFileSize(formData.lampiran.size)}`,
+          type: "error"
+        });
+        return false;
+      }
+
+      // Estimasi ukuran base64
+      const estimatedBase64Size = formData.lampiran.size * 1.4; // Base64 adds ~33% overhead
+      const maxFirestoreFieldSize = 1048487; // Firestore field limit
+
+      if (estimatedBase64Size > maxFirestoreFieldSize) {
+        setToast({
+          message: "File terlalu besar untuk disimpan. Silakan kompres file atau pilih file yang lebih kecil.",
+          type: "error"
+        });
+        return false;
+      }
+    }
+    
     return true;
+  };
+
+  // Enhanced fileToBase64 with size checking
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        resolve(null);
+        return;
+      }
+
+      console.log("Converting file to base64:", {
+        name: file.name,
+        size: formatFileSize(file.size),
+        type: file.type
+      });
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onload = () => {
+        const base64Result = reader.result;
+        const base64Size = base64Result.length;
+        const maxSize = 1048487; // Firestore limit
+
+        console.log("Base64 conversion result:", {
+          originalSize: formatFileSize(file.size),
+          base64Size: formatFileSize(base64Size),
+          withinLimit: base64Size <= maxSize
+        });
+
+        if (base64Size > maxSize) {
+          reject(new Error(`File terlalu besar setelah konversi (${formatFileSize(base64Size)}). Maksimal: ${formatFileSize(maxSize)}. Silakan gunakan file yang lebih kecil.`));
+          return;
+        }
+
+        resolve(base64Result);
+      };
+
+      reader.onerror = (error) => {
+        console.error("FileReader error:", error);
+        reject(new Error("Gagal membaca file"));
+      };
+    });
   };
 
   // Handle submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log("=== FORM SUBMIT START ===");
+    console.log("Form data before validation:", {
+      ...formData,
+      lampiran: formData.lampiran ? {
+        name: formData.lampiran.name,
+        size: formatFileSize(formData.lampiran.size),
+        type: formData.lampiran.type
+      } : null
+    });
+    
     if (!validateForm()) {
+      console.log("=== VALIDATION FAILED ===");
       return;
     }
     
     setLoading(true);
     
     try {
-      // Import notificationService
-      const { notifyNewTicket } = await import("../services/notificationService");
-
       let lampiranBase64 = null;
       let lampiranType = null;
       let lampiranName = null;
 
-      if(formData.lampiran){
-        try{
-          const base64Data = await fileToBase64(formData.lampiran);
-          lampiranBase64 = base64Data;
+      if (formData.lampiran) {
+        try {
+          console.log("=== CONVERTING FILE TO BASE64 ===");
+          lampiranBase64 = await fileToBase64(formData.lampiran);
           lampiranType = formData.lampiran.type;
           lampiranName = formData.lampiran.name;
-        }catch(error){
+          
+          console.log("File conversion successful:", {
+            name: lampiranName,
+            type: lampiranType,
+            base64Length: lampiranBase64 ? lampiranBase64.length : 0
+          });
+        } catch (error) {
           console.error("Error converting file to base64:", error);
           setToast({
-            message: "Gagal mengupload lampiran. Silakan coba lagi.",
+            message: error.message || "Gagal mengupload lampiran. File terlalu besar atau format tidak didukung.",
             type: "error"
           });
           setLoading(false);
@@ -274,8 +436,7 @@ const FormKeluhanMahasiswaPage = () => {
         prodi: formData.anonymous ? null : formData.prodi,
         semester: formData.anonymous ? null : formData.semester,
         noHp: formData.anonymous ? null : formData.noHp,
-        email: formData.anonymous ? formData.email : formData.email,
-        // Tambahan fields untuk token system
+        email: formData.email,
         anonymous: formData.anonymous,
         secretToken: formData.anonymous ? generateSecureToken() : null,
         tokenGeneratedAt: formData.anonymous ? serverTimestamp() : null,
@@ -288,20 +449,46 @@ const FormKeluhanMahasiswaPage = () => {
         isDeleted: false
       };
 
+      console.log("=== SAVING TICKET TO FIRESTORE ===");
+      console.log("Ticket data size check:", {
+        estimatedDocumentSize: JSON.stringify(ticketData).length + " characters",
+        hasAttachment: !!lampiranBase64,
+        attachmentSize: lampiranBase64 ? formatFileSize(lampiranBase64.length) : "0KB"
+      });
+
       // Simpan ke Firestore
       const docRef = await addDoc(collection(db, "tickets"), ticketData);
       
       // Tambahkan ID document ke data
       const finalTicketData = { ...ticketData, id: docRef.id };
       
+      console.log("=== TICKET SAVED SUCCESSFULLY ===", docRef.id);
+
+      console.log("=== DEBUGGING USER INFO ===");
+      console.log("currentUser:", currentUser);
+      console.log("userRole:", userRole);
+      console.log("displayName:", currentUser?.displayName);
+      console.log("uid:", currentUser?.uid);
+      
       // Kirim notifikasi ke admin
-      if (currentUser?.displayName) {
-        await notifyNewTicket(
-          finalTicketData,
-          currentUser.uid,
-          currentUser.displayName,
-          userRole || "student"
-        );
+      try {
+        console.log("=== SENDING NOTIFICATION ===");
+        const { notifyNewTicket } = await import("../services/notificationService");
+        
+        const senderName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Mahasiswa';
+        
+        if (currentUser?.uid) {
+          const notifResult = await notifyNewTicket(
+            finalTicketData,
+            currentUser.uid,
+            senderName,
+            userRole || "student"
+          );
+          console.log("=== NOTIFICATION RESULT ===", notifResult);
+        }
+      } catch (notifError) {
+        console.error("Error sending notification:", notifError);
+        // Jangan gagalkan seluruh proses jika notifikasi gagal
       }
       
       setToast({
@@ -334,9 +521,21 @@ const FormKeluhanMahasiswaPage = () => {
       }, 2000);
       
     } catch (error) {
-      console.error("Error creating ticket:", error);
+      console.error("=== FIRESTORE ERROR ===", error);
+      
+      // Analisis error untuk memberikan pesan yang lebih spesifik
+      let errorMessage = "Gagal mengirim laporan. Silakan coba lagi nanti.";
+      
+      if (error.message.includes("1048487 bytes") || error.message.includes("too large")) {
+        errorMessage = "File lampiran terlalu besar untuk disimpan. Maksimal ukuran efektif: 750KB. Silakan kompres file Anda.";
+      } else if (error.message.includes("permission")) {
+        errorMessage = "Tidak memiliki izin untuk menyimpan data. Silakan login ulang.";
+      } else if (error.message.includes("network")) {
+        errorMessage = "Masalah koneksi internet. Silakan periksa koneksi dan coba lagi.";
+      }
+      
       setToast({
-        message: "Gagal mengirim laporan. Silakan coba lagi nanti.",
+        message: errorMessage,
         type: "error"
       });
     } finally {
@@ -352,26 +551,6 @@ const FormKeluhanMahasiswaPage = () => {
       }
     };
   }, [previewFileUrl]);
-
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      if(!file){
-        resolve(null);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-
-      reader.onerror = (error) => {
-        reject(error);
-      };
-    });
-  };
 
   return (
     <div className="bg-gray-50 min-h-screen py-8">
@@ -570,7 +749,7 @@ const FormKeluhanMahasiswaPage = () => {
               
               <div className="mb-4">
                 <label htmlFor="judul" className="block text-gray-700 font-medium mb-2">
-                  Judul Keluhan <span className="text-red-500">*</span>
+                  Judul <span className="text-red-500">*</span>
                 </label>
                 <input 
                   type="text" 
@@ -579,13 +758,13 @@ const FormKeluhanMahasiswaPage = () => {
                   value={formData.judul} 
                   onChange={handleChange} 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Tuliskan judul keluhan secara singkat"
+                  placeholder="Tuliskan judul laporan secara singkat"
                 />
               </div>
               
               <div className="mb-4">
                 <label htmlFor="deskripsi" className="block text-gray-700 font-medium mb-2">
-                  Deskripsi Keluhan <span className="text-red-500">*</span>
+                  Deskripsi <span className="text-red-500">*</span>
                 </label>
                 <textarea 
                   id="deskripsi" 
@@ -594,15 +773,33 @@ const FormKeluhanMahasiswaPage = () => {
                   onChange={handleChange} 
                   rows="5"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Jelaskan keluhan Anda secara detail..."
+                  placeholder="Jelaskan laporan Anda secara detail..."
                 />
               </div>
               
-              {/* Lampiran */}
+              {/* Lampiran dengan Size Guide */}
               <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">
-                  Lampiran (Opsional)
+                  Lampiran <span className="text-gray-500">(Opsional)</span>
                 </label>
+                
+                {/* File Size Guide */}
+                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-start space-x-2">
+                    <svg className="h-5 w-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium mb-1">📋 Pedoman Upload File:</p>
+                      <ul className="space-y-1">
+                        <li>• <strong>Ukuran maksimal:</strong> 750KB (~0.75MB)</li>
+                        <li>• <strong>Format didukung:</strong> Gambar (JPG, PNG, GIF), PDF, Word, Excel, Text</li>
+                        <li>• <strong>Tips:</strong> Kompres gambar atau gunakan format JPG untuk ukuran lebih kecil</li>
+                        <li>• <strong>Catatan:</strong> File lebih besar dari 750KB akan otomatis ditolak</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
                 
                 {!formData.lampiran ? (
                   // Upload interface when no file is selected
@@ -613,13 +810,13 @@ const FormKeluhanMahasiswaPage = () => {
                           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                         </svg>
                         <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Klik untuk upload</span> atau drag and drop</p>
-                        <p className="text-xs text-gray-500">JPG, PNG atau PDF (Maks. 5MB)</p>
+                        <p className="text-xs text-gray-500">Maksimal 750KB • JPG, PNG, PDF, Word, Excel, Text</p>
                       </div>
                       <input 
                         type="file" 
                         name="lampiran"
                         onChange={handleChange}
-                        accept=".jpg,.jpeg,.png,.pdf" 
+                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" 
                         className="hidden" 
                       />
                     </label>
@@ -636,8 +833,25 @@ const FormKeluhanMahasiswaPage = () => {
                           onClick={() => openFilePreview(formData.lampiran)}
                         />
                         <div className="flex justify-between items-center mt-3">
-                          <span className="text-sm text-gray-600">{formData.lampiran.name}</span>
-                          <div className="flex space-x-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{formData.lampiran.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(formData.lampiran.size)} • {formData.lampiran.type}
+                            </p>
+                            {/* Status indicator */}
+                            <div className="mt-1">
+                              {formData.lampiran.size <= 750 * 1024 ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  ✓ Ukuran OK
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  ✗ Terlalu Besar
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex space-x-2 ml-3">
                             <button
                               type="button"
                               onClick={() => openFilePreview(formData.lampiran)}
@@ -678,8 +892,20 @@ const FormKeluhanMahasiswaPage = () => {
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">{formData.lampiran.name}</p>
                           <p className="text-xs text-gray-500">
-                            {getFileType(formData.lampiran) === 'pdf' ? 'PDF Document' : 'File Document'}
+                            {formatFileSize(formData.lampiran.size)} • {getFileType(formData.lampiran) === 'pdf' ? 'PDF Document' : 'File Document'}
                           </p>
+                          {/* Status indicator */}
+                          <div className="mt-1">
+                            {formData.lampiran.size <= 750 * 1024 ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                ✓ Ukuran OK
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                ✗ Terlalu Besar
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex space-x-2">
                           <button
@@ -699,19 +925,12 @@ const FormKeluhanMahasiswaPage = () => {
                         </div>
                       </div>
                     )}
-                    
-                    {/* File info */}
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <div className="flex justify-between items-center text-xs text-gray-500">
-                        <span>Ukuran: {(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB</span>
-                        <span>Tipe: {formData.lampiran.type}</span>
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
             </div>
 
+            {/* Modal Preview */}
             <Modal
               isOpen={isFilePreviewOpen}
               onClose={closeFilePreview}
@@ -769,7 +988,7 @@ const FormKeluhanMahasiswaPage = () => {
                     {formData.lampiran?.name || "File"}
                   </p>
                   <p className="text-gray-500 text-xs">
-                    {formData.lampiran ? `${(formData.lampiran.size / 1024 / 1024).toFixed(2)} MB` : ''}
+                    {formData.lampiran ? formatFileSize(formData.lampiran.size) : ''}
                   </p>
                 </div>
                 
