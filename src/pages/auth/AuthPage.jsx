@@ -1,7 +1,7 @@
 // src/pages/AuthPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import TextField from "../../components/forms/Textfield";
+import Textfield from "../../components/forms/Textfield";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
 import { registerUser, loginUser } from "../../Services/authService";
@@ -416,7 +416,7 @@ const AuthPage = () => {
         >
           {isLoginMode ? (
             <form onSubmit={handleLoginSubmit} noValidate>
-              <TextField
+              <Textfield
                 label="Email"
                 type="email"
                 name="email"
@@ -428,7 +428,7 @@ const AuthPage = () => {
                 placeholder="Enter your email"
               />
   
-              <TextField
+              <Textfield
                 label="Password"
                 type="password"
                 name="password"
@@ -450,7 +450,7 @@ const AuthPage = () => {
             </form>
           ) : (
             <form onSubmit={handleSignupSubmit} noValidate>
-              <TextField
+              <Textfield
                 label="Full Name"
                 name="name"
                 value={signupData.name}
@@ -462,7 +462,7 @@ const AuthPage = () => {
                 placeholder="Enter your full name"
               />
   
-              <TextField
+              <Textfield
                 label="Email"
                 type="email"
                 name="email"
@@ -474,7 +474,7 @@ const AuthPage = () => {
                 placeholder="yourname@student.telkomuniversity.ac.id"
               />
   
-              <TextField
+              <Textfield
                 label="Password"
                 type="password"
                 name="password"
@@ -486,7 +486,7 @@ const AuthPage = () => {
                 placeholder="Min. 6 characters"
               />
   
-              <TextField
+              <Textfield
                 label="Confirm Password"
                 type="password"
                 name="confirmPassword"
