@@ -24,6 +24,12 @@ const TicketManagementPage = () => {
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackCounts, setFeedbackCounts] = useState({});
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 10;
   
   // Get status badge
   const getStatusBadge = (status) => {
@@ -278,9 +284,13 @@ const TicketManagementPage = () => {
   
   // Filter tickets
   const filteredTickets = tickets.filter(ticket => {
+    // Filter by status
     const matchesStatus = filterStatus === "all" || ticket.status === filterStatus;
+    
+    // Filter by category
     const matchesCategory = filterCategory === "all" || ticket.kategori === filterCategory;
     
+    // Filter by read status
     let matchesReadStatus = true;
     if (filterReadStatus === "read") {
       matchesReadStatus = ticket.readByAdmin === true;
@@ -288,23 +298,55 @@ const TicketManagementPage = () => {
       matchesReadStatus = ticket.readByAdmin !== true;
     }
     
-    const matchesSearch = 
-      ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.id?.toLowerCase().includes(searchTerm.toLowerCase());
-      (ticket.nama && ticket.nama.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Filter by date range
+    let matchesDateRange = true;
+    if (startDate || endDate) {
+      const ticketDate = ticket.createdAt?.toDate ? ticket.createdAt.toDate() : new Date(ticket.createdAt);
+      
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        matchesDateRange = matchesDateRange && ticketDate >= start;
+      }
+      
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        matchesDateRange = matchesDateRange && ticketDate <= end;
+      }
+    }
     
-    return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch;
+    // Filter by search term
+    const matchesSearch = 
+    ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (ticket.nama && ticket.nama.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch && matchesDateRange;
   });
   
   // Get ticket categories from data
   const categories = Array.from(new Set(tickets.map(ticket => ticket.kategori))).filter(Boolean);
 
-  // Reset filters
+  // Pagination logic
+  const indexOfLastTicket = currentPage * ticketsPerPage;
+  const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
+  const currentTickets = filteredTickets.slice(indexOfFirstTicket, indexOfLastTicket);
+  const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   const resetFilters = () => {
     setFilterStatus("all");
     setFilterCategory("all");
     setFilterReadStatus("all");
     setSearchTerm("");
+    setStartDate("");
+    setEndDate("");
+    setCurrentPage(1);
   };
   
   // Get ticket statistics
@@ -333,7 +375,7 @@ const TicketManagementPage = () => {
       
       {/* Filters and Search - IMPROVED LAYOUT */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end">
           <div>
             <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
               Status
@@ -348,10 +390,9 @@ const TicketManagementPage = () => {
               <option value="new">Baru</option>
               <option value="in_progress">Diproses</option>
               <option value="done">Selesai</option>
-              
             </select>
           </div>
-          
+
           <div>
             <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-2">
               Kategori
@@ -371,12 +412,48 @@ const TicketManagementPage = () => {
             </select>
           </div>
 
-          <ReadStatusFilter 
-            readStatus={filterReadStatus}
-            setReadStatus={setFilterReadStatus}
-            userRole={userRole}
-          />
-          
+          <div>
+            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2">
+              Tanggal Mulai
+            </label>
+            <input
+              type="date"
+              id="start-date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-2">
+              Tanggal Akhir
+            </label>
+            <input
+              type="date"
+              id="end-date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="read-status-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Status Dibaca
+            </label>
+            <select
+              id="read-status-filter"
+              value={filterReadStatus}
+              onChange={(e) => setFilterReadStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Semua Tiket</option>
+              <option value="read">Sudah Dibaca</option>
+              <option value="unread">Belum Dibaca</option>
+            </select>
+          </div>
+
           <div>
             <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
               Cari
@@ -386,19 +463,20 @@ const TicketManagementPage = () => {
               id="search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari judul atau ID laporan"
+              placeholder="Cari judul, ID, atau nama"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          
-          <div className="flex justify-end">
-            <button
-              onClick={resetFilters}
-              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors"
-            >
-              Reset Filter
-            </button>
-          </div>
+        </div>
+        
+        {/* Reset Button - Separate Row */}
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={resetFilters}
+            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors duration-200"
+          >
+            Reset Filter
+          </button>
         </div>
       </div>
       
@@ -472,14 +550,14 @@ const TicketManagementPage = () => {
                     </div>
                   </td>
                 </tr>
-              ) : filteredTickets.length === 0 ? (
+              ) : currentTickets.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
                     Tidak ada tiket yang ditemukan
                   </td>
                 </tr>
               ) : (
-                filteredTickets.map((ticket) => {
+                currentTickets.map((ticket) => {
                   const statusBadge = getStatusBadge(ticket.status);
                   const isUnread = userRole === "admin" && !ticket.readByAdmin;
                   const feedbackInfo = getFeedbackInfo(ticket.id);
@@ -555,7 +633,7 @@ const TicketManagementPage = () => {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">Belum ada</span>
+                          <span className="text-xs text-gray-400">Tidak ada</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -582,6 +660,76 @@ const TicketManagementPage = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{indexOfFirstTicket + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(indexOfLastTicket, filteredTickets.length)}
+                  </span>{' '}
+                  of <span className="font-medium">{filteredTickets.length}</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      onClick={() => handlePageChange(number)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        number === currentPage
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Next</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Delete Confirmation Modal */}
