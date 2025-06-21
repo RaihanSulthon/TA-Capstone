@@ -1,4 +1,3 @@
-// Apply the same truncation to StudentTicketsPage.jsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../../contexts/Authcontexts";
@@ -18,7 +17,7 @@ const StudentTicketsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [filterReadStatus, setFilterReadStatus] = useState("all"); // New state for read/unread filter
+  const [filterReadStatus, setFilterReadStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -27,6 +26,10 @@ const StudentTicketsPage = () => {
   const [feedbackCounts, setFeedbackCounts] = useState({});
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 20;
   
   // Function to truncate text with ellipsis
   const truncateText = (text, maxLength = 25) => {
@@ -141,7 +144,7 @@ const StudentTicketsPage = () => {
         );
         
         setToast({
-          message: result.message || "Tiket berhasil dihapus",
+          message: result.message || "Tiket berhasil dihapus dari daftar Anda",
           type: "success"
         });
       } else {
@@ -163,114 +166,113 @@ const StudentTicketsPage = () => {
   };
 
   // Fetch feedback counts for all tickets
-const fetchFeedbackCounts = async () => {
-  try {
-    if(tickets.length === 0){
-      setFeedbackCounts({});
-      return;
-    }
-
-    const userTicketIds = tickets.map(ticket => ticket.id);
-    const counts = {}
-
-    userTicketIds.forEach(ticketId => {
-      counts[ticketId] = {
-        total: 0,
-        unreadByStudent: 0
-      };
-    });
-
-    const feedbacksQuery = query(
-      collection(db, "feedbacks"),
-      where("ticketId", "in", userTicketIds.slice(0,10)),
-      orderBy("createdAt", "desc")
-    );
-
-    const feedbacsSnapshot = await getDocs(feedbacksQuery);
-
-    feedbacsSnapshot.docs.forEach(doc => {
-      const feedback = doc.data();
-      const ticketId = feedback.ticketId;
-
-      if(counts[ticketId]){
-        counts[ticketId].total++;
-
-        const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
-        if(!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student"){
-          counts[ticketId].unreadByStudent++;
-        }
+  const fetchFeedbackCounts = async () => {
+    try {
+      if(tickets.length === 0){
+        setFeedbackCounts({});
+        return;
       }
-    });
 
-    if (userTicketIds.length > 10){
-      for(let i = 10; i < userTicketIds; i += 10){
-        const batch = userTicketIds.slice(i, i+10);
-        const batchQuery = query(
-          collection(db, "feedbacks"),
-          where("ticketId", "in", batch),
-          orderBy("createdAt", "desc")
-        );
+      const userTicketIds = tickets.map(ticket => ticket.id);
+      const counts = {}
 
-        const batchSnapshot = await getDocs(batchQuery);
+      userTicketIds.forEach(ticketId => {
+        counts[ticketId] = {
+          total: 0,
+          unreadByStudent: 0
+        };
+      });
 
-        batchSnapshot.docs.forEach(doc => {
-          const feedback = doc.data();
-          const ticketId = feedback.ticketId;
-
-          if (counts[ticketId]){
-            counts[ticketId].total++;
-
-            const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
-            if(!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student"){
-              counts[ticketId].unreadByStudent++;
-            }
-          }
-        });
-      }
-    }
-    setFeedbackCounts(counts);
-
-  } catch (error) {
-    console.error("Error fetching feedback counts:", error);
-  }
-};
-
-// Get feedback info for a ticket
-const getFeedbackInfo = (ticketId) => {
-  const counts = feedbackCounts[ticketId] || { total: 0, unreadByStudent: 0 };
-  return {
-    total: counts.total,
-    unread: counts.unreadByStudent
-  };
-};
-
-// Fetch feedback counts when component mounts and when tickets change
-useEffect(() => {
-  if (currentUser && userRole === "student" && tickets.length > 0) {
-    fetchFeedbackCounts();
-    
-    // Listen for real-time feedback updates hanya untuk tiket user
-    const userTicketIds = tickets.map(ticket => ticket.id);
-    
-    if (userTicketIds.length > 0) {
-      // Karena onSnapshot juga punya batasan where-in 10 items, kita gunakan approach yang sama
       const feedbacksQuery = query(
-        collection(db, "feedbacks"), 
-        where("ticketId", "in", userTicketIds.slice(0, 10)),
+        collection(db, "feedbacks"),
+        where("ticketId", "in", userTicketIds.slice(0,10)),
         orderBy("createdAt", "desc")
       );
-      
-      const unsubscribe = onSnapshot(feedbacksQuery, () => {
-        fetchFeedbackCounts();
-      });
-      
-      // Register the listener for cleanup
-      addListener(unsubscribe);
-    }
-  }
-}, [currentUser, userRole, tickets, addListener]); // Tambahkan tickets sebagai dependency
 
-  
+      const feedbacsSnapshot = await getDocs(feedbacksQuery);
+
+      feedbacsSnapshot.docs.forEach(doc => {
+        const feedback = doc.data();
+        const ticketId = feedback.ticketId;
+
+        if(counts[ticketId]){
+          counts[ticketId].total++;
+
+          const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
+          if(!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student"){
+            counts[ticketId].unreadByStudent++;
+          }
+        }
+      });
+
+      if (userTicketIds.length > 10){
+        for(let i = 10; i < userTicketIds.length; i += 10){
+          const batch = userTicketIds.slice(i, i+10);
+          const batchQuery = query(
+            collection(db, "feedbacks"),
+            where("ticketId", "in", batch),
+            orderBy("createdAt", "desc")
+          );
+
+          const batchSnapshot = await getDocs(batchQuery);
+
+          batchSnapshot.docs.forEach(doc => {
+            const feedback = doc.data();
+            const ticketId = feedback.ticketId;
+
+            if (counts[ticketId]){
+              counts[ticketId].total++;
+
+              const readByStudent = feedback.readBy && feedback.readBy[currentUser?.uid];
+              if(!readByStudent && feedback.createdBy !== currentUser?.uid && userRole === "student"){
+                counts[ticketId].unreadByStudent++;
+              }
+            }
+          });
+        }
+      }
+      setFeedbackCounts(counts);
+
+    } catch (error) {
+      console.error("Error fetching feedback counts:", error);
+    }
+  };
+
+  // Get feedback info for a ticket
+  const getFeedbackInfo = (ticketId) => {
+    const counts = feedbackCounts[ticketId] || { total: 0, unreadByStudent: 0 };
+    return {
+      total: counts.total,
+      unread: counts.unreadByStudent
+    };
+  };
+
+  // Fetch feedback counts when component mounts and when tickets change
+  useEffect(() => {
+    if (currentUser && userRole === "student" && tickets.length > 0) {
+      fetchFeedbackCounts();
+      
+      // Listen for real-time feedback updates hanya untuk tiket user
+      const userTicketIds = tickets.map(ticket => ticket.id);
+      
+      if (userTicketIds.length > 0) {
+        // Karena onSnapshot juga punya batasan where-in 10 items, kita gunakan approach yang sama
+        const feedbacksQuery = query(
+          collection(db, "feedbacks"), 
+          where("ticketId", "in", userTicketIds.slice(0, 10)),
+          orderBy("createdAt", "desc")
+        );
+        
+        const unsubscribe = onSnapshot(feedbacksQuery, () => {
+          fetchFeedbackCounts();
+        });
+        
+        // Register the listener for cleanup
+        addListener(unsubscribe);
+      }
+    }
+  }, [currentUser, userRole, tickets, addListener]);
+
   // Fetch tickets
   useEffect(() => {
     const fetchTickets = async () => {
@@ -372,6 +374,17 @@ useEffect(() => {
     
   // Get ticket categories from data
   const categories = Array.from(new Set(tickets.map(ticket => ticket.kategori))).filter(Boolean);
+
+  // Pagination logic
+  const indexOfLastTicket = currentPage * ticketsPerPage;
+  const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
+  const currentTickets = filteredTickets.slice(indexOfFirstTicket, indexOfLastTicket);
+  const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const resetFilters = () => {
     setFilterStatus("all");
@@ -610,20 +623,20 @@ useEffect(() => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center">
+                    <td colSpan="6" className="px-6 py-4 text-center">
                       <div className="flex justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                       </div>
                     </td>
                   </tr>
-                ) : filteredTickets.length === 0 ? (
+                ) : currentTickets.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                       Tidak ada tiket yang ditemukan
                     </td>
                   </tr>
                 ) : (
-                  filteredTickets.map((ticket) => {
+                  currentTickets.map((ticket) => {
                     const statusBadge = getStatusBadge(ticket.status);
                     const hasFeedback = hasUnreadFeedback(ticket);
                     const isUnread = userRole === "student" ? !ticket.readByStudent : false;
@@ -695,30 +708,36 @@ useEffect(() => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <div className="flex space-x-2">
-                          <Button
-                            onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                            className={(() => {
-                              const feedbackInfo = getFeedbackInfo(ticket.id);
-                              if (feedbackInfo.unread > 0) {
-                                return "bg-orange-600 hover:bg-orange-700";
-                              } else if (isUnread) {
-                                return "bg-blue-600 hover:bg-blue-700";
-                              } else {
-                                return "";
-                              }
-                            })()}
-                          >
-                            {(() => {
-                              const feedbackInfo = getFeedbackInfo(ticket.id);
-                              if (feedbackInfo.unread > 0) {
-                                return "Feedback Baru";
-                              } else if (isUnread) {
-                                return "Lihat Tiket Baru";
-                              } else {
-                                return "Detail";
-                              }
-                            })()}
-                          </Button>
+                            <Button
+                              onClick={() => navigate(`/app/tickets/${ticket.id}`)}
+                              className={(() => {
+                                const feedbackInfo = getFeedbackInfo(ticket.id);
+                                if (feedbackInfo.unread > 0) {
+                                  return "bg-orange-600 hover:bg-orange-700";
+                                } else if (isUnread) {
+                                  return "bg-blue-600 hover:bg-blue-700";
+                                } else {
+                                  return "";
+                                }
+                              })()}
+                            >
+                              {(() => {
+                                const feedbackInfo = getFeedbackInfo(ticket.id);
+                                if (feedbackInfo.unread > 0) {
+                                  return "Feedback Baru";
+                                } else if (isUnread) {
+                                  return "Lihat Tiket Baru";
+                                } else {
+                                  return "Detail";
+                                }
+                              })()}
+                            </Button>
+                            <Button
+                              onClick={() => openDeleteModal(ticket)}
+                              className="bg-red-600 text-white hover:bg-red-700"
+                            >
+                              Hapus
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -728,6 +747,76 @@ useEffect(() => {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing <span className="font-medium">{indexOfFirstTicket + 1}</span> to{' '}
+                    <span className="font-medium">
+                      {Math.min(indexOfLastTicket, filteredTickets.length)}
+                    </span>{' '}
+                    of <span className="font-medium">{filteredTickets.length}</span> results
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                      <button
+                        key={number}
+                        onClick={() => handlePageChange(number)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          number === currentPage
+                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {number}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Next</span>
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       
@@ -740,26 +829,29 @@ useEffect(() => {
       >
         <div>
           <p className="text-gray-600 mb-4">
-            Apakah Anda yakin ingin menghapus tiket ini?
+            Apakah Anda yakin ingin menghapus tiket ini dari daftar Anda?
           </p>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-2">
             <span className="font-medium">Judul:</span> {ticketToDelete?.judul}
+          </p>
+          <p className="text-blue-600 text-sm mb-6">
+            <strong>Catatan:</strong> Tiket akan dihapus dari daftar Anda, namun masih dapat diakses oleh admin.
           </p>
           
           <div className="flex justify-end space-x-3">
             <button
               onClick={closeDeleteModal}
-              className="px-4 py-2 border border-red-600 rounded text-white bg-red-600 hover:bg-white hover:text-red-600 transition-colors duration-200"
+              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
               disabled={isDeleting}
             >
               Batal
             </button>
             <button
               onClick={handleDeleteTicket}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+              className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded transition-colors"
               disabled={isDeleting}
             >
-              {isDeleting ? "Menghapus..." : "Hapus Tiket"}
+              {isDeleting ? "Menghapus..." : "Hapus dari Daftar"}
             </button>
           </div>
         </div>
