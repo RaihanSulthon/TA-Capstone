@@ -1,7 +1,7 @@
 // src/pages/AuthPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import TextField from "../../components/forms/TextField";
+import TextField from "../../components/forms/Textfield";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
 import { registerUser, loginUser } from "../../Services/authService";
