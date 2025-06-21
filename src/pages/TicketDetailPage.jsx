@@ -51,6 +51,8 @@ const TicketDetailPage = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [tokenTimer, setTokenTimer] = useState(null);
 
+  const passwordInputRef = useRef(null);
+
   // Cleanup timer when component unmounts
   useEffect(() => {
     return () => {
@@ -597,17 +599,7 @@ const TicketDetailPage = () => {
     navigate(`/app/tickets/${ticketId}/feedback`);
   };
 
-  // Token reveal component
-  const TokenRevealComponent = ({ ticket }) => {
-    const passwordInputRef = useRef(null);
-
-    useEffect(() => {
-      if (showPasswordModal && passwordInputRef.current) {
-        passwordInputRef.current.focus();
-      }
-    }, [showPasswordModal]);
-  
-    const handleRevealToken = async () => {
+  const handleRevealToken = async () => {
     if (!password.trim()) {
       setToast({
         message: "Masukkan password Anda",
@@ -615,26 +607,26 @@ const TicketDetailPage = () => {
       });
       return;
     }
-
+  
     setIsVerifying(true);
     try {
       const credential = EmailAuthProvider.credential(currentUser.email, password);
       await reauthenticateWithCredential(currentUser, credential);
-
+  
       setShowToken(true);
       setShowPasswordModal(false);
       setPassword("");
-
+  
       await updateDoc(doc(db, "tickets", ticket.id), {
         tokenViewCount: (ticket.tokenViewCount || 0) + 1,
         tokenLastViewed: serverTimestamp()
       });
-
+  
       const timer = setTimeout(() => {
         setShowToken(false);
       }, 10000);
       setTokenTimer(timer);
-
+  
       setToast({
         message: "Token berhasil ditampilkan. Token akan hilang dalam 10 detik.",
         type: "success"
@@ -654,89 +646,13 @@ const TicketDetailPage = () => {
       message: "Token berhasil disalin. Jangan bagikan ke orang lain!",
       type: "success"
     });
-  }
+  };
 
-  return (
-    <>
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-sm font-medium text-purple-800 mb-1">Token Rahasia</h4>
-          <p className="text-xs text-purple-600 mb-2">
-            Token ini diperlukan jika Anda ingin verifikasi tiket secara langsung dengan admin
-          </p>
-          <div className="flex items-center space-x-2">
-            <code className="bg-white px-3 py-1 rounded border text-sm">
-              {showToken ? ticket.secretToken : "********"}
-            </code>
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="text-purple-600 hover:text-purple-800 transition-colors"
-              title="Lihat Token"
-            >
-              👁️
-            </button>
-            {showToken && (
-              <button
-                onClick={copyToken}
-                className="text-purple-600 hover:text-purple-800 transition-colors text-sm"
-                title="Salin Token"
-              >
-                📋
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Password Modal */}
-      <Modal
-        isOpen={showPasswordModal}
-        onClose={() => {
-          setShowPasswordModal(false);
-          setPassword("");
-        }}
-        title="Verifikasi Password"
-        size="sm"
-      >
-        <div>
-          <p className="text-sm text-gray-600 mb-4">
-            Masukkan password akun Anda untuk melihat token rahasia
-          </p>
-          <input
-            ref={passwordInputRef}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password akun Anda"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-6"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleRevealToken();
-            }}
-          />
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={() => {
-                setShowPasswordModal(false);
-                setPassword("");
-              }}
-              className="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
-              disabled={isVerifying}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleRevealToken}
-              disabled={isVerifying}
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
-            >
-              {isVerifying ? "Memverifikasi..." : "Tampilkan Token"}
-            </button>
-          </div>
-        </div>
-      </Modal>
-    </>
-  );
-};
+  useEffect(() => {
+    if (showPasswordModal && passwordInputRef.current) {
+      passwordInputRef.current.focus();
+    }
+  }, [showPasswordModal]);
 
   if (loading) {
     return (
@@ -970,7 +886,35 @@ const TicketDetailPage = () => {
               
               {/* Token Section for Anonymous Tickets */}
               <div className="mt-4 pt-4 border-t border-purple-200">
-                <TokenRevealComponent ticket={ticket} />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-purple-800 mb-1">Token Rahasia</h4>
+                    <p className="text-xs text-purple-600 mb-2">
+                      Token ini diperlukan jika Anda ingin verifikasi tiket secara langsung dengan admin
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <code className="bg-white px-3 py-1 rounded border text-sm font-mono">
+                        {showToken ? ticket.secretToken : "••••••••••••••••"}
+                      </code>
+                      <button
+                        onClick={() => setShowPasswordModal(true)}
+                        className="text-purple-600 hover:text-purple-800 transition-colors text-sm px-2 py-1 bg-purple-100 rounded hover:bg-purple-200"
+                        title="Lihat Token"
+                      >
+                        👁️ Lihat
+                      </button>
+                      {showToken && (
+                        <button
+                          onClick={copyToken}
+                          className="text-purple-600 hover:text-purple-800 transition-colors text-sm px-2 py-1 bg-purple-100 rounded hover:bg-purple-200"
+                          title="Salin Token"
+                        >
+                          📋 Salin
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1129,6 +1073,53 @@ const TicketDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Password Modal */}
+      <Modal
+        isOpen={showPasswordModal}
+        onClose={() => {
+          setShowPasswordModal(false);
+          setPassword("");
+        }}
+        title="Verifikasi Password"
+        size="sm"
+      >
+        <div>
+          <p className="text-sm text-gray-600 mb-4">
+            Masukkan password akun Anda untuk melihat token rahasia
+          </p>
+          <input
+            ref={passwordInputRef}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password akun Anda"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-6"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleRevealToken();
+            }}
+          />
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                setShowPasswordModal(false);
+                setPassword("");
+              }}
+              className="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+              disabled={isVerifying}
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleRevealToken}
+              disabled={isVerifying}
+              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
+            >
+              {isVerifying ? "Memverifikasi..." : "Tampilkan Token"}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Email Modal */}
       <Modal
