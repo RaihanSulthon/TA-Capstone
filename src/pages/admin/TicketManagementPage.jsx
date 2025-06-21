@@ -29,7 +29,7 @@ const TicketManagementPage = () => {
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const ticketsPerPage = 20;
+  const ticketsPerPage = 10;
   
   // Get status badge
   const getStatusBadge = (status) => {

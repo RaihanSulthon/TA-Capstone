@@ -29,7 +29,7 @@ const StudentTicketsPage = () => {
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const ticketsPerPage = 20;
+  const ticketsPerPage = 10;
   
   // Function to truncate text with ellipsis
   const truncateText = (text, maxLength = 25) => {
