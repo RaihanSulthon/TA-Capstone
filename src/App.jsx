@@ -7,7 +7,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleBasedRoute from "./components/RoleBasedRoute";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import UserManagementPage from "./pages/admin/UserManagementPage";
+import TicketStatisticsPage from "./pages/admin/TicketStatisticsPage";
 import AccessDeniedPage from "./pages/AccessDeniedPage";
 
 // Ticketing System Pages
@@ -116,7 +116,7 @@ function App() {
               path="users"
               element={
                 <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
-                  <UserManagementPage />
+                  <TicketStatisticsPage />
                 </RoleBasedRoute>
               }
             />
