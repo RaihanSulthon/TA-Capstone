@@ -25,6 +25,8 @@ const StudentTicketsPage = () => {
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackCounts, setFeedbackCounts] = useState({});
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   
   // Function to truncate text with ellipsis
   const truncateText = (text, maxLength = 25) => {
@@ -334,7 +336,7 @@ useEffect(() => {
     // Filter by category
     const matchesCategory = filterCategory === "all" || ticket.kategori === filterCategory;
     
-    // Filter by read status - this is the new filter
+    // Filter by read status
     let matchesReadStatus = true;
     if (filterReadStatus === "read") {
       matchesReadStatus = ticket.readByStudent === true;
@@ -342,23 +344,43 @@ useEffect(() => {
       matchesReadStatus = ticket.readByStudent !== true;
     }
     
+    // Filter by date range
+    let matchesDateRange = true;
+    if (startDate || endDate) {
+      const ticketDate = ticket.createdAt?.toDate ? ticket.createdAt.toDate() : new Date(ticket.createdAt);
+      
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        matchesDateRange = matchesDateRange && ticketDate >= start;
+      }
+      
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        matchesDateRange = matchesDateRange && ticketDate <= end;
+      }
+    }
+    
     // Filter by search term
     const matchesSearch = 
     ticket.judul?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ticket.id?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch;
+    return matchesStatus && matchesCategory && matchesReadStatus && matchesSearch && matchesDateRange;
   });
     
   // Get ticket categories from data
   const categories = Array.from(new Set(tickets.map(ticket => ticket.kategori))).filter(Boolean);
 
-  // Reset filters
   const resetFilters = () => {
     setFilterStatus("all");
     setFilterCategory("all");
-    setFilterReadStatus("all"); // Reset read status filter too
+    setFilterReadStatus("all");
     setSearchTerm("");
+    setStartDate("");
+    setEndDate("");
+    setCurrentPage(1);
   };
 
   // Get ticket statistics
@@ -406,77 +428,111 @@ useEffect(() => {
           onClose={() => setToast({ message: "", type: "success" })}
         />
       )}
-      
+
       {/* Filters and Search */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex flex-col md:flex-row gap-4 md:items-center">
-            <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                id="status-filter"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full md:w-40 px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="all">Semua Status</option>
-                <option value="new">Menunggu</option>
-                <option value="in_progress">Diproses</option>
-                <option value="done">Selesai</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-1">
-                Kategori
-              </label>
-              <select
-                id="category-filter"
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="all">Semua Kategori</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {getCategoryLabel(category)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Add Read Status Filter */}
-            <ReadStatusFilter 
-              readStatus={filterReadStatus}
-              setReadStatus={setFilterReadStatus}
-              userRole={userRole}
-            />
-            
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                Cari
-              </label>
-              <input
-                type="text"
-                id="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari judul atau ID laporan"
-                className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end">
+          <div>
+            <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Status
+            </label>
+            <select
+              id="status-filter"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Semua Status</option>
+              <option value="new">Menunggu</option>
+              <option value="in_progress">Sedang Diproses</option>
+              <option value="done">Selesai</option>
+            </select>
           </div>
           
-          <div className="flex items-end">
-            <button
-              onClick={resetFilters}
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+          <div>
+            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Kategori
+            </label>
+            <select
+              id="category-filter"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Reset Filter
-            </button>
+              <option value="all">Semua Kategori</option>
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {getCategoryLabel(category)}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <div>
+            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2">
+              Tanggal Mulai
+            </label>
+            <input
+              type="date"
+              id="start-date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-2">
+              Tanggal Akhir
+            </label>
+            <input
+              type="date"
+              id="end-date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="read-status-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Status Dibaca
+            </label>
+            <select
+              id="read-status-filter"
+              value={filterReadStatus}
+              onChange={(e) => setFilterReadStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Semua Tiket</option>
+              <option value="read">Sudah Dibaca</option>
+              <option value="unread">Belum Dibaca</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+              Cari
+            </label>
+            <input
+              type="text"
+              id="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Cari judul atau ID"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        
+        {/* Reset Button - Separate Row */}
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={resetFilters}
+            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors duration-200"
+          >
+            Reset Filter
+          </button>
         </div>
       </div>
       
