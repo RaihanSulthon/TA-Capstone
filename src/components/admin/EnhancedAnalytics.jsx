@@ -23,7 +23,7 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays > 365) {
+    if (diffDays > 365) { 
       return "Rentang tanggal maksimal 1 tahun";
     }
     
