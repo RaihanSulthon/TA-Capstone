@@ -21,6 +21,8 @@ import Modal from "../components/Modal";
 import Button from "../components/forms/Button";
 import emailjs from '@emailjs/browser';
 import { EMAIL_CONFIG } from "../config/emailConfig";
+import { notifyStatusChange } from "../services/notificationService";
+
 
 const TicketDetailPage = () => {
   const { ticketId } = useParams();
@@ -448,9 +450,6 @@ const TicketDetailPage = () => {
     setIsUpdatingStatus(true);
     
     try {
-      // Import notificationService
-      const { notifyStatusChange } = await import("../services/notificationService");
-      
       // Update ticket in Firestore
       const ticketRef = doc(db, "tickets", ticketId);
       
