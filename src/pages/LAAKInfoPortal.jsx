@@ -158,7 +158,7 @@ const LAAKInfoPortal = () => {
           url: "https://toss.telkomuniversity.ac.id/login",
           description: "Tel-U Online Student Services - Login menggunakan SSO",
           requiresLogin: true
-        },
+        }, 
         {
           title: "Tel-U Care (untuk Penundaan BPP)",
           url: "https://situ-keu.telkomuniversity.ac.id/credit-payment/home",
