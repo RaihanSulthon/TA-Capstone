@@ -245,8 +245,8 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
     
     const notifications = [];
     
-    // If updated by admin, notify student (if not anonymous)
-    if (updaterRole === "admin" && ticket.userId && !ticket.anonymous) {
+    // If updated by admin, notify student (HAPUS kondisi !ticket.anonymous)
+    if (updaterRole === "admin" && ticket.userId) {
       notifications.push(
         createTicketNotification({
           ticketId: ticket.id,
@@ -261,7 +261,8 @@ export const notifyStatusChange = async (ticket, oldStatus, newStatus, updaterId
             oldStatus,
             newStatus,
             oldStatusLabel,
-            newStatusLabel
+            newStatusLabel,
+            isAnonymous: ticket.anonymous || false
           }
         })
       );
