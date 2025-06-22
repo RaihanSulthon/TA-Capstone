@@ -7,6 +7,7 @@ import Textfield from "../components/forms/Textfield";
 import Toast from "../components/Toast";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
+import { notifyNewTicket } from "../services/notificationService";
 
 const FormKeluhanMahasiswaPage = () => {
   const { currentUser, userRole } = useAuth();
@@ -473,7 +474,6 @@ const FormKeluhanMahasiswaPage = () => {
       // Kirim notifikasi ke admin
       try {
         console.log("=== SENDING NOTIFICATION ===");
-        const { notifyNewTicket } = await import("../services/notificationService");
         
         const senderName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Mahasiswa';
         

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Textfield from "../../components/forms/Textfield";
 import Button from "../../components/forms/Button";
 import Toast from "../../components/Toast";
-import { registerUser, loginUser } from "../../Services/authService";
+import { registerUser, loginUser } from "../../services/authService";
 import { useAuth } from "../../contexts/Authcontexts";
 
 const AuthPage = () => {

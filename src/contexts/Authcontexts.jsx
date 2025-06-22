@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext, useCallback, useRef } from "react";
-import { getCurrentUser, logoutUser } from "../Services/authService";
+import { getCurrentUser, logoutUser } from "../services/authService";
 import {db} from "../firebase-config";
 import {doc, getDoc} from "firebase/firestore";
 
