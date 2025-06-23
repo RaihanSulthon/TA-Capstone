@@ -30,3 +30,51 @@ dist-ssr
 .env.development
 .env.test
 .env.production
+
+# Firebase specific
+.firebaserc
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+
+# Optional: Firebase hosting cache
+.firebase/hosting.*
+
+# Optional: Sensitive Firebase config (if it contains secrets)
+# Uncomment if your firebase.json contains sensitive info
+# firebase.json
+
+# Build tools cache
+.vite/
+.cache/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Temporary folders
+tmp/
+temp/
+
+# OS generated files
+Thumbs.db
+
+# Backup files
+*.backup
+*.bak
+
+# Project specific sensitive files (uncomment if needed)
+# src/config/secrets.js
+# src/firebase-config.js
