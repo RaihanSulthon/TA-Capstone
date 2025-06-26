@@ -240,7 +240,7 @@ const LAAKInfoPortal = () => {
           {/* Back to Home Button */}
           <button
             onClick={() => navigate("/")}
-            className="mt-8 inline-flex items-center px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors"
+            className="mt-8 inline-flex items-center px-6 py-3 bg-blue-600 text-white border-2 font-medium rounded-lg hover:bg-white hover:text-blue-600 transition-colors duration-300"
           >
             <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />

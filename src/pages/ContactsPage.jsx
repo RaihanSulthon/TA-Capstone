@@ -150,9 +150,27 @@ const ContactsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-blue-600 text-white py-12">
+      <div className="bg-blue-600 text-white py-8 md:py-12">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
+          {/* Mobile Layout */}
+          <div className="block md:hidden">
+            <h1 className="text-2xl md:text-3xl font-bold mb-3">Kontak Dosen</h1>
+            <p className="text-blue-100 mb-4 leading-relaxed">
+              Temukan dosen berdasarkan bidang keahlian yang Anda butuhkan
+            </p>
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-5 py-2.5 rounded-lg font-medium transition-colors duration-300"
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Kembali
+            </button>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">Kontak Dosen</h1>
               <p className="text-blue-100">
@@ -173,6 +191,7 @@ const ContactsPage = () => {
           </div>
         </div>
       </div>
+      
 
       {/* Search and Filter Section */}
       <div className="container mx-auto px-4 py-8">
