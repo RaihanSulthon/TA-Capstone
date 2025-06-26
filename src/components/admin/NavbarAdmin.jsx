@@ -98,7 +98,7 @@ const NavbarAdmin = () => {
           <div className="flex justify-between items-center h-16">
             <Link to="/admin/dashboard" className="flex items-center">
               <svg
-                className="w-8 h-8 text-white mr-2"
+                className="w-6 h-6 md:w-8 md:h-8 text-white mr-1 md:mr-2"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -109,63 +109,78 @@ const NavbarAdmin = () => {
                   clipRule="evenodd"
                 ></path>
               </svg>
-              <span className="text-xl font-bold text-white">Admin Panel</span>
+              <span className="text-md md:text-xl font-bold text-white">Admin Panel</span>
             </Link>
             
+            {/* Desktop Menu */}
             <div className="flex items-center">
-              <span className="mr-4">
-                Hello, {getDisplayName()}
-              </span>
-              
-              {/* Add NotificationSystem component */}
-              <div className="mr-4">
-                <NotificationsSystem />
+              <div className="hidden md:flex items-center">
+                <span className="mr-4">
+                  Hello, {getDisplayName()}
+                </span>
+                
+                {/* Add NotificationSystem component */}
+                <div className="mr-4">
+                  <NotificationsSystem />
+                </div>
+                
+                <Link 
+                  to="/admin/dashboard" 
+                  className="mr-4 text-white hover:text-red-200"
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/admin/users" 
+                  className="mr-4 text-white hover:text-red-200"
+                >
+                  Users
+                </Link>
+                <Link 
+                  to="/admin/tickets"
+                  className="mr-4 text-white hover:text-red-200"
+                >
+                  Tickets
+                </Link>
+                {/* Add Contacts Menu */}
+                <Link 
+                  to="/admin/contacts"
+                  className="mr-4 text-white hover:text-red-200"
+                >
+                  Contacts
+                </Link>
+                {/* Add FAQ Menu */}
+                <Link 
+                  to="/admin/faqs"
+                  className="mr-4 text-white hover:text-red-200"
+                >
+                  FAQ
+                </Link>
+                <Link 
+                  to="/app/dashboard" 
+                  className="mr-4 text-white hover:text-red-200"
+                >
+                  User View
+                </Link>
+                <button
+                  onClick={openLogoutModal}
+                  className="bg-red-700 border-1 border-white hover:bg-white hover:text-red-700 px-5 py-2 rounded-lg font-semibold transition-colors duration-300"
+                >
+                  Logout
+                </button>
               </div>
-              
-              <Link 
-                to="/admin/dashboard" 
-                className="mr-4 text-white hover:text-red-200"
-              >
-                Dashboard
-              </Link>
-              <Link 
-                to="/admin/users" 
-                className="mr-4 text-white hover:text-red-200"
-              >
-                Users
-              </Link>
-              <Link 
-                to="/admin/tickets"
-                className="mr-4 text-white hover:text-red-200"
-              >
-                Tickets
-              </Link>
-              {/* Add Contacts Menu */}
-              <Link 
-                to="/admin/contacts"
-                className="mr-4 text-white hover:text-red-200"
-              >
-                Contacts
-              </Link>
-              {/* Add FAQ Menu */}
-              <Link 
-                to="/admin/faqs"
-                className="mr-4 text-white hover:text-red-200"
-              >
-                FAQ
-              </Link>
-              <Link 
-                to="/app/dashboard" 
-                className="mr-4 text-white hover:text-red-200"
-              >
-                User View
-              </Link>
-              <button
-                onClick={openLogoutModal}
-                className="bg-red-700 border-1 border-white hover:bg-white hover:text-red-700 px-5 py-2 rounded-lg font-semibold transition-colors duration-300"
-              >
-                Logout
-              </button>
+              <div className="md:hidden flex items-center space-x-2">
+                <NotificationsSystem />
+                <span className="text-white text-sm mr-2">
+                  {getDisplayName()}
+                </span>
+                <button
+                  onClick={openLogoutModal}
+                  className="bg-white text-red-700 px-3 py-1 rounded text-sm"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>

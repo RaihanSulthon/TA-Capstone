@@ -150,7 +150,7 @@ const DashboardPage = () => {
         <div className="border-t pt-4 mt-4">
           <h3 className="font-medium mb-4 text-lg">Account Information</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <div>
               <p className="text-gray-600 text-sm">Full Name</p>
               <p className="font-medium">{userData?.name || "Not provided"}</p>
