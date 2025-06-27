@@ -38,7 +38,7 @@ const MainLayout = () => {
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-transparent backdrop-blur-sm z-40 md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           ></div>
         )}
@@ -46,9 +46,9 @@ const MainLayout = () => {
         {/* Sidebar Navigation */}
         {userRole && (
           <div className={`
-            bg-white w-64 shadow-md fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
+            bg-white shadow-md fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
             md:relative md:translate-x-0 md:z-auto md:w-64 md:min-w-0 md:flex-shrink-0
-            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            ${isSidebarOpen ? 'translate-x-0 w-80' : '-translate-x-full w-64'}
           `}>
             <div className="p-4 border-b">
               <h2 className="text-xl font-semibold">
