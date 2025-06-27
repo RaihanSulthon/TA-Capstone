@@ -659,11 +659,14 @@ const StudentTicketsPage = () => {
 
                       {/* Feedback Info */}
                       {feedbackInfo.total > 0 && (
-                        <div className="mb-2 text-sm">
-                          <span className="text-gray-500">Feedback:</span>
-                          <div className="font-medium text-purple-600 truncate">
-                            {feedbackInfo.total} feedback {feedbackInfo.unread > 0 && `(${feedbackInfo.unread} baru)`}
-                          </div>
+                        <div className="mb-2">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            feedbackInfo.unread > 0 
+                              ? "bg-orange-100 text-orange-800" 
+                              : "bg-purple-100 text-purple-800"
+                          }`}>
+                            💬 {feedbackInfo.total} feedback{feedbackInfo.unread > 0 ? ` (${feedbackInfo.unread} baru)` : ""}
+                          </span>
                         </div>
                       )}
 
