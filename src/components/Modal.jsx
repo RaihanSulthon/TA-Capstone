@@ -49,31 +49,17 @@ const Modal = ({
   const getModalSize = () => {
     switch (size) {
       case "sm":
-        return "max-w-sm";
+        return "w-full max-w-sm mx-4";
       case "lg":
-        return "max-w-lg";
+        return "w-full max-w-lg mx-4";
       case "xl":
-        return "max-w-xl";
+        return "w-full max-w-xl mx-4";
       case "2xl":
-        return "max-w-2xl";
+        return "w-full max-w-2xl mx-4";
       case "full":
-        return "max-w-full mx-4";
+        return "w-full max-w-full mx-4";
       default:
-        return "max-w-md"; // Default: md
-    }
-  };
-
-  // Menentukan posisi modal
-  const getModalPosition = () => {
-    switch (position) {
-      case "top-right":
-        return "fixed top-4 right-4 z-50";
-      case "top-left":
-        return "fixed top-4 left-4 z-50";
-      case "custom": // Untuk posisi custom jika diperlukan
-        return "fixed z-50"; // Tambahkan class positioning sesuai kebutuhan
-      default:
-        return "fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"; // Posisi tengah (default)
+        return "w-full max-w-md mx-4"; // Default: md
     }
   };
 
@@ -85,21 +71,35 @@ const Modal = ({
   return (
     <>
       {/* Backdrop dengan efek blur */}
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" aria-hidden="true" />
       
-      {/* Modal container */}
-      <div 
-        ref={modalRef}
-        className={`${getModalPosition()} bg-white rounded-xl shadow-2xl p-6 w-full ${getModalSize()} mx-4 transform transition-all duration-300 ease-in-out`}
-      >
-        {title && (
-          <h2 className={`text-xl font-semibold mb-4 ${isAdminPanel ? 'text-gray-900' : ''}`}>
-            {title}
-          </h2>
-        )}
-        
-        <div className="overflow-hidden">
-          {children}
+      {/* Modal container - FIXED: Proper centering */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div 
+          ref={modalRef}
+          className={`bg-white rounded-xl shadow-2xl ${getModalSize()} max-h-[90vh] transform transition-all duration-300 ease-in-out`}
+        >
+          {/* Header */}
+          {title && (
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200">
+              <h2 className={`text-lg md:text-xl font-semibold ${isAdminPanel ? 'text-gray-900' : 'text-gray-900'}`}>
+                {title}
+              </h2>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+          
+          {/* Content */}
+          <div className="p-4 md:p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+            {children}
+          </div>
         </div>
       </div>
     </>
