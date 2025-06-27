@@ -484,35 +484,35 @@ const TicketManagementPage = () => {
         </div>
       </div>
       
-      {/* Enhanced Stats Summary - IMPROVED GRID */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-4 md:mb-6 overflow-hidden w-full">
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+      {/*Stats Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6 overflow-hidden w-full">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Total Tiket</p>
-          <p className="text-lg md:text-2xl font-bold text-blue-600">{ticketStats.total}</p>
+          <p className="text-sm md:text-lg font-bold text-blue-600">{ticketStats.total}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Tiket Baru</p>
-          <p className="text-lg md:text-2xl font-bold text-blue-600">{ticketStats.new}</p>
+          <p className="text-sm md:text-lg font-bold text-blue-600">{ticketStats.new}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Sedang Diproses</p>
-          <p className="text-lg md:text-2xl font-bold text-yellow-600">{ticketStats.inProgress}</p>
+          <p className="text-lg md:text-lg font-bold text-yellow-600">{ticketStats.inProgress}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Selesai</p>
-          <p className="text-lg md:text-2xl font-bold text-green-600">{ticketStats.done}</p>
+          <p className="text-lg md:text-lg font-bold text-green-600">{ticketStats.done}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Belum Dibaca</p>
-          <p className="text-lg md:text-2xl font-bold text-purple-600">{ticketStats.unread}</p>
+          <p className="text-lg md:text-lg font-bold text-purple-600">{ticketStats.unread}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Tiket Dengan Feedback</p>
-          <p className="text-lg md:text-2xl font-bold text-indigo-600">{ticketStats.withFeedback}</p>
+          <p className="text-lg md:text-lg font-bold text-indigo-600">{ticketStats.withFeedback}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Total Feedback</p>
-          <p className="text-lg md:text-2xl font-bold text-indigo-600">{ticketStats.totalFeedbacks}</p>
+          <p className="text-lg md:text-lg font-bold text-indigo-600">{ticketStats.totalFeedbacks}</p>
         </div>
       </div>
       

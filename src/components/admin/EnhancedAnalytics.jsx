@@ -176,67 +176,80 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       {/* Enhanced Header with Date Range Filters */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 space-y-4 md:space-y-0">
-        <h2 className="text-xl font-bold text-gray-800">Analisis Tiket</h2>
+      <div className="flex flex-col space-y-4 mb-6">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800">Analisis Tiket</h2>
         
-        {/* Date Range Filters */}
-        <div className="flex flex-col md:flex-row gap-4 items-end">
-          <div className="flex gap-2 items-end">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Dari Tanggal
-              </label>
-              <input
-                type="date"
-                value={dateRange.startDate}
-                onChange={(e) => handleDateChange('startDate', e.target.value)}
-                className={`px-3 py-1 border rounded-md text-sm focus:outline-none focus:ring-2 ${
-                  dateError 
-                    ? 'border-red-300 focus:ring-red-500' 
-                    : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Sampai Tanggal
-              </label>
-              <input
-                type="date"
-                value={dateRange.endDate}
-                onChange={(e) => handleDateChange('endDate', e.target.value)}
-                className={`px-3 py-1 border rounded-md text-sm focus:outline-none focus:ring-2 ${
-                  dateError 
-                    ? 'border-red-300 focus:ring-red-500' 
-                    : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              />
-            </div>
+        {/* Mobile-first Date Range Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Tanggal Mulai
+            </label>
+            <input
+              type="date"
+              value={dateRange.startDate}
+              onChange={(e) => handleDateChange('startDate', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 ${
+                dateError 
+                  ? 'border-red-300 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Sampai Tanggal
+            </label>
+            <input
+              type="date"
+              value={dateRange.endDate}
+              onChange={(e) => handleDateChange('endDate', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 ${
+                dateError 
+                  ? 'border-red-300 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Jenis Chart
+            </label>
+            <select
+              value={selectedChart}
+              onChange={(e) => setSelectedChart(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="monthly">Tren Aktivitas Bulanan</option>
+              <option value="category">Kategori</option>
+              <option value="completion">Tingkat Penyelesaian</option>
+            </select>
+          </div>
+          
+          <div className="flex items-end">
             <button
               onClick={() => {
-                const newDateRange = {
+                setDateRange({
                   startDate: new Date(new Date().setMonth(new Date().getMonth() - 6)).toISOString().split('T')[0],
                   endDate: new Date().toISOString().split('T')[0]
-                };
-                setDateRange(newDateRange);
+                });
                 setDateError("");
               }}
-              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors"
+              className="w-full px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors duration-200"
             >
               Reset
             </button>
           </div>
-          
-          <select
-            value={selectedChart}
-            onChange={(e) => setSelectedChart(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="monthly">Tren Aktivitas Bulanan</option>
-            <option value="category">Kategori Populer</option>
-            <option value="completion">Tingkat Penyelesaian per Bulan</option>
-          </select>
         </div>
+        
+        {/* Error Message */}
+        {dateError && (
+          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+            {dateError}
+          </div>
+        )}
       </div>
 
       {/* Error Message untuk Date Validation */}
@@ -262,61 +275,63 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
           
           {/* Tampilkan placeholder jika ada error */}
           {dateError ? (
-            <div className="flex items-center justify-center h-[300px] bg-gray-100 rounded-lg">
-              <div className="text-center text-gray-500">
-                <svg className="h-12 w-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center justify-center h-64 sm:h-80 lg:h-96 bg-gray-100 rounded-lg overflow-hidden">
+              <div className="text-center text-gray-500 p-4">
+                <svg className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p>Silakan perbaiki rentang tanggal untuk melihat analisis</p>
+                <p className="text-sm sm:text-base">Silakan perbaiki rentang tanggal untuk melihat analisis</p>
               </div>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              {selectedChart === 'monthly' && (
-                <BarChart data={monthlyChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="new" fill="#60A5FA" name="Baru" />
-                  <Bar dataKey="in_progress" fill="#FBBF24" name="Sedang Diproses" />
-                  <Bar dataKey="done" fill="#10B981" name="Selesai" />
-                </BarChart>
-              )}
+            <div className="h-64 sm:h-80 lg:h-96 overflow-hidden">
+              <ResponsiveContainer width="100%" height= "100%">
+                {selectedChart === 'monthly' && (
+                  <BarChart data={monthlyChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="new" fill="#60A5FA" name="Baru" />
+                    <Bar dataKey="in_progress" fill="#FBBF24" name="Sedang Diproses" />
+                    <Bar dataKey="done" fill="#10B981" name="Selesai" />
+                  </BarChart>
+                )}
               
-              {selectedChart === 'category' && (
-                <PieChart>
-                  <Pie
-                    data={categoryChartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, completion_rate }) => `${name} (${completion_rate}% selesai)`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {categoryChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value, name, props) => [
-                    `${value} tiket (${props.payload.completion_rate}% selesai)`, 
-                    name
-                  ]} />
-                </PieChart>
-              )}
+                {selectedChart === 'category' && (
+                  <PieChart>
+                    <Pie
+                      data={categoryChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, completion_rate }) => `${name} (${completion_rate}% selesai)`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {categoryChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name, props) => [
+                      `${value} tiket (${props.payload.completion_rate}% selesai)`, 
+                      name
+                    ]} />
+                  </PieChart>
+                )}
               
-              {selectedChart === 'completion' && (
-                <BarChart data={completionByMonthData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip content={<CompletionTooltip />} />
-                  <Bar dataKey="completion_rate" fill="#10B981" name="Tingkat Penyelesaian (%)" />
-                </BarChart>
-              )}
-            </ResponsiveContainer>
+                {selectedChart === 'completion' && (
+                  <BarChart data={completionByMonthData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip content={<CompletionTooltip />} />
+                    <Bar dataKey="completion_rate" fill="#10B981" name="Tingkat Penyelesaian (%)" />
+                  </BarChart>
+                )}
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
 
