@@ -338,12 +338,12 @@ const AuthPage = () => {
 };
 
   return(
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full p-6 mt-5 bg-white rounded-lg shadow-md relative">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="max-w-md w-full p-4 sm:p-6 my-4 sm:mt-5 bg-white rounded-lg shadow-md relative">
         {/* Back Button */}
         <button 
         onClick={() => navigate('/')}
-        className="absolute p-1 rounded-full border border-gray-300 shadow-sm bg-white hover:bg-blue-500 transition-all duration-300 group"
+        className="absolute top-4 left-4 p-2 sm:p-1 rounded-full border border-gray-300 shadow-sm bg-white hover:bg-blue-500 transition-all duration-300 group touch-manipulation"
         aria-label="Back to home"
       >
         <svg 
@@ -362,12 +362,12 @@ const AuthPage = () => {
         </svg>
       </button>
         {/* Form header */}
-        <h2 className="text-3xl font-bold text-center mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6 pt-8 sm:pt-0">
           {isLoginMode ? "Login" : "Create an Account"}
         </h2>
-        <div className="flex border-b mb-6">
+        <div className="flex border-b mb-4 sm:mb-6">
           <button
-            className={`w-1/2 py-2 text-center transition-colors duration-300 ${
+            className={`w-1/2 py-3 sm:py-2 text-sm sm:text-base text-center transition-colors duration-300 touch-manipulation  ${
               isLoginMode
                 ? "border-b-2 border-blue-500 text-blue-600 font-medium"
                 : "text-gray-500 hover:text-gray-700"
@@ -379,7 +379,7 @@ const AuthPage = () => {
             Login
           </button>
           <button
-            className={`w-1/2 py-2 text-center transition-colors duration-300 ${
+            className={`w-1/2 py-3 sm:py-2 text-sm sm:text-base text-center transition-colors duration-300 touch-manipulation ${
               !isLoginMode
                 ? "border-b-2 border-blue-500 text-blue-600 font-medium"
                 : "text-gray-500 hover:text-gray-700"
@@ -443,7 +443,7 @@ const AuthPage = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300 w-full mt-4"
+                className="bg-blue-600 border-1 border-blue-500 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300 w-full mt-4 py-3 sm:py-2 text-base touch-manipulation"
               >
                 {loading ? "Logging In..." : "Log In"}
               </Button>
@@ -516,13 +516,13 @@ const AuthPage = () => {
           )}
         </div>
   
-        <div className="text-center mt-4">
+        <div className="text-center mt-4 sm:mt-4">
           {isLoginMode ? (
-            <p>
+            <p className="text-sm sm:text-base">
               Don't have an account?{" "}
               <button
                 onClick={toggleAuthMode}
-                className="text-blue-500 hover:underline transition-colors duration-300"
+                className="text-blue-500 hover:underline transition-colors duration-300 touch-manipulation"
                 type="button"
                 disabled={isAnimating}
               >
@@ -530,11 +530,11 @@ const AuthPage = () => {
               </button>
             </p>
           ) : (
-            <p>
+            <p className="text-sm sm:text-base">
               Already have an account?{" "}
               <button
                 onClick={toggleAuthMode}
-                className="text-blue-500 hover:underline transition-colors duration-300"
+                className="text-blue-500 hover:underline transition-colors duration-300 touch-manipulation"
                 type="button"
                 disabled={isAnimating}
               >

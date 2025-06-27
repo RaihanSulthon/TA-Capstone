@@ -81,7 +81,7 @@ const Navbar = () => {
             {/* Updated Logo and App Name with better positioning */}
             <Link to="/" className="flex items-center">
               <svg
-                className="w-8 h-8 text-blue-600 mr-2"
+                className="w-6 h-6 md:w-8 md:h-8 text-blue-600 mr-1 md:mr-2"
                 fill="currentColor"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -92,76 +92,113 @@ const Navbar = () => {
                   clipRule="evenodd"
                 ></path>
               </svg>
-              <span className="text-xl font-bold text-blue-600">My Capstone App</span>
+              <span className="text-md md:text-xl font-bold text-blue-600">My Capstone App</span>
             </Link>
             
             <div className="flex items-center">
               {isAuthenticated ? (
                 <>
-                  <div className="mr-4 flex items-center">
-                    <span className="text-gray-700 mr-2">
-                      Hello, {getUserDisplayName()}
-                    </span>
-                    {userRole && (
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeStyle()}`}>
-                        {formatRoleDisplay()}
+                  {/* Desktop Menu */}
+                  <div className="hidden md:flex items-center">
+                    <div className="mr-4 flex items-center">
+                      <span className="text-gray-700 mr-2">
+                        Hello, {getUserDisplayName()}
                       </span>
+                      {userRole && (
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeStyle()}`}>
+                          {formatRoleDisplay()}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="mr-6">
+                      <NotificationsSystem />
+                    </div>
+                    
+                    <Link 
+                      to="/app/dashboard" 
+                      className="mr-4 text-gray-700 hover:text-blue-600"
+                    >
+                      Dashboard
+                    </Link>
+                    
+                    {userRole === 'student' && (
+                      <Link 
+                        to="/app/my-tickets" 
+                        className="mr-4 text-gray-700 hover:text-blue-600"
+                      >
+                        Tiket Saya
+                      </Link>
                     )}
+                    
+                    {isAdmin() && (
+                      <Link 
+                        to="/admin/dashboard" 
+                        className="mr-4 text-gray-700 hover:text-blue-600"
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    
+                    <button
+                      onClick={openLogoutModal}
+                      className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-colors duration-200 px-4 py-2 rounded"
+                    >
+                      Logout
+                    </button>
                   </div>
-                  
-                  {/* Add Notifications System */}
-                  <div className="mr-6">
+
+                  {/* Mobile Menu */}
+                  <div className="md:hidden flex items-center space-x-2">
                     <NotificationsSystem />
+                    <div className="flex items-center">
+                      {/* <span className="text-gray-700 text-sm mr-2">
+                        {getUserDisplayName()}
+                      </span> */}
+                      <button
+                        onClick={openLogoutModal}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   </div>
-                  
-                  <Link 
-                    to="/app/dashboard" 
-                    className="mr-4 text-gray-700 hover:text-blue-600"
-                  >
-                    Dashboard
-                  </Link>
-                  
-                  {/* Role-specific Links */}
-                  {userRole === 'student' && (
-                    <Link 
-                      to="/app/my-tickets" 
-                      className="mr-4 text-gray-700 hover:text-blue-600"
-                    >
-                      Tiket Saya
-                    </Link>
-                  )}
-                  
-                  {isAdmin() && (
-                    <Link 
-                      to="/admin/dashboard" 
-                      className="mr-4 text-gray-700 hover:text-blue-600"
-                    >
-                      Admin Panel
-                    </Link>
-                  )}
-                  
-                  <button
-                    onClick={openLogoutModal}
-                    className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-colors duration-200 px-4 py-2 rounded"
-                  >
-                    Logout
-                  </button>
                 </>
               ) : (
                 <>
-                  <Link 
-                    to="/auth" 
-                    className="text-gray-700 hover:text-blue-600 px-4 py-2"
-                  >
-                    Login
-                  </Link>
-                  <Link 
-                    to="/auth"
-                    state={{ initialTab: "signup" }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                  >
-                    Sign Up
-                  </Link>
+                  {/* Desktop Auth Menu */}
+                  <div className="hidden md:flex items-center">
+                    <Link 
+                      to="/auth" 
+                      className="text-gray-700 hover:text-blue-600 px-4 py-2"
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/auth"
+                      state={{ initialTab: "signup" }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+
+                  {/* Mobile Auth Menu */}
+                  <div className="md:hidden flex items-center space-x-2">
+                    <Link 
+                      to="/auth" 
+                      className="text-gray-700 hover:text-blue-600 px-2 py-1 text-sm"
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/auth"
+                      state={{ initialTab: "signup" }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
                 </>
               )}
             </div>

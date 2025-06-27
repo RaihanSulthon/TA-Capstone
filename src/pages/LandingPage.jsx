@@ -280,13 +280,13 @@ const LandingPage = () => {
               >
                 FAQ
               </button>
-              <div className="border-t border-gray-200 py-3 px-4">
+              <div className="border-t border-gray-200 py-3 px-4 space-y-3">
                 {isAuthenticated ? (
                   <Button
                     onClick={() => {
                       navigate("/app/dashboard");
                     }}
-                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="w-full bg-blue text-white border-1 border-blue-600 hover:bg-white hover:text-blue-600 py-3 rounded-lg font-semibold transition-colors duration-300"
                   >
                     Dashboard
                   </Button>
@@ -296,7 +296,7 @@ const LandingPage = () => {
                       onClick={() => {
                         navigate("/auth");
                       }}
-                      className="w-full py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
+                      className="w-full bg-blue-600 text-white border-2 border-blue-600 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300 mb-3"
                     >
                       Log In
                     </Button>
@@ -304,7 +304,7 @@ const LandingPage = () => {
                       onClick={() => {
                         navigate("/auth", { state: { initialTab: "signup" } });
                       }}
-                      className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      className="w-full bg-blue-600 text-white border-2 border-blue-600 hover:bg-white hover:text-blue-600 rounded-lg font-semibold transition-colors duration-300"
                     >
                       Sign Up
                     </Button>

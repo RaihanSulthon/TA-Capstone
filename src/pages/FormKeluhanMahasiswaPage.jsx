@@ -553,16 +553,16 @@ const FormKeluhanMahasiswaPage = () => {
   }, [previewFileUrl]);
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
+    <div className="bg-gray-50 min-h-screen py-4 md:py-8 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         {/* Header Form */}
-        <div className="bg-blue-600 p-6 text-white">
-          <h1 className="text-2xl font-bold">Form Keluhan dan Laporan Mahasiswa</h1>
-          <p className="mt-2">Silakan isi formulir di bawah ini untuk menyampaikan keluhan atau laporan Anda</p>
+        <div className="bg-blue-600 p-4 md:p-6 text-white">
+          <h1 className="text-xl md:text-2xl font-bold">Form Keluhan dan Laporan Mahasiswa</h1>
+          <p className="mt-2 text-sm md:text-base">Silakan isi formulir di bawah ini untuk menyampaikan keluhan atau laporan Anda</p>
         </div>
         
         {/* Content Form */}
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {/* Toast notification */}
           {toast.message && (
             <Toast 
@@ -615,7 +615,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="nama" 
                     value={formData.nama} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={formData.anonymous}
                   />
                 </div>
@@ -630,7 +630,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="nim" 
                     value={formData.nim} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={formData.anonymous}
                   />
                 </div>
@@ -645,7 +645,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="prodi" 
                     value={formData.prodi} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={formData.anonymous}
                   />
                 </div>
@@ -659,7 +659,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="semester" 
                     value={formData.semester} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={formData.anonymous}
                   >
                     <option value="">Pilih Semester</option>
@@ -679,7 +679,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="email" 
                     value={formData.email} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 
@@ -693,7 +693,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="noHp" 
                     value={formData.noHp} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={formData.anonymous}
                   />
                 </div>
@@ -715,7 +715,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="kategori" 
                     value={formData.kategori} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {kategoriOptions.map(option => (
                       <option key={option.value} value={option.value}>
@@ -734,7 +734,7 @@ const FormKeluhanMahasiswaPage = () => {
                     name="subKategori" 
                     value={formData.subKategori} 
                     onChange={handleChange} 
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={!formData.kategori}
                   >
                     <option value="">Pilih Sub Kategori</option>
@@ -757,7 +757,7 @@ const FormKeluhanMahasiswaPage = () => {
                   name="judul" 
                   value={formData.judul} 
                   onChange={handleChange} 
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Tuliskan judul laporan secara singkat"
                 />
               </div>
@@ -772,7 +772,7 @@ const FormKeluhanMahasiswaPage = () => {
                   value={formData.deskripsi} 
                   onChange={handleChange} 
                   rows="5"
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full min-w-0 px-3 md:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Jelaskan laporan Anda secara detail..."
                 />
               </div>
@@ -935,18 +935,18 @@ const FormKeluhanMahasiswaPage = () => {
               isOpen={isFilePreviewOpen}
               onClose={closeFilePreview}
               title="Preview File"
-              size="full"
+              size="large"
             >
-              <div className="flex flex-col items-center max-w-full">
-                {/* File Container */}
-                <div className="w-full bg-gray-100 rounded-lg p-4 mb-6">
+              <div className="flex flex-col items-center justify-center p-4">
+                <div className="w-full max-w-4xl bg-white rounded-lg border border-gray-200 overflow-hidden">
                   {getFileType(formData.lampiran) === 'image' ? (
-                    <img 
-                      src={previewFileUrl} 
-                      alt="Preview" 
-                      className="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-lg mx-auto"
-                      style={{ minHeight: '300px' }}
-                    />
+                    <div className="relative bg-gray-50 p-4 flex items-center justify-center min-h-[400px]">
+                      <img 
+                        src={previewFileUrl} 
+                        alt="Preview" 
+                        className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-sm"
+                      />
+                    </div>
                   ) : getFileType(formData.lampiran) === 'pdf' ? (
                     <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg border-2 border-dashed border-gray-300">
                       <svg className="h-16 w-16 text-red-600 mb-4" fill="currentColor" viewBox="0 0 20 20">
