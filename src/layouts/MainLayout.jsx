@@ -17,6 +17,15 @@ const MainLayout = () => {
     return location.pathname === path;
   };
 
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/app/dashboard') return 'Dashboard';
+    if (path === '/app/my-tickets') return 'Tiket Saya';
+    if (path === '/app/submit-ticket') return 'Buat Tiket Baru';
+    if (path.startsWith('/app/tickets/')) return 'Detail Tiket';
+    return 'Dashboard'; // fallback
+  };
+
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
@@ -38,7 +47,7 @@ const MainLayout = () => {
         {userRole && (
           <div className={`
             bg-white w-64 shadow-md fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
-            md:relative md:translate-x-0 md:z-auto
+            md:relative md:translate-x-0 md:z-auto md:w-64 md:min-w-0 md:flex-shrink-0
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           `}>
             <div className="p-4 border-b">
@@ -195,10 +204,10 @@ const MainLayout = () => {
         )}
         
         {/* Main Content */}
-        <div className="flex-1 bg-gray-50 md:p-4 p-2">
+        <div className="flex-1 bg-gray-50 md:p-4 p-2 min-w-0 overflow-x-hidden">
           {/* Mobile Header dengan Hamburger */}
           {userRole && (
-            <div className="md:hidden bg-white p-4 mb-4 rounded-lg shadow flex items-center justify-between">
+            <div className="md:hidden bg-white p-4 mb-4 rounded-lg shadow flex items-center justify-between max-w-full overflow-hidden">
               <button
                 onClick={() => setIsSidebarOpen(true)}
                 className="text-gray-600 hover:text-gray-900"
@@ -207,8 +216,8 @@ const MainLayout = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <h1 className="text-lg font-semibold">
-                {isAdminSection ? "Admin Panel" : "Dashboard"}
+              <h1 className="text-lg font-semibold truncate">
+                {isAdminSection ? "Admin Panel" : getPageTitle()}
               </h1>
               <div></div> {/* Spacer untuk center alignment */}
             </div>
