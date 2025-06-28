@@ -534,7 +534,7 @@ const FeedbackPage = () => {
                 className="bg-gray-600 text-white hover:bg-white hover:text-gray-600 border border-gray-600 transition-colors duration-200"
                 disabled={sending}
               >
-                Kembali ke Detail
+                Kembali
               </Button>
               <Button
                 type="submit"

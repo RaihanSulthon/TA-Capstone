@@ -673,7 +673,7 @@ const StudentTicketsPage = () => {
                       {/* Action Buttons */}
                       <div className="flex gap-2 w-full">
                         <Button
-                          onClick={() => navigate(`/app/ticket/${ticket.id}`)}
+                          onClick={() => navigate(`/app/tickets/${ticket.id}`)}
                           className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs py-2 px-3 min-w-0"
                         >
                           Detail
