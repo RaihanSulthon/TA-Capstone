@@ -578,7 +578,7 @@ const AdminFAQPage = () => {
       {/* Stats */}
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
         <p className="text-sm text-gray-600">
-          Total: {faqs.length} FAQ | Menampilkan: {filteredFAQs.length} FAQ | 
+          Total: {faqs.length} FAQ | 
           Aktif: {faqs.filter(f => f.isActive).length} | 
           Non-aktif: {faqs.filter(f => !f.isActive).length}
         </p>
