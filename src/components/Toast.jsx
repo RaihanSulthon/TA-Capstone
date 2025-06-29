@@ -49,14 +49,14 @@ const Toast = ({ message, type = "error", onClose, duration = 5000 }) => {
   const styles = getToastStyles();
   
   return (
-    <div className="fixed z-50 top-4 right-4 max-w-md w-full shadow-lg rounded-lg overflow-hidden animate-fade-in">
+    <div className="fixed z-50 top-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md shadow-lg rounded-lg overflow-hidden animate-fade-in">
       <div className={`${styles.container} p-4`}>
         <div className="flex items-start">
           <div className="flex-shrink-0">
             {styles.icon}
           </div>
           <div className="ml-3 flex-1 pt-0.5">
-            <p className="text-sm font-medium">{message}</p>
+            <p className="text-sm font-medium break-words">{message}</p>
           </div>
           <div className="ml-4 flex-shrink-0 flex">
             <button

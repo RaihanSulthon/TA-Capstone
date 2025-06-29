@@ -127,7 +127,7 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 overflow-x-hidden w-full">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
       {/* Admin Info Card */}
@@ -167,36 +167,71 @@ const AdminDashboardPage = () => {
       </div>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Total Users</h3>
-          <p className="text-3xl font-bold text-blue-600">{userStats.total}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8 px-1">
+        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+          <p className="text-xs md:text-sm text-gray-500 truncate">Total Users</p>
+          <p className="text-lg md:text-2xl font-bold text-blue-600">{userStats.total}</p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Students</h3>
-          <p className="text-3xl font-bold text-green-600">{userStats.students}</p>
+        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+          <p className="text-xs md:text-sm text-gray-500 truncate">Students</p>
+          <p className="text-lg md:text-2xl font-bold text-green-600">{userStats.students}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Admin</h3>
-          <p className="text-3xl font-bold text-red-600">{userStats.admins}</p>
+        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
+          <p className="text-xs md:text-sm text-gray-500 truncate">Admin</p>
+          <p className="text-lg md:text-2xl font-bold text-red-600">{userStats.admins}</p>
         </div>
       </div>
-      
+            
       {/* Recent Users */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold">Recent Users</h3>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 p-4 md:p-6 gap-3">
+          <h3 className="text-lg md:text-xl font-semibold">User Overview</h3>
           <Link 
             to="/admin/users" 
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium w-full sm:w-auto text-center sm:text-left"
           >
             View All Users
           </Link>
         </div>
         
-        <div className="overflow-x-auto">
+        {/* Mobile Card Layout */}
+        <div className="block md:hidden">
+          <div className="divide-y divide-gray-200">
+            {recentUsers.length > 0 ? (
+              recentUsers.map((user) => (
+                <div key={user.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium text-gray-900 truncate flex-1 mr-2">
+                      {user.name || "N/A"}
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ${
+                      user.role === 'admin' ?
+                        'bg-red-100 text-red-800' : 
+                        'bg-green-100 text-green-800'
+                    }`}>
+                      {getRoleDisplayName(user.role)}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 truncate">
+                    {user.email}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Registered: {formatDate(user.createdAt)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-gray-500">
+                No recent users found
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Table Layout */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -226,9 +261,11 @@ const AdminDashboardPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === 'admin' ? 'bg-red-100 text-red-800' 
-                        : 'bg-green-100 text-green-800'}`}>
-                          {getRoleDisplayName(user.role)}
+                        user.role === 'admin' ?
+                          'bg-red-100 text-red-800' : 
+                          'bg-green-100 text-green-800'
+                      }`}>
+                        {getRoleDisplayName(user.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -238,8 +275,8 @@ const AdminDashboardPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No users found
+                  <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                    No recent users found
                   </td>
                 </tr>
               )}
