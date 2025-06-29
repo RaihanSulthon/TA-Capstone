@@ -485,7 +485,7 @@ const TicketManagementPage = () => {
       </div>
       
       {/*Stats Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6 overflow-hidden w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3 mb-6 md:mb-8 px-1">
         <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Total Tiket</p>
           <p className="text-sm md:text-lg font-bold text-blue-600">{ticketStats.total}</p>

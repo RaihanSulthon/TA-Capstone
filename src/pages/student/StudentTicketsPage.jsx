@@ -554,7 +554,7 @@ const StudentTicketsPage = () => {
       </div>
       
       {/* Enhanced Stats Summary with Feedback Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-4 md:mb-6 overflow-hidden w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-6 md:mb-8 px-1">
         <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
           <p className="text-xs md:text-sm text-gray-500 truncate">Total Tiket</p>
           <p className="text-lg md:text-2xl font-bold text-blue-600">{ticketStats.total}</p>
