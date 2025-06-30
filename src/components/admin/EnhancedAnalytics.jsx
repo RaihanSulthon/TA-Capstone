@@ -9,6 +9,7 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
   
   const [selectedChart, setSelectedChart] = useState("monthly");
   const [dateError, setDateError] = useState(""); // State untuk error validasi tanggal
+  const [isMobile, setIsMobile] = useState(false);
 
   // Validasi date range
   const validateDateRange = (startDate, endDate) => {
@@ -29,6 +30,17 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
     
     return "";
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    handleResize(); // Check initial size
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Handle date change dengan validasi
   const handleDateChange = (field, value) => {
@@ -298,28 +310,30 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
                   </BarChart>
                 )}
               
-                {selectedChart === 'category' && (
-                  <PieChart>
-                    <Pie
-                      data={categoryChartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, completion_rate }) => `${name} (${completion_rate}% selesai)`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {categoryChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name, props) => [
-                      `${value} tiket (${props.payload.completion_rate}% selesai)`, 
-                      name
-                    ]} />
-                  </PieChart>
-                )}
+              {selectedChart === 'category' && (
+                <PieChart>
+                  <Pie
+                    data={categoryChartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, completion_rate }) => {
+                      return isMobile ? name : `${name} (${completion_rate}% selesai)`;
+                    }}
+                    outerRadius={isMobile ? 70 : 100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categoryChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value, name, props) => [
+                    `${value} tiket (${props.payload.completion_rate}% selesai)`, 
+                    name
+                  ]} />
+                </PieChart>
+              )}
               
                 {selectedChart === 'completion' && (
                   <BarChart data={completionByMonthData}>
