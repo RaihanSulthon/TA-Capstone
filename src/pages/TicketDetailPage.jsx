@@ -1135,7 +1135,7 @@ const TicketDetailPage = () => {
             </div>
           )}
           
-          {/* Action buttons for admin */}
+          {/* PERBAIKAN: Action buttons for admin - Responsive yang benar */}
           {userRole === "admin" && (
             <div className="border-t pt-6">
               <h3 className="text-sm font-medium text-gray-500 mb-4">Tindakan</h3>
@@ -1158,7 +1158,7 @@ const TicketDetailPage = () => {
                 >
                   📧 Kirim Email
                 </Button>
-                {ticket.status === "done" ? (
+                {ticket.status === "done" && (
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
                     disabled={isUpdatingStatus}
@@ -1166,7 +1166,8 @@ const TicketDetailPage = () => {
                   >
                     {isUpdatingStatus ? "Memperbarui..." : "🔄 Buka Kembali"}
                   </Button>
-                ) : (
+                )}
+                {ticket.status !== "done" && (
                   <Button
                     onClick={() => handleStatusUpdate("done")}
                     disabled={isUpdatingStatus}
@@ -1204,7 +1205,7 @@ const TicketDetailPage = () => {
                 >
                   📧 Kirim Email
                 </Button>
-                {ticket.status === "done" ? (
+                {ticket.status === "done" && (
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
                     disabled={isUpdatingStatus}
@@ -1212,7 +1213,8 @@ const TicketDetailPage = () => {
                   >
                     {isUpdatingStatus ? "Memperbarui..." : "🔄 Buka Kembali"}
                   </Button>
-                ) : (
+                )}
+                {ticket.status !== "done" && (
                   <Button
                     onClick={() => handleStatusUpdate("done")}
                     disabled={isUpdatingStatus}
@@ -1234,30 +1236,16 @@ const TicketDetailPage = () => {
             </div>
           )}
 
-          {/* Action buttons for students */}
+          {/* PERBAIKAN: Action buttons for students - Responsive yang benar */}
           {userRole === "student" && ticket.userId === currentUser.uid && (
             <div className="border-t pt-6">
               <h3 className="text-sm font-medium text-gray-500 mb-4">Tindakan</h3>
               
-              {/* Mobile Layout */}
-              <div className="block md:hidden space-y-2 w-full">
+              {/* Unified responsive layout */}
+              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                 <Button
                   onClick={handleViewFeedback}
-                  className={`w-full text-white text-sm py-2.5 px-4 justify-center ${
-                    unreadFeedbackCount > 0 
-                      ? "bg-orange-600 hover:bg-orange-700" 
-                      : "bg-purple-600 hover:bg-purple-700"
-                  }`}
-                >
-                  📝 Lihat Feedback ({feedbackCount}{unreadFeedbackCount > 0 ? `, ${unreadFeedbackCount} baru` : ""})
-                </Button>
-              </div>
-
-              {/* Desktop Layout */}
-              <div className="hidden md:flex space-x-2">
-                <Button
-                  onClick={handleViewFeedback}
-                  className={`text-white ${
+                  className={`w-full md:w-auto text-white ${
                     unreadFeedbackCount > 0 
                       ? "bg-orange-600 hover:bg-orange-700" 
                       : "bg-purple-600 hover:bg-purple-700"

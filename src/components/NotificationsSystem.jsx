@@ -99,11 +99,31 @@ const NotificationsSystem = () => {
     
     // Register the listener 
     const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      console.log("=== NOTIFICATIONS LISTENER DEBUG ===");
+      console.log("Snapshot size:", snapshot.size);
+      console.log("User role:", userRole);
+      console.log("Current user ID:", currentUser.uid);
+
       console.log(`Got ${snapshot.docs.length} notifications`);
-      const notificationsList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+
+      const notificationsList = snapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log("Notification doc:", {
+          id: doc.id,
+          recipientId: data.recipientId,
+          type: data.type,
+          title: data.title,
+          message: data.message,
+          read: data.read,
+          createdAt: data.createdAt
+        });
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
+
+      console.log("Filtered notifications:", notificationsList);
       
       setNotifications(notificationsList);
       // Update unread count once when we get notifications
