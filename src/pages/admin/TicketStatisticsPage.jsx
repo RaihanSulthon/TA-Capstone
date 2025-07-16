@@ -725,7 +725,11 @@ const UserManagementPage = () => {
         </div>
       </div>
       {/* Enhanced Analytics Charts Section */}
-      <EnhancedAnalytics tickets={tickets} users={users} />
+      <EnhancedAnalytics
+        tickets={tickets}
+        users={users}
+        showExportButtons={true}
+      />
       {/* Additional Information */}
       <div className="mt-4 md:mt-6 bg-white rounded-lg shadow-md p-4 md:p-6">
         <h3 className="text-base md:text-lg font-medium text-gray-900 mb-3 md:mb-4">
