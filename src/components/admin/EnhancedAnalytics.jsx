@@ -13,7 +13,6 @@ import {
 } from "recharts";
 import { exportToCSV, exportToPDF, exportToPDFWithManualCharts } from "../../utils/exportUtils";
 
-const result = await exportToPDFWithManualCharts(analyticsData, dateRange, filteredTickets);
 
 const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
   const [dateRange, setDateRange] = useState({
