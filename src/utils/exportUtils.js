@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+
 /**
  * Export data to PDF format with MANUAL CHARTS (FIXED LAYOUT)
  * @param {Object} analyticsData - Data analytics yang telah diproses
