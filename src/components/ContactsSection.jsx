@@ -168,7 +168,7 @@ const ContactsSection = () => {
             <div className="text-center">
               <button
                 onClick={handleViewAllClick}
-                className="inline-flex items-center bg-blue-600 border-2 border-blue-500 hover:bg-white hover:text-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
+                className="inline-flex items-center bg-blue-600 border-2 border-blue-500 hover:bg-white hover:text-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 duration-300"
               >
                 Lihat Semua Kontak Dosen
                 <svg className="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

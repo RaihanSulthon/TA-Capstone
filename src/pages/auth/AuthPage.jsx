@@ -343,7 +343,7 @@ const AuthPage = () => {
         {/* Back Button */}
         <button 
         onClick={() => navigate('/')}
-        className="absolute top-4 left-4 p-2 sm:p-1 rounded-full border border-gray-300 shadow-sm bg-white hover:bg-blue-500 transition-all duration-300 group touch-manipulation"
+        className="absolute top-4 left-4 p-2 sm:p-1 rounded-full border border-gray-300 shadow-sm bg-white hover:bg-blue-500 hover:scale-105 transition-all duration-300 group touch-manipulation"
         aria-label="Back to home"
       >
         <svg 
@@ -367,9 +367,9 @@ const AuthPage = () => {
         </h2>
         <div className="flex border-b mb-4 sm:mb-6">
           <button
-            className={`w-1/2 py-3 sm:py-2 text-sm sm:text-base text-center transition-colors duration-300 touch-manipulation  ${
+            className={`w-1/2 py-3 sm:py-2 text-sm sm:text-base text-center transition-all hover:scale-105 duration-300 touch-manipulation  ${
               isLoginMode
-                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                ? "border-b-2 border-blue-500 text-blue-600 font-medium transition-all hover:scale-105 duration-300"
                 : "text-gray-500 hover:text-gray-700"
             }`}
             onClick={() => !isLoginMode && toggleAuthMode()}
@@ -379,7 +379,7 @@ const AuthPage = () => {
             Login
           </button>
           <button
-            className={`w-1/2 py-3 sm:py-2 text-sm sm:text-base text-center transition-colors duration-300 touch-manipulation ${
+            className={`w-1/2 py-3 sm:py-2 text-sm sm:text-base text-center transition-all hover:scale-105 duration-300 touch-manipulation ${
               !isLoginMode
                 ? "border-b-2 border-blue-500 text-blue-600 font-medium"
                 : "text-gray-500 hover:text-gray-700"
