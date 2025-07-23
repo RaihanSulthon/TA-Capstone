@@ -272,7 +272,7 @@ const UserManagementPage = () => {
         <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2">
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors duration-200">
+            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md font-semibold hover:scale-105 transition-all duration-300 hover:shadow-xl">
             Reset Filter
           </button>
         </div>

@@ -73,12 +73,12 @@ const NavbarAdmin = () => {
       <div className="flex justify-end space-x-3">
         <button
           onClick={closeLogoutModal}
-          className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors">
+          className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-xl">
           Cancel
         </button>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-colors duration-200 px-4 py-2 rounded">
+          className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-all duration-300 hover:scale-105 hover:shadow-xl px-4 py-2 rounded">
           Logout
         </button>
       </div>
@@ -96,7 +96,11 @@ const NavbarAdmin = () => {
           <div className="flex justify-between items-center h-16">
             <Link to="/admin/dashboard" className="flex items-center">
               <div className="hidden sm:block">
-                <img src={applogo} alt="App Logo" className="h-8 w-auto" />
+                <img
+                  src={applogo}
+                  alt="App Logo"
+                  className="h-8 w-auto hover:scale-105 transition-all duration-300"
+                />
               </div>
               <span className="text-md md:text-xl font-bold text-white md:ml-4">
                 Admin Panel
@@ -105,7 +109,7 @@ const NavbarAdmin = () => {
 
             {/* Desktop Menu */}
             <div className="flex items-center">
-              <div className="hidden md:flex items-center">
+              <div className="hidden md:flex items-center gap-x-1">
                 <span className="mr-4">Hello, {getDisplayName()}</span>
 
                 {/* Add NotificationSystem component */}
@@ -113,41 +117,9 @@ const NavbarAdmin = () => {
                   <NotificationsSystem />
                 </div>
 
-                <Link
-                  to="/admin/dashboard"
-                  className="mr-4 text-white hover:text-red-200">
-                  Dashboard
-                </Link>
-                <Link
-                  to="/admin/users"
-                  className="mr-4 text-white hover:text-red-200">
-                  Users
-                </Link>
-                <Link
-                  to="/admin/tickets"
-                  className="mr-4 text-white hover:text-red-200">
-                  Tickets
-                </Link>
-                {/* Add Contacts Menu */}
-                <Link
-                  to="/admin/contacts"
-                  className="mr-4 text-white hover:text-red-200">
-                  Contacts
-                </Link>
-                {/* Add FAQ Menu */}
-                <Link
-                  to="/admin/faqs"
-                  className="mr-4 text-white hover:text-red-200">
-                  FAQ
-                </Link>
-                <Link
-                  to="/app/dashboard"
-                  className="mr-4 text-white hover:text-red-200">
-                  User View
-                </Link>
                 <button
                   onClick={openLogoutModal}
-                  className="bg-red-700 border-1 border-white hover:bg-white hover:text-red-700 px-5 py-2 rounded-lg font-semibold transition-colors duration-300">
+                  className="bg-red-700 border-1 border-white hover:bg-white hover:text-red-700 px-5 py-2 rounded-lg font-semibold transition-all hover:scale-105 hover:shadow-xl duration-300">
                   Logout
                 </button>
               </div>
@@ -158,7 +130,7 @@ const NavbarAdmin = () => {
                 </span>
                 <button
                   onClick={openLogoutModal}
-                  className="bg-white text-red-700 px-3 py-1 rounded text-sm">
+                  className="bg-white text-red-700 px-3 py-1 rounded text-sm hover:scale-105 transition-all duration-300 hover:shadow-xl">
                   Logout
                 </button>
               </div>
