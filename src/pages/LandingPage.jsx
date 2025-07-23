@@ -333,7 +333,7 @@ const LandingPage = () => {
                 // Show only the Dashboard button for logged-in users
                 <Button
                   onClick={() => navigate("/app/dashboard")}
-                  className="bg-blue-600 text-white border-2 border-white hover:bg-white hover:text-blue-600 px-8 py-3 rounded-lg font-semibold transition-colors duration-300">
+                  className="bg-blue-600 text-white border-2 border-white hover:bg-white hover:text-blue-600 px-8 py-3 rounded-lg font-semibold transition-all hover:scale-105 hover:shadow-xl duration-300">
                   Go to Dashboard
                 </Button>
               ) : (
