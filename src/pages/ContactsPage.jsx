@@ -160,7 +160,7 @@ const ContactsPage = () => {
             </p>
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-5 py-2.5 rounded-lg font-medium transition-colors duration-300"
+              className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-5 py-2.5 rounded-lg font-medium hover:scale-105 duration-300 transition-all hover:shadow-xl"
             >
               <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -181,7 +181,7 @@ const ContactsPage = () => {
             {/* Back to Home Button */}
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-lg font-medium transition-colors duration-300"
+              className="inline-flex items-center bg-blue-600 text-white border border-white hover:bg-white hover:text-blue-600 px-6 py-3 rounded-lg font-medium hover:scale-105 duration-300 transition-all hover:shadow-xl"
             >
               <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -235,7 +235,7 @@ const ContactsPage = () => {
             <div className="flex items-end">
               <button
                 onClick={resetFilters}
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="px-4 py-2 text-sm text-gray-700 md:mt-4 hover:bg-gray-100 font-semibold bg-gray-200 rounded-md hover:scale-105 duration-300 transition-all hover:shadow-xl"
               >
                 Reset Filter
               </button>

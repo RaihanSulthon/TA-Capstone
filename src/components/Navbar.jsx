@@ -77,8 +77,12 @@ const Navbar = () => {
           <div className="flex justify-between items-center h-16">
             {/* Updated Logo and App Name with better positioning */}
             <Link to="/" className="flex items-center">
-              <div className="hidden sm:block">
-                <img src={applogo} alt="App Logo" className="h-8 w-auto ml-4" />
+              <div className="hidden sm:block ">
+                <img
+                  src={applogo}
+                  alt="App Logo"
+                  className="h-8 w-auto ml-4 hover:scale-105 transition-all duration-300"
+                />
               </div>
               <span className="text-md ml-2 md:text-xl font-bold text-blue-600">
                 Tell-Us
@@ -108,14 +112,14 @@ const Navbar = () => {
 
                     <Link
                       to="/app/dashboard"
-                      className="mr-4 text-gray-700 hover:text-blue-600">
+                      className="mr-4 text-gray-700 hover:text-blue-600 hover:scale-105 duration-300 transition-all">
                       Dashboard
                     </Link>
 
                     {userRole === "student" && (
                       <Link
                         to="/app/my-tickets"
-                        className="mr-4 text-gray-700 hover:text-blue-600">
+                        className="mr-4 text-gray-700 hover:text-blue-600 hover:scale-105 duration-300 transition-all">
                         Tiket Saya
                       </Link>
                     )}
@@ -123,14 +127,14 @@ const Navbar = () => {
                     {isAdmin() && (
                       <Link
                         to="/admin/dashboard"
-                        className="mr-4 text-gray-700 hover:text-blue-600">
+                        className="mr-4 text-gray-700 hover:text-blue-600 hover:scale-105 duration-300 transition-all">
                         Admin Panel
                       </Link>
                     )}
 
                     <button
                       onClick={openLogoutModal}
-                      className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-colors duration-200 px-4 py-2 rounded">
+                      className="bg-red-500 text-white hover:bg-white hover:text-red-500 border border-red-500 transition-all hover:scale-105 shadow-lg duration-300 px-4 py-2 rounded">
                       Logout
                     </button>
                   </div>
@@ -139,9 +143,6 @@ const Navbar = () => {
                   <div className="md:hidden flex items-center space-x-2">
                     <NotificationsSystem />
                     <div className="flex items-center">
-                      {/* <span className="text-gray-700 text-sm mr-2">
-                        {getUserDisplayName()}
-                      </span> */}
                       <button
                         onClick={openLogoutModal}
                         className="bg-red-500 text-white px-3 py-1 rounded text-sm">

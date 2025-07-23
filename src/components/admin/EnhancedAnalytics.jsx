@@ -306,7 +306,7 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
               dateError ||
               getFilteredTickets().length === 0
             }
-            className="flex items-center px-3 py-2 bg-green-500 hover:text-green-500 hover:border-green-500 text-white hover:border-1 text-sm font-medium rounded-md hover:bg-white transition-all duration-300 hover:scale-105">
+            className="flex items-center px-3 py-2 bg-green-500 hover:text-green-500 hover:border-green-500 text-white hover:border-1 text-sm font-medium rounded-md hover:bg-white hover:scale-105 transition-all duration-300 hover:shadow-xl">
             {exportLoading.csv ? (
               <>
                 <svg
@@ -398,7 +398,7 @@ const EnhancedAnalytics = ({ tickets = [], users = [] }) => {
               dateError ||
               getFilteredTickets().length === 0
             }
-            className="flex items-center px-3 py-2 bg-red-700 text-white hover:text-red-700 hover:border-red-700 hover:border-1 text-sm font-medium rounded-md hover:bg-white transition-all duration-300 hover:scale-105">
+            className="flex items-center px-3 py-2 bg-red-700 text-white hover:text-red-700 hover:border-red-700 hover:border-1 text-sm font-medium rounded-md hover:bg-white hover:scale-105 transition-all duration-300 hover:shadow-xl">
             {exportLoading.pdf ? (
               <>
                 <svg
