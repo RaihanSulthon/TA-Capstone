@@ -159,7 +159,7 @@ const MainLayout = () => {
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2"
-          d="M3 10h6l-1.5 1.5A6 6 0 1018 9.6M21 4h-6l1.5-1.5A6 6 0 106 6.4"
+          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
         />
       ),
     },
