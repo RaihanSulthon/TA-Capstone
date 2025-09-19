@@ -98,6 +98,22 @@ const UserDetailPage = () => {
     return statusColors[status] || "bg-gray-100 text-gray-800";
   };
 
+  const getRoleBadge = (role) => {
+    const roleColors = {
+      admin: "bg-red-100 text-red-800",
+      student: "bg-blue-100 text-blue-800",
+    };
+    return roleColors[role] || "bg-gray-100 text-gray-800";
+  };
+
+  const getRoleDisplayName = (role) => {
+    const roleNames = {
+      admin: "Admin",
+      student: "Student",
+    };
+    return roleNames[role] || "Student";
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -128,15 +144,23 @@ const UserDetailPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p>
-                  <strong>Nama:</strong> {userDetail.displayName || "N/A"}
+                  <strong>Nama:</strong>{" "}
+                  {userDetail.name || userDetail.displayName || "N/A"}
                 </p>
                 <p>
                   <strong>Email:</strong> {userDetail.email}
                 </p>
               </div>
               <div>
-                <p>
-                  <strong>Role:</strong> {userDetail.role || "Student"}
+                <p className="mb-2">
+                  <strong>Role:</strong>{" "}
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadge(
+                      userDetail.role
+                    )}`}
+                  >
+                    {getRoleDisplayName(userDetail.role)}
+                  </span>
                 </p>
                 <p>
                   <strong>Tanggal Registrasi:</strong>{" "}
@@ -242,7 +266,7 @@ const UserDetailPage = () => {
                               state: { from: location.pathname },
                             });
                           }}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition-colors duration-200"
+                          className="hover:scale-105 transition-all hover:shadow-xl duration-300 bg-blue-600 hover:bg-white hover:text-blue-600 hover:border-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium border border-blue-500"
                         >
                           Detail
                         </button>
