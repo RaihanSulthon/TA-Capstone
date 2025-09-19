@@ -614,7 +614,7 @@ const UserManagementPage = () => {
                   <span className="font-medium">
                     {Math.min(indexOfLastUser, filteredUsers.length)}
                   </span>{" "}
-                  of <span className="font-medium">{filteredUsers.length}</span>{" "}
+                  out of <span className="font-medium">{filteredUsers.length}</span>{" "}
                   results
                 </p>
               </div>

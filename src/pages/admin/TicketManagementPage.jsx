@@ -987,7 +987,7 @@ const TicketManagementPage = () => {
                   <span className="font-medium">
                     {Math.min(indexOfLastTicket, filteredTickets.length)}
                   </span>{" "}
-                  of{" "}
+                  out of{" "}
                   <span className="font-medium">{filteredTickets.length}</span>{" "}
                   results
                 </p>
