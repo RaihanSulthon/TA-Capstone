@@ -3,6 +3,7 @@ import { db } from "../../firebase-config";
 import { collection, getDocs } from "firebase/firestore";
 import Toast from "../../components/Toast";
 import EnhancedAnalytics from "../../components/admin/EnhancedAnalytics";
+import { useNavigate } from "react-router-dom";
 
 const UserManagementPage = () => {
   // State declarations
@@ -15,6 +16,7 @@ const UserManagementPage = () => {
   const [tickets, setTickets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(6);
+  const navigate = useNavigate();
 
   // Fetch all users and tickets
   useEffect(() => {
@@ -220,6 +222,10 @@ const UserManagementPage = () => {
     );
   }
 
+  const handleViewDetail = (userId) => {
+    navigate(`/admin/user-detail/${userId}`);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 overflow-x-hidden w-full">
       <h1 className="text-2xl font-bold mb-6">Ticket Statistics</h1>
@@ -237,7 +243,8 @@ const UserManagementPage = () => {
           <div>
             <label
               htmlFor="search"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Search
             </label>
             <input
@@ -253,14 +260,16 @@ const UserManagementPage = () => {
           <div>
             <label
               htmlFor="role-filter"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Filter by Role
             </label>
             <select
               id="role-filter"
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
               <option value="all">All Roles</option>
               <option value="student">Students</option>
               <option value="admin">Admins</option>
@@ -272,7 +281,8 @@ const UserManagementPage = () => {
         <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2">
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md font-semibold hover:scale-105 transition-all duration-300 hover:shadow-xl">
+            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md font-semibold hover:scale-105 transition-all duration-300 hover:shadow-xl"
+          >
             Reset Filter
           </button>
         </div>
@@ -444,33 +454,42 @@ const UserManagementPage = () => {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Name
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Email
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Role
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Total Laporan
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Status Laporan
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Terakhir Submit
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Detail
                 </th>
               </tr>
             </thead>
@@ -503,7 +522,8 @@ const UserManagementPage = () => {
                               : user.role === "student"
                               ? "bg-green-100 text-green-800"
                               : "bg-gray-100 text-gray-800"
-                          }`}>
+                          }`}
+                        >
                           {user.role === "admin"
                             ? "Admin"
                             : user.role === "student"
@@ -559,6 +579,14 @@ const UserManagementPage = () => {
                           </span>
                         )}
                       </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleViewDetail(user.id)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium"
+                        >
+                          Detail
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
@@ -574,7 +602,8 @@ const UserManagementPage = () => {
                 <tr>
                   <td
                     colSpan="6"
-                    className="px-6 py-4 text-center text-gray-500">
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No users found
                   </td>
                 </tr>
@@ -591,7 +620,8 @@ const UserManagementPage = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Previous
               </button>
               <span className="text-sm text-gray-700">
@@ -600,7 +630,8 @@ const UserManagementPage = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Next
               </button>
             </div>
@@ -614,23 +645,27 @@ const UserManagementPage = () => {
                   <span className="font-medium">
                     {Math.min(indexOfLastUser, filteredUsers.length)}
                   </span>{" "}
-                  of <span className="font-medium">{filteredUsers.length}</span>{" "}
+                  out of{" "}
+                  <span className="font-medium">{filteredUsers.length}</span>{" "}
                   results
                 </p>
               </div>
               <div>
                 <nav
                   className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination">
+                  aria-label="Pagination"
+                >
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <span className="sr-only">Previous</span>
                     <svg
                       className="h-5 w-5"
                       viewBox="0 0 20 20"
-                      fill="currentColor">
+                      fill="currentColor"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -662,7 +697,8 @@ const UserManagementPage = () => {
                           pageNum === currentPage
                             ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
                             : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}>
+                        }`}
+                      >
                         {pageNum}
                       </button>
                     );
@@ -671,12 +707,14 @@ const UserManagementPage = () => {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <span className="sr-only">Next</span>
                     <svg
                       className="h-5 w-5"
                       viewBox="0 0 20 20"
-                      fill="currentColor">
+                      fill="currentColor"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"

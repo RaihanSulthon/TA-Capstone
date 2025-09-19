@@ -435,14 +435,16 @@ const TicketManagementPage = () => {
           <div>
             <label
               htmlFor="status-filter"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Status
             </label>
             <select
               id="status-filter"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
               <option value="all">Semua Status</option>
               <option value="new">Baru</option>
               <option value="in_progress">Diproses</option>
@@ -453,14 +455,16 @@ const TicketManagementPage = () => {
           <div>
             <label
               htmlFor="category-filter"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Kategori
             </label>
             <select
               id="category-filter"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
               <option value="all">Semua Kategori</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -473,7 +477,8 @@ const TicketManagementPage = () => {
           <div>
             <label
               htmlFor="start-date"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Tanggal Mulai
             </label>
             <input
@@ -488,7 +493,8 @@ const TicketManagementPage = () => {
           <div>
             <label
               htmlFor="end-date"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Tanggal Akhir
             </label>
             <input
@@ -503,14 +509,16 @@ const TicketManagementPage = () => {
           <div>
             <label
               htmlFor="read-status-filter"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Status Dibaca
             </label>
             <select
               id="read-status-filter"
               value={filterReadStatus}
               onChange={(e) => setFilterReadStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
               <option value="all">Semua Tiket</option>
               <option value="read">Sudah Dibaca</option>
               <option value="unread">Belum Dibaca</option>
@@ -520,7 +528,8 @@ const TicketManagementPage = () => {
           <div>
             <label
               htmlFor="search"
-              className="block text-sm font-medium text-gray-700 mb-2">
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Cari
             </label>
             <input
@@ -538,7 +547,8 @@ const TicketManagementPage = () => {
         <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2">
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-all hover:scale-105 font-semibold duration-300 hover:shadow-xl">
+            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-all hover:scale-105 font-semibold duration-300 hover:shadow-xl"
+          >
             Reset Filter
           </button>
         </div>
@@ -632,7 +642,8 @@ const TicketManagementPage = () => {
                         : isUnread
                         ? "bg-blue-50"
                         : ""
-                    } overflow-hidden`}>
+                    } overflow-hidden`}
+                  >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0 pr-2">
                         <div className="flex items-center mb-1">
@@ -645,7 +656,8 @@ const TicketManagementPage = () => {
                         </div>
                         <h3
                           className="font-medium text-gray-900 text-sm leading-tight break-words"
-                          title={ticket.judul}>
+                          title={ticket.judul}
+                        >
                           {truncateText(ticket.judul, 20)}
                         </h3>
                         <div className="text-xs text-gray-600 mb-1">
@@ -662,7 +674,8 @@ const TicketManagementPage = () => {
                                 userRole === "admin"
                                   ? ticket.userEmail || ticket.email
                                   : ticket.email
-                              }>
+                              }
+                            >
                               {userRole === "admin"
                                 ? ticket.userEmail || ticket.email
                                 : ticket.email}
@@ -677,7 +690,8 @@ const TicketManagementPage = () => {
                             </span>
                             <div
                               className="font-medium truncate"
-                              title={getCategoryLabel(ticket.kategori)}>
+                              title={getCategoryLabel(ticket.kategori)}
+                            >
                               {getCategoryLabel(ticket.kategori)}
                             </div>
                           </div>
@@ -693,7 +707,8 @@ const TicketManagementPage = () => {
                       </div>
                       <div className="flex-shrink-0 ml-2">
                         <span
-                          className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${statusBadge.className}`}>
+                          className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${statusBadge.className}`}
+                        >
                           {statusBadge.label}
                         </span>
                       </div>
@@ -717,7 +732,8 @@ const TicketManagementPage = () => {
                               feedbackInfo.unread > 0
                                 ? "bg-orange-100 text-orange-800"
                                 : "bg-purple-100 text-purple-800"
-                            }`}>
+                            }`}
+                          >
                             💬 {feedbackInfo.total} feedback
                             {feedbackInfo.unread > 0
                               ? ` (${feedbackInfo.unread} baru)`
@@ -728,13 +744,19 @@ const TicketManagementPage = () => {
 
                       <div className="flex gap-2 w-full">
                         <Button
-                          onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all hover:shadow-xl duration-300 text-xs py-2 px-3 min-w-0">
+                          onClick={() =>
+                            navigate(`/app/tickets/${ticket.id}`, {
+                              state: { from: "/admin/tickets" },
+                            })
+                          }
+                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all hover:shadow-xl duration-300 text-xs py-2 px-3 min-w-0"
+                        >
                           Detail
                         </Button>
                         <Button
                           onClick={() => openDeleteModal(ticket)}
-                          className="bg-red-600 text-white hover:bg-red-700 hover:scale-105 transition-all hover:shadow-xl duration-300 text-xs py-2 px-3 flex-shrink-0">
+                          className="bg-red-600 text-white hover:bg-red-700 hover:scale-105 transition-all hover:shadow-xl duration-300 text-xs py-2 px-3 flex-shrink-0"
+                        >
                           Hapus
                         </Button>
                       </div>
@@ -751,37 +773,44 @@ const TicketManagementPage = () => {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/4"
+                >
                   ID & Judul
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6"
+                >
                   Pengirim
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6"
+                >
                   Kategori
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6"
+                >
                   Status
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6"
+                >
                   Tanggal & Waktu
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6"
+                >
                   Feedback
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6">
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/6"
+                >
                   Aksi
                 </th>
               </tr>
@@ -799,7 +828,8 @@ const TicketManagementPage = () => {
                 <tr>
                   <td
                     colSpan="7"
-                    className="px-6 py-4 text-center text-gray-500">
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     Tidak ada tiket yang ditemukan
                   </td>
                 </tr>
@@ -814,7 +844,8 @@ const TicketManagementPage = () => {
                       key={ticket.id}
                       className={`hover:bg-gray-50 transition-colors ${
                         isUnread ? "bg-blue-50" : ""
-                      }`}>
+                      }`}
+                    >
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2 mb-1">
@@ -824,12 +855,14 @@ const TicketManagementPage = () => {
                             {isUnread && (
                               <span
                                 className="inline-block h-2 w-2 rounded-full bg-blue-600"
-                                title="Belum dibaca"></span>
+                                title="Belum dibaca"
+                              ></span>
                             )}
                           </div>
                           <div
                             className="text-sm font-medium text-gray-900 leading-tight"
-                            title={ticket.judul}>
+                            title={ticket.judul}
+                          >
                             {truncateText(ticket.judul, 40)}
                           </div>
                         </div>
@@ -841,7 +874,8 @@ const TicketManagementPage = () => {
                             ticket.anonymous
                               ? "Anonymous"
                               : ticket.nama || "Unknown"
-                          }>
+                          }
+                        >
                           {ticket.anonymous
                             ? "Anonymous"
                             : truncateText(ticket.nama || "Unknown", 20)}
@@ -856,7 +890,8 @@ const TicketManagementPage = () => {
                               userRole === "admin"
                                 ? ticket.userEmail || ticket.email
                                 : ticket.email
-                            }>
+                            }
+                          >
                             {truncateText(
                               userRole === "admin"
                                 ? ticket.userEmail || ticket.email
@@ -873,13 +908,15 @@ const TicketManagementPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge.className}`}>
+                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge.className}`}
+                        >
                           {statusBadge.label}
                         </span>
                         {ticket.assignedToName && (
                           <div
                             className="text-xs text-gray-500 mt-1"
-                            title={`Staff: ${ticket.assignedToName}`}>
+                            title={`Staff: ${ticket.assignedToName}`}
+                          >
                             Staff: {truncateText(ticket.assignedToName, 15)}
                           </div>
                         )}
@@ -902,7 +939,8 @@ const TicketManagementPage = () => {
                                   : "text-purple-600"
                               }`}
                               fill="currentColor"
-                              viewBox="0 0 20 20">
+                              viewBox="0 0 20 20"
+                            >
                               <path
                                 fillRule="evenodd"
                                 d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
@@ -914,7 +952,8 @@ const TicketManagementPage = () => {
                                 feedbackInfo.unread > 0
                                   ? "font-medium text-orange-600"
                                   : "text-purple-600"
-                              }`}>
+                              }`}
+                            >
                               {feedbackInfo.unread > 0
                                 ? `${feedbackInfo.unread} Feedback`
                                 : `${feedbackInfo.total} Feedback`}
@@ -930,19 +969,23 @@ const TicketManagementPage = () => {
                         <div className="flex space-x-2">
                           <Button
                             onClick={() =>
-                              navigate(`/app/tickets/${ticket.id}`)
+                              navigate(`/app/tickets/${ticket.id}`, {
+                                state: { from: "/admin/tickets" },
+                              })
                             }
                             className={
                               isUnread
                                 ? "bg-blue-600 hover:bg-blue-700"
                                 : "bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-all hover:scale-105 duration-300"
-                            }>
+                            }
+                          >
                             {isUnread ? "Lihat Tiket Baru" : "Detail"}
                           </Button>
 
                           <Button
                             onClick={() => openDeleteModal(ticket)}
-                            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-all hover:scale-105 duration-300">
+                            className="bg-red-600 text-white hover:bg-white hover:text-red-600 border border-red-600 transition-all hover:scale-105 duration-300"
+                          >
                             Hapus
                           </Button>
                         </div>
@@ -963,7 +1006,8 @@ const TicketManagementPage = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Previous
               </button>
               <span className="text-sm text-gray-700">
@@ -972,7 +1016,8 @@ const TicketManagementPage = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Next
               </button>
             </div>
@@ -987,7 +1032,7 @@ const TicketManagementPage = () => {
                   <span className="font-medium">
                     {Math.min(indexOfLastTicket, filteredTickets.length)}
                   </span>{" "}
-                  of{" "}
+                  out of{" "}
                   <span className="font-medium">{filteredTickets.length}</span>{" "}
                   results
                 </p>
@@ -995,18 +1040,21 @@ const TicketManagementPage = () => {
               <div>
                 <nav
                   className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination">
+                  aria-label="Pagination"
+                >
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <span className="sr-only">Previous</span>
                     <svg
                       className="h-5 w-5"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      aria-hidden="true">
+                      aria-hidden="true"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -1023,7 +1071,8 @@ const TicketManagementPage = () => {
                           number === currentPage
                             ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
                             : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}>
+                        }`}
+                      >
                         {number}
                       </button>
                     )
@@ -1031,14 +1080,16 @@ const TicketManagementPage = () => {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <span className="sr-only">Next</span>
                     <svg
                       className="h-5 w-5"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      aria-hidden="true">
+                      aria-hidden="true"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -1058,7 +1109,8 @@ const TicketManagementPage = () => {
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         title="Konfirmasi Hapus Tiket"
-        size="sm">
+        size="sm"
+      >
         <div>
           <p className="text-gray-600 mb-4">
             Apakah Anda yakin ingin menghapus tiket ini?
@@ -1075,13 +1127,15 @@ const TicketManagementPage = () => {
             <button
               onClick={closeDeleteModal}
               className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
-              disabled={isDeleting}>
+              disabled={isDeleting}
+            >
               Batal
             </button>
             <button
               onClick={handleDeleteTicket}
               className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded transition-colors"
-              disabled={isDeleting}>
+              disabled={isDeleting}
+            >
               {isDeleting ? "Menghapus..." : "Hapus Permanen"}
             </button>
           </div>
