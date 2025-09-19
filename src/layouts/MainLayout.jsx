@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/Authcontexts";
 import Navbar from "../components/Navbar";
 import NavbarAdmin from "../components/admin/NavbarAdmin";
@@ -10,13 +10,11 @@ const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Determine if admin section is active
-  const isAdminSection = location.pathname.startsWith("/admin");
+  // Expanded = hover (desktop) atau dibuka (mobile)
+  const isExpanded = isHovered || isSidebarOpen;
 
-  // Check if a nav link is active
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
+  const isAdminSection = location.pathname.startsWith("/admin");
+  const isActive = (path) => location.pathname === path;
 
   const getPageTitle = () => {
     const path = location.pathname;
@@ -24,14 +22,14 @@ const MainLayout = () => {
     if (path === "/app/my-tickets") return "Tiket Saya";
     if (path === "/app/submit-ticket") return "Buat Tiket Baru";
     if (path.startsWith("/app/tickets/")) return "Detail Tiket";
-    return "Dashboard"; // fallback
+    return "Dashboard";
   };
 
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
-  // Menu items configuration for admin
+  // Admin menu
   const adminMenuItems = [
     {
       path: "/admin/dashboard",
@@ -100,49 +98,114 @@ const MainLayout = () => {
     },
   ];
 
+  // User menu
+  const userMenuItems = [
+    {
+      path: "/app/dashboard",
+      label: "Dashboard",
+      icon: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M3 12l2-2m0 0l7-7 7 7m-9 8h4m5-6v7a2 2 0 01-2 2h-3m-6 0H7a2 2 0 01-2-2v-7"
+        />
+      ),
+    },
+    {
+      path: "/app/submit-ticket",
+      label: "Buat Tiket Baru",
+      studentOnly: true,
+      icon: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M12 4v16m8-8H4"
+        />
+      ),
+    },
+    {
+      path: "/app/my-tickets",
+      label: "Tiket Saya",
+      studentOnly: true,
+      icon: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M8 6h8M8 10h8m-5 4h5m2 4H6a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z"
+        />
+      ),
+    },
+    {
+      path: "/contacts",
+      label: "Kontak Dosen",
+      icon: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M17 20h5v-2a4 4 0 00-5-4M9 11a4 4 0 100-8 4 4 0 000 8zm8 9H5a2 2 0 01-2-2 6 6 0 0112 0 2 2 0 002 2zm4-9a4 4 0 11-8 0 4 4 0 018 0z"
+        />
+      ),
+    },
+    {
+      path: "/admin/dashboard",
+      label: "Switch to Admin View",
+      adminOnly: true,
+      icon: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M3 10h6l-1.5 1.5A6 6 0 1018 9.6M21 4h-6l1.5-1.5A6 6 0 106 6.4"
+        />
+      ),
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       {isAdminSection ? <NavbarAdmin /> : <Navbar />}
 
       <div className="flex flex-1">
-        {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-transparent backdrop-blur-sm z-40 md:hidden"
             onClick={() => setIsSidebarOpen(false)}></div>
         )}
 
-        {/* Sidebar Navigation */}
         {userRole && (
           <div
             className={`
-          fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out
-          md:relative md:translate-x-0 md:z-auto md:min-w-0 md:flex-shrink-0
-          ${isSidebarOpen ? "translate-x-0 w-80" : "-translate-x-full"}
-          ${
-            isAdminSection
-              ? `bg-gray-100 border-r border-gray-200 ${
-                  isHovered ? "md:w-64" : "md:w-16"
-                }`
-              : `bg-white shadow-md ${isHovered ? "md:w-64" : "md:w-16"}`
-          }
-        `}
+              fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out
+              md:relative md:translate-x-0 md:z-auto md:min-w-0 md:flex-shrink-0
+              ${isSidebarOpen ? "translate-x-0 w-80" : "-translate-x-full"}
+              ${
+                isAdminSection
+                  ? `bg-gray-100 border-r border-gray-200 ${
+                      isExpanded ? "md:w-64" : "md:w-16"
+                    }`
+                  : `bg-white shadow-md ${
+                      isExpanded ? "md:w-64" : "md:w-16"
+                    }`
+              }
+            `}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
-            {/* Admin Sidebar */}
             {isAdminSection && isAdmin() ? (
               <div className="h-full flex flex-col">
-                {/* Sidebar Header - Remove hamburger icon */}
                 <div
                   className={`p-4 border-b border-gray-200 bg-white transition-all duration-300 ${
-                    !isHovered && "md:p-2"
+                    !isExpanded && "md:p-2"
                   }`}>
                   <div
                     className={`flex items-center ${
-                      !isHovered ? "justify-center" : ""
+                      !isExpanded ? "justify-center" : ""
                     }`}>
-                    {isHovered ? (
-                      <h2 className="text-lg font-semibold text-gray-800 transition-opacity duration-300">
+                    {isExpanded ? (
+                      <h2 className="text-lg font-semibold text-gray-800">
                         Admin Panel
                       </h2>
                     ) : (
@@ -153,97 +216,77 @@ const MainLayout = () => {
                   </div>
                 </div>
 
-                {/* Navigation Menu */}
+                {/* Admin menu always rendered */}
                 <nav className="flex-1 mt-2 px-2 space-y-1">
                   {adminMenuItems.map((item) => (
-                    <div key={item.path} className="relative">
-                      <Link
-                        to={item.path}
-                        onClick={() => setIsSidebarOpen(false)}
-                        className={`group flex flex-col items-center px-2 py-2 text-sm font-medium rounded-md transition-all duration-300 ${
-                          isActive(item.path)
-                            ? "bg-blue-100 text-blue-700"
-                            : "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
-                        } ${
-                          isHovered
-                            ? "flex-row justify-start px-3"
-                            : "flex-col justify-center"
-                        }`}
-                        title={!isHovered ? item.label : ""}>
-                        <svg
-                          className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                            isHovered ? "mr-3" : "mb-1"
-                          } ${
-                            isActive(item.path)
-                              ? "text-blue-500"
-                              : "text-gray-400 group-hover:text-gray-500"
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24">
-                          {item.icon}
-                        </svg>
-
-                        {isHovered ? (
-                          <span className="transition-opacity duration-300 whitespace-nowrap">
-                            {item.label}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-center leading-tight">
-                            {item.shortLabel}
-                          </span>
-                        )}
-                      </Link>
-                    </div>
-                  ))}
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-300 my-4"></div>
-
-                  {/* Switch to User View */}
-                  <div className="relative">
                     <Link
-                      to="/app/dashboard"
+                      key={item.path}
+                      to={item.path}
+                      title={!isExpanded ? item.label : undefined}
                       onClick={() => setIsSidebarOpen(false)}
-                      className={`group flex flex-col items-center px-2 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-all duration-300 ${
-                        isHovered
-                          ? "flex-row justify-start px-3"
-                          : "flex-col justify-center"
-                      }`}
-                      title={!isHovered ? "Switch to User View" : ""}>
+                      className={`group flex items-center ${
+                        isExpanded ? "px-3 justify-start" : "justify-center"
+                      } py-2 text-sm font-medium rounded-md transition-colors ${
+                        isActive(item.path)
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+                      }`}>
                       <svg
-                        className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                          isHovered ? "mr-3" : "mb-1"
-                        } text-gray-400 group-hover:text-gray-500`}
+                        className={`h-5 w-5 flex-shrink-0 ${
+                          isExpanded ? "mr-3" : ""
+                        } ${
+                          isActive(item.path)
+                            ? "text-blue-500"
+                            : "text-gray-400 group-hover:text-gray-500"
+                        }`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                        />
+                        {item.icon}
                       </svg>
-
-                      {isHovered ? (
-                        <span className="transition-opacity duration-300 whitespace-nowrap">
-                          Switch to User View
-                        </span>
-                      ) : (
-                        <span className="text-xs text-center leading-tight">
-                          Switch
-                        </span>
+                      {isExpanded && (
+                        <span className="whitespace-nowrap">{item.label}</span>
                       )}
                     </Link>
-                  </div>
+                  ))}
+                  <div
+                    className={`border-t border-gray-300 my-4 ${
+                      !isExpanded && "mx-4"
+                    }`}
+                  />
+                  <Link
+                    to="/app/dashboard"
+                    title={!isExpanded ? "Switch to User View" : undefined}
+                    onClick={() => setIsSidebarOpen(false)}
+                    className={`group flex items-center ${
+                      isExpanded ? "px-3 justify-start" : "justify-center"
+                    } py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900`}>
+                    <svg
+                      className={`h-5 w-5 flex-shrink-0 ${
+                        isExpanded ? "mr-3" : ""
+                      } text-gray-400 group-hover:text-gray-500`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                      />
+                    </svg>
+                    {isExpanded && (
+                      <span className="whitespace-nowrap">
+                        Switch to User View
+                      </span>
+                    )}
+                  </Link>
                 </nav>
               </div>
             ) : (
-              /* Regular User Sidebar */
               <div className="h-full">
                 <div className="p-4 border-b border-gray-300">
-                  {isHovered ? (
+                  {isExpanded ? (
                     <h2 className="text-xl font-semibold">Navigation</h2>
                   ) : (
                     <div className="flex justify-center">
@@ -254,68 +297,51 @@ const MainLayout = () => {
                   )}
                 </div>
 
-                <nav className="mt-4 px-2">
-                  <Link
-                    to="/app/dashboard"
-                    onClick={() => setIsSidebarOpen(false)}
-                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
-                      isActive("/app/dashboard")
-                        ? "bg-blue-100 text-blue-700 font-medium shadow-md"
-                        : "text-gray-700 hover:bg-blue-50"
-                    }`}>
-                    {isHovered ? "Dashboard" : "Dash"}
-                  </Link>
-
-                  {userRole === "student" && (
-                    <>
+                {/* User menu always rendered */}
+                <nav className="mt-4 px-2 flex flex-col gap-2">
+                  {userMenuItems.map((item) => {
+                    if (item.studentOnly && userRole !== "student") return null;
+                    if (item.adminOnly && !isAdmin()) return null;
+                    return (
                       <Link
-                        to="/app/submit-ticket"
+                        key={item.path}
+                        to={item.path}
+                        title={!isExpanded ? item.label : undefined}
                         onClick={() => setIsSidebarOpen(false)}
-                        className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
-                          isActive("/app/submit-ticket")
-                            ? "bg-blue-100 text-blue-700 font-medium shadow-md"
+                        className={`group flex items-center ${
+                          isExpanded ? "px-4 justify-start" : "justify-center"
+                        } py-2 rounded-md text-sm font-medium transition-colors ${
+                          isActive(item.path)
+                            ? "bg-blue-100 text-blue-700"
                             : "text-gray-700 hover:bg-blue-50"
                         }`}>
-                        {isHovered ? "Buat Tiket Baru" : "Buat"}
+                        <svg
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isExpanded ? "mr-3" : ""
+                          } ${
+                            isActive(item.path)
+                              ? "text-blue-500"
+                              : "text-gray-400 group-hover:text-gray-500"
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24">
+                          {item.icon}
+                        </svg>
+                        {isExpanded && (
+                          <span className="whitespace-nowrap">
+                            {item.label}
+                          </span>
+                        )}
                       </Link>
-                      <Link
-                        to="/app/my-tickets"
-                        onClick={() => setIsSidebarOpen(false)}
-                        className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
-                          isActive("/app/my-tickets")
-                            ? "bg-blue-100 text-blue-700 font-medium shadow-md"
-                            : "text-gray-700 hover:bg-blue-50"
-                        }`}>
-                        {isHovered ? "Tiket Saya" : "Tiket"}
-                      </Link>
-                    </>
-                  )}
-
-                  <Link
-                    to="/contacts"
-                    className={`block px-4 py-2 rounded-md mb-2.5 transition-all duration-200 transform hover:translate-y-[-2px] hover:shadow-lg ${
-                      isActive("/contacts")
-                        ? "bg-blue-100 text-blue-700 font-medium shadow-md"
-                        : "text-gray-700 hover:bg-blue-50"
-                    }`}>
-                    {isHovered ? "Kontak Dosen" : "Kontak"}
-                  </Link>
-
-                  {isAdmin() && (
-                    <Link
-                      to="/admin/dashboard"
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="block px-4 py-2 rounded-md mb-2.5 transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-lg text-gray-700 hover:bg-red-100">
-                      {isHovered ? "Switch to Admin View" : "Admin"}
-                    </Link>
-                  )}
+                    );
+                  })}
                 </nav>
               </div>
             )}
           </div>
         )}
 
-        {/* Main Content */}
         <div className="flex-1 bg-gray-50 md:p-4 p-2 min-w-0 overflow-x-hidden">
           {userRole && (
             <div className="md:hidden bg-white p-4 mb-4 rounded-lg shadow flex items-center justify-between max-w-full overflow-hidden">
