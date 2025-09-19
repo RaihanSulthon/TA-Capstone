@@ -113,7 +113,7 @@ const UserDetailPage = () => {
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/admin/users")}
             className="mb-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
           >
             ← Kembali
