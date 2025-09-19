@@ -280,7 +280,7 @@ const MainLayout = () => {
                         Switch to User View
                       </span>
                     )}
-                  </Link>
+                  </Link> 
                 </nav>
               </div>
             ) : (
