@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../contexts/Authcontexts";
 import { db, storage } from "../firebase-config";
 import {
@@ -51,6 +51,7 @@ const TicketDetailPage = () => {
   const [password, setPassword] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [tokenTimer, setTokenTimer] = useState(null);
+  const location = useLocation();
 
   // Helper functions
   const formatDate = (timestamp) => {
@@ -232,12 +233,23 @@ const TicketDetailPage = () => {
   };
 
   const handleGoBack = () => {
-    if (userRole === "admin") {
-      navigate("/admin/tickets");
-    } else if (userRole === "student") {
-      navigate("/app/my-tickets");
+    // Cek apakah ada state yang menyimpan halaman sebelumnya
+    if (location.state?.from) {
+      navigate(location.state.from);
     } else {
-      navigate(-1);
+      // Coba navigate back jika ada history
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        // Fallback berdasarkan role
+        if (userRole === "admin") {
+          navigate("/admin/tickets");
+        } else if (userRole === "student") {
+          navigate("/app/my-tickets");
+        } else {
+          navigate("/app/dashboard");
+        }
+      }
     }
   };
 
@@ -617,22 +629,6 @@ const TicketDetailPage = () => {
             return !readByCurrentUser;
           }).length;
 
-          console.log("=== FEEDBACK COUNT DEBUG ===");
-          console.log("Total feedbacks:", feedbacks.length);
-          console.log("Unread count:", unreadCount);
-          console.log("Current user:", currentUser.uid);
-          console.log("User role:", userRole);
-          console.log(
-            "Feedbacks detail:",
-            feedbacks.map((f) => ({
-              id: f.id,
-              createdBy: f.createdBy,
-              readBy: f.readBy,
-              isReadByMe: f.readBy && f.readBy[currentUser.uid],
-              isMyFeedback: f.createdBy === currentUser.uid,
-            }))
-          );
-
           setUnreadFeedbackCount(unreadCount);
         });
 
@@ -726,7 +722,8 @@ const TicketDetailPage = () => {
               <svg
                 className="h-5 w-5 text-red-400"
                 viewBox="0 0 20 20"
-                fill="currentColor">
+                fill="currentColor"
+              >
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -742,7 +739,8 @@ const TicketDetailPage = () => {
               <div className="mt-4">
                 <button
                   onClick={() => navigate(-1)}
-                  className="bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-md text-sm font-medium">
+                  className="bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-md text-sm font-medium"
+                >
                   Kembali
                 </button>
               </div>
@@ -766,7 +764,8 @@ const TicketDetailPage = () => {
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium">
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium"
+          >
             Kembali
           </button>
         </div>
@@ -787,7 +786,8 @@ const TicketDetailPage = () => {
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium">
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium"
+          >
             Kembali
           </button>
         </div>
@@ -818,12 +818,14 @@ const TicketDetailPage = () => {
         <button
           onClick={handleGoBack}
           className="mr-2 md:mr-3 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border border-blue-300 text-blue-500 bg-white hover:bg-blue-500 hover:text-white hover:scale-105 transition-all duration-300 flex-shrink-0"
-          aria-label="Back">
+          aria-label="Back"
+        >
           <svg
             className="h-4 w-4 md:h-5 md:w-5"
             fill="none"
             stroke="currentColor"
-            viewBox="0 0 24 24">
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -850,7 +852,8 @@ const TicketDetailPage = () => {
               Ticket #{ticket.id.substring(0, 8)}
             </div>
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}>
+              className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}
+            >
               {statusBadge.label}
             </span>
           </div>
@@ -875,7 +878,8 @@ const TicketDetailPage = () => {
           <span>Dibuat pada {formatDate(ticket.createdAt)}</span>
           <span className="mx-2">•</span>
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}>
+            className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}
+          >
             {statusBadge.label}
           </span>
           {ticket.anonymous && (
@@ -1108,7 +1112,8 @@ const TicketDetailPage = () => {
                   className="h-5 w-5 text-purple-600 mr-2"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1141,14 +1146,16 @@ const TicketDetailPage = () => {
                         <button
                           onClick={() => setShowPasswordModal(true)}
                           className="text-purple-600 hover:text-purple-800 transition-all text-sm px-2 py-1 bg-purple-100 rounded hover:bg-purple-200 hover:scale-105 hover:shadow-xl duration-300"
-                          title="Lihat Token">
+                          title="Lihat Token"
+                        >
                           👁️ Lihat
                         </button>
                         {showToken && (
                           <button
                             onClick={copyToken}
                             className="text-purple-600 hover:text-purple-800 transition-colors text-sm px-2 py-1 bg-purple-100 rounded hover:bg-purple-200"
-                            title="Salin Token">
+                            title="Salin Token"
+                          >
                             📋 Salin
                           </button>
                         )}
@@ -1197,12 +1204,14 @@ const TicketDetailPage = () => {
                         <div className="flex flex-col sm:flex-row gap-2">
                           <button
                             onClick={handleImagePreview}
-                            className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded border-1 border-blue-600 transition-all hover:text-blue-600 hover:scale-105 font-semibold hover:shadow-xl duration-300 hover:bg-white text-sm">
+                            className="flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded border-1 border-blue-600 transition-all hover:text-blue-600 hover:scale-105 font-semibold hover:shadow-xl duration-300 hover:bg-white text-sm"
+                          >
                             🔍 Preview
                           </button>
                           <button
                             onClick={handleFileDownload}
-                            className="flex items-center justify-center px-3 py-2 bg-green-600 text-white rounded  border-1 border-green-600 hover:text-green-600 transition-all hover:scale-105 font-semibold hover:shadow-xl duration-300 hover:bg-white text-sm">
+                            className="flex items-center justify-center px-3 py-2 bg-green-600 text-white rounded  border-1 border-green-600 hover:text-green-600 transition-all hover:scale-105 font-semibold hover:shadow-xl duration-300 hover:bg-white text-sm"
+                          >
                             📥 Download
                           </button>
                         </div>
@@ -1234,7 +1243,8 @@ const TicketDetailPage = () => {
                         </div>
                         <button
                           onClick={handleFileDownload}
-                          className="flex-shrink-0 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm">
+                          className="flex-shrink-0 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+                        >
                           📥 Download
                         </button>
                       </div>
@@ -1267,7 +1277,8 @@ const TicketDetailPage = () => {
                     unreadFeedbackCount > 0
                       ? "bg-orange-600 hover:bg-orange-700 hover:scale-105 transition-all duration-300 hover:shadow-xl"
                       : "bg-purple-600 hover:bg-white hover:text-purple-600 border-1 border-purple-600  hover:scale-105 transition-all duration-300 hover:shadow-xl"
-                  }`}>
+                  }`}
+                >
                   📝 Lihat Feedback ({feedbackCount}
                   {unreadFeedbackCount > 0
                     ? `, ${unreadFeedbackCount} Feedback Baru`
@@ -1276,14 +1287,16 @@ const TicketDetailPage = () => {
                 </Button>
                 <Button
                   onClick={() => setIsEmailModalOpen(true)}
-                  className="w-full bg-blue-600 text-white hover:bg-blue-700 text-sm py-2.5 px-4 justify-center hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  className="w-full bg-blue-600 text-white hover:bg-blue-700 text-sm py-2.5 px-4 justify-center hover:scale-105 transition-all duration-300 hover:shadow-xl"
+                >
                   📧 Kirim Email
                 </Button>
                 {ticket.status === "done" && (
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
                     disabled={isUpdatingStatus}
-                    className="w-full bg-orange-600 text-white hover:bg-orange-700 text-sm py-2.5 px-4 justify-center disabled:opacity-50">
+                    className="w-full bg-orange-600 text-white hover:bg-orange-700 text-sm py-2.5 px-4 justify-center disabled:opacity-50"
+                  >
                     {isUpdatingStatus ? "Memperbarui..." : "🔄 Buka Kembali"}
                   </Button>
                 )}
@@ -1291,7 +1304,8 @@ const TicketDetailPage = () => {
                   <Button
                     onClick={() => handleStatusUpdate("done")}
                     disabled={isUpdatingStatus}
-                    className="w-full bg-green-600 text-white hover:bg-green-700 text-sm py-2.5 px-4 justify-center disabled:opacity-50 hover:scale-105 transition-all duration-300">
+                    className="w-full bg-green-600 text-white hover:bg-green-700 text-sm py-2.5 px-4 justify-center disabled:opacity-50 hover:scale-105 transition-all duration-300"
+                  >
                     {isUpdatingStatus ? "Memperbarui..." : "✅ Tandai Selesai"}
                   </Button>
                 )}
@@ -1299,7 +1313,8 @@ const TicketDetailPage = () => {
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
                     disabled={isUpdatingStatus}
-                    className="w-full bg-yellow-600 text-white hover:bg-yellow-700 text-sm py-2.5 px-4 justify-center disabled:opacity-50 hover:scale-105 transition-all duration-300">
+                    className="w-full bg-yellow-600 text-white hover:bg-yellow-700 text-sm py-2.5 px-4 justify-center disabled:opacity-50 hover:scale-105 transition-all duration-300"
+                  >
                     {isUpdatingStatus ? "Memperbarui..." : "🔄 Proses"}
                   </Button>
                 )}
@@ -1313,7 +1328,8 @@ const TicketDetailPage = () => {
                     unreadFeedbackCount > 0
                       ? "bg-orange-600 hover:bg-orange-700 hover:scale-105 transition-all duration-300 hover:shadow-xl"
                       : "bg-purple-600 hover:bg-white hover:text-purple-600 border-1 border-purple-600  hover:scale-105 transition-all duration-300 hover:shadow-xl"
-                  }`}>
+                  }`}
+                >
                   📝 Lihat Feedback ({feedbackCount}
                   {unreadFeedbackCount > 0
                     ? `, ${unreadFeedbackCount} baru`
@@ -1322,14 +1338,16 @@ const TicketDetailPage = () => {
                 </Button>
                 <Button
                   onClick={() => setIsEmailModalOpen(true)}
-                  className="bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  className="bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all duration-300 hover:shadow-xl"
+                >
                   📧 Kirim Email
                 </Button>
                 {ticket.status === "done" && (
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
                     disabled={isUpdatingStatus}
-                    className="bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50">
+                    className="bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50"
+                  >
                     {isUpdatingStatus ? "Memperbarui..." : "🔄 Buka Kembali"}
                   </Button>
                 )}
@@ -1337,7 +1355,8 @@ const TicketDetailPage = () => {
                   <Button
                     onClick={() => handleStatusUpdate("done")}
                     disabled={isUpdatingStatus}
-                    className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                    className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 hover:scale-105 transition-all duration-300 hover:shadow-xl"
+                  >
                     {isUpdatingStatus ? "Memperbarui..." : "✅ Tandai Selesai"}
                   </Button>
                 )}
@@ -1345,7 +1364,8 @@ const TicketDetailPage = () => {
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
                     disabled={isUpdatingStatus}
-                    className="bg-yellow-600 text-white hover:bg-yellow-700 disabled:opacity-50 hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                    className="bg-yellow-600 text-white hover:bg-yellow-700 disabled:opacity-50 hover:scale-105 transition-all duration-300 hover:shadow-xl"
+                  >
                     {isUpdatingStatus ? "Memperbarui..." : "🔄 Proses"}
                   </Button>
                 )}
@@ -1368,7 +1388,8 @@ const TicketDetailPage = () => {
                     unreadFeedbackCount > 0
                       ? "bg-orange-600 hover:bg-orange-700 hover:scale-105 transition-all duration-300"
                       : "bg-purple-600 hover:bg-white hover:text-purple-600 border-1 border-purple-600  hover:scale-105 transition-all duration-300"
-                  }`}>
+                  }`}
+                >
                   📝 Lihat Feedback ({feedbackCount}
                   {unreadFeedbackCount > 0
                     ? `, ${unreadFeedbackCount} baru`
@@ -1387,7 +1408,8 @@ const TicketDetailPage = () => {
           {/* Backdrop dengan blur effect */}
           <div
             className="absolute inset-0 bg-white/30 backdrop-blur-sm"
-            onClick={() => setIsEmailModalOpen(false)}></div>
+            onClick={() => setIsEmailModalOpen(false)}
+          ></div>
 
           {/* Modal Content */}
           <div className="relative min-h-screen flex items-center justify-center p-4">
@@ -1445,7 +1467,8 @@ const TicketDetailPage = () => {
                 <div className="flex flex-col md:flex-row gap-2 mt-6">
                   <button
                     onClick={() => setIsEmailModalOpen(false)}
-                    className="w-full md:w-auto px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 transition-colors">
+                    className="w-full md:w-auto px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 transition-colors"
+                  >
                     Batal
                   </button>
                   <button
@@ -1453,7 +1476,8 @@ const TicketDetailPage = () => {
                     disabled={
                       isSendingEmail || !emailData.recipientEmail.trim()
                     }
-                    className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
                     {isSendingEmail ? "Mengirim..." : "Kirim Email"}
                   </button>
                 </div>
@@ -1471,7 +1495,8 @@ const TicketDetailPage = () => {
             setShowPasswordModal(false);
             setPassword("");
           }}
-          title="Verifikasi Password">
+          title="Verifikasi Password"
+        >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
               Untuk keamanan, silakan masukkan password Anda untuk melihat token
@@ -1499,13 +1524,15 @@ const TicketDetailPage = () => {
                   setShowPasswordModal(false);
                   setPassword("");
                 }}
-                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+              >
                 Batal
               </button>
               <button
                 onClick={handleRevealToken}
                 disabled={isVerifying || !password.trim()}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
                 {isVerifying ? "Memverifikasi..." : "Verifikasi"}
               </button>
             </div>

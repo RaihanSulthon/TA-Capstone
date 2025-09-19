@@ -16,6 +16,7 @@ import TicketDetailPage from "./pages/TicketDetailPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import TicketManagementPage from "./pages/admin/TicketManagementPage";
 import StudentTicketsPage from "./pages/student/StudentTicketsPage";
+import UserDetailPage from "./pages/admin/UserDetailPage";
 
 // Contact Pages
 import ContactsPage from "./pages/ContactsPage";
@@ -34,13 +35,13 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="auth" element={<AuthPage />} />
           <Route path="access-denied" element={<AccessDeniedPage />} />
-          
+
           {/* Public Contacts Route - Always accessible without login */}
           <Route path="/contacts" element={<ContactsPage />} />
 
           {/* LAAK Info Portal Route */}
           <Route path="/laak-info" element={<LAAKInfoPortal />} />
-          
+
           {/* Protected User Routes */}
           <Route path="app" element={<MainLayout />}>
             <Route
@@ -51,12 +52,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Ticket System Routes - Student */}
             <Route
               path="submit-ticket"
               element={
-                <RoleBasedRoute allowedRoles={["student"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["student"]}
+                  fallbackPath="/access-denied"
+                >
                   <FormKeluhanMahasiswaPage />
                 </RoleBasedRoute>
               }
@@ -65,7 +69,10 @@ function App() {
             <Route
               path="my-tickets"
               element={
-                <RoleBasedRoute allowedRoles={["student"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["student"]}
+                  fallbackPath="/access-denied"
+                >
                   <StudentTicketsPage />
                 </RoleBasedRoute>
               }
@@ -90,32 +97,49 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Add other user routes here */}
             <Route
               path="profile"
               element={
                 <ProtectedRoute>
-                  <DashboardPage /> {/* Replace with actual profile page when created */}
+                  <DashboardPage />{" "}
+                  {/* Replace with actual profile page when created */}
                 </ProtectedRoute>
               }
             />
           </Route>
-          
+
           {/* Admin Routes */}
           <Route path="admin" element={<MainLayout />}>
             <Route
               path="dashboard"
               element={
-                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["admin"]}
+                  fallbackPath="/access-denied"
+                >
                   <AdminDashboardPage />
                 </RoleBasedRoute>
               }
             />
+
+            <Route
+              path="user-detail/:userId"
+              element={
+                <RoleBasedRoute allowedRoles={["admin"]}>
+                  <UserDetailPage />
+                </RoleBasedRoute>
+              }
+            />
+
             <Route
               path="users"
               element={
-                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["admin"]}
+                  fallbackPath="/access-denied"
+                >
                   <TicketStatisticsPage />
                 </RoleBasedRoute>
               }
@@ -125,17 +149,23 @@ function App() {
             <Route
               path="tickets"
               element={
-                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["admin"]}
+                  fallbackPath="/access-denied"
+                >
                   <TicketManagementPage />
                 </RoleBasedRoute>
               }
             />
-            
+
             {/* Admin Contacts Management Route */}
             <Route
               path="contacts"
               element={
-                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["admin"]}
+                  fallbackPath="/access-denied"
+                >
                   <AdminContactsPage />
                 </RoleBasedRoute>
               }
@@ -145,18 +175,24 @@ function App() {
             <Route
               path="faqs"
               element={
-                <RoleBasedRoute allowedRoles={["admin"]} fallbackPath="/access-denied">
+                <RoleBasedRoute
+                  allowedRoles={["admin"]}
+                  fallbackPath="/access-denied"
+                >
                   <AdminFAQPage />
                 </RoleBasedRoute>
               }
             />
-            
+
             {/* Add more admin routes here */}
           </Route>
-          
+
           {/* Redirects */}
-          <Route path="dashboard" element={<Navigate to="/app/dashboard" replace />} />
-          
+          <Route
+            path="dashboard"
+            element={<Navigate to="/app/dashboard" replace />}
+          />
+
           {/* 404 Page - Catch All */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
