@@ -345,8 +345,6 @@ const TicketDetailPage = () => {
         statusUpdatedAt: serverTimestamp(),
       });
 
-      console.log("Ticket updated successfully, now sending notification...");
-
       // Send notification for status change - dengan parameter yang benar
       const notificationResult = await notifyStatusChange(
         ticket,
@@ -356,8 +354,6 @@ const TicketDetailPage = () => {
         currentUser.displayName || currentUser.email?.split("@")[0] || "Admin",
         "admin" // role dalam huruf kecil
       );
-
-      console.log("Notification result:", notificationResult);
 
       setToast({
         message: `Status tiket berhasil diperbarui menjadi ${

@@ -182,7 +182,6 @@ const AdminContactsPage = () => {
           photoType = formData.photoFile.type;
           photoName = formData.photoFile.name;
         } catch (error) {
-          console.error("Error converting file to base64:", error);
           setToast({
             message: "Gagal mengproses gambar. Silakan coba lagi.",
             type: "error",
@@ -268,7 +267,6 @@ const AdminContactsPage = () => {
           photoType = formData.photoFile.type;
           photoName = formData.photoFile.name;
         } catch (error) {
-          console.error("Error converting file to base64:", error);
           setToast({
             message: "Gagal mengproses gambar. Silakan coba lagi.",
             type: "error",
