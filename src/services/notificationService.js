@@ -67,8 +67,6 @@ const createTicketNotification = async ({
     
     const notificationRef = await addDoc(collection(db, "notifications"), notificationData);
     
-    console.log("Notification created successfully with ID:", notificationRef.id);
-    
     return {
       success: true,
       data: {
