@@ -217,7 +217,7 @@ const NavbarAdmin = () => {
   return (
     <>
       <nav className="bg-red-700 text-white shadow-md">
-        <div className="container mx-auto px-4">
+        <div className="w-full px-4 md:px-6">
           <div className="flex justify-between items-center h-16">
             <Link to="/admin/dashboard" className="flex items-center">
               <div className="hidden sm:block">

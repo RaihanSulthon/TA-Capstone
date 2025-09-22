@@ -141,6 +141,7 @@ const MainLayout = () => {
     {
       path: "/contacts",
       label: "Kontak Dosen",
+      hideForAdmin: true,
       icon: (
         <path
           strokeLinecap="round"
@@ -173,7 +174,8 @@ const MainLayout = () => {
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-transparent backdrop-blur-sm z-40 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}></div>
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
         )}
 
         {userRole && (
@@ -184,32 +186,32 @@ const MainLayout = () => {
               ${isSidebarOpen ? "translate-x-0 w-80" : "-translate-x-full"}
               ${
                 isAdminSection
-                  ? `bg-gray-100 border-r border-gray-200 ${
-                      isExpanded ? "md:w-64" : "md:w-16"
-                    }`
-                  : `bg-white shadow-md ${
-                      isExpanded ? "md:w-64" : "md:w-16"
-                    }`
+                  ? `bg-gray-100 ${isExpanded ? "md:w-64" : "md:w-16"}`
+                  : `bg-white shadow-lg ${isExpanded ? "md:w-64" : "md:w-16"}`
               }
+              md:rounded-r-2xl md:overflow-hidden
             `}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}>
+            onMouseLeave={() => setIsHovered(false)}
+          >
             {isAdminSection && isAdmin() ? (
               <div className="h-full flex flex-col">
                 <div
-                  className={`p-4 border-b border-gray-200 bg-white transition-all duration-300 ${
+                  className={`p-4 bg-white transition-all duration-300 md:rounded-tr-2xl ${
                     !isExpanded && "md:p-2"
-                  }`}>
+                  }`}
+                >
                   <div
                     className={`flex items-center ${
                       !isExpanded ? "justify-center" : ""
-                    }`}>
+                    }`}
+                  >
                     {isExpanded ? (
                       <h2 className="text-lg font-semibold text-gray-800">
                         Admin Panel
                       </h2>
                     ) : (
-                      <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                      <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
                         <span className="text-white text-xs font-bold">A</span>
                       </div>
                     )}
@@ -217,104 +219,22 @@ const MainLayout = () => {
                 </div>
 
                 {/* Admin menu always rendered */}
-                <nav className="flex-1 mt-2 px-2 space-y-1">
-                  {adminMenuItems.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      title={!isExpanded ? item.label : undefined}
-                      onClick={() => setIsSidebarOpen(false)}
-                      className={`group flex items-center ${
-                        isExpanded ? "px-3 justify-start" : "justify-center"
-                      } py-2 text-sm font-medium rounded-md transition-colors ${
-                        isActive(item.path)
-                          ? "bg-blue-100 text-blue-700"
-                          : "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
-                      }`}>
-                      <svg
-                        className={`h-5 w-5 flex-shrink-0 ${
-                          isExpanded ? "mr-3" : ""
-                        } ${
-                          isActive(item.path)
-                            ? "text-blue-500"
-                            : "text-gray-400 group-hover:text-gray-500"
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        {item.icon}
-                      </svg>
-                      {isExpanded && (
-                        <span className="whitespace-nowrap">{item.label}</span>
-                      )}
-                    </Link>
-                  ))}
-                  <div
-                    className={`border-t border-gray-300 my-4 ${
-                      !isExpanded && "mx-4"
-                    }`}
-                  />
-                  <Link
-                    to="/app/dashboard"
-                    title={!isExpanded ? "Switch to User View" : undefined}
-                    onClick={() => setIsSidebarOpen(false)}
-                    className={`group flex items-center ${
-                      isExpanded ? "px-3 justify-start" : "justify-center"
-                    } py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900`}>
-                    <svg
-                      className={`h-5 w-5 flex-shrink-0 ${
-                        isExpanded ? "mr-3" : ""
-                      } text-gray-400 group-hover:text-gray-500`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                      />
-                    </svg>
-                    {isExpanded && (
-                      <span className="whitespace-nowrap">
-                        Switch to User View
-                      </span>
-                    )}
-                  </Link> 
-                </nav>
-              </div>
-            ) : (
-              <div className="h-full">
-                <div className="p-4 border-b border-gray-300">
-                  {isExpanded ? (
-                    <h2 className="text-xl font-semibold">Navigation</h2>
-                  ) : (
-                    <div className="flex justify-center">
-                      <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">N</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* User menu always rendered */}
-                <nav className="mt-4 px-2 flex flex-col gap-2">
-                  {userMenuItems.map((item) => {
-                    if (item.studentOnly && userRole !== "student") return null;
-                    if (item.adminOnly && !isAdmin()) return null;
-                    return (
+                <nav className="flex-1 px-2 space-y-1 overflow-y-auto bg-gray-100">
+                  <div className="pt-2">
+                    {adminMenuItems.map((item) => (
                       <Link
                         key={item.path}
                         to={item.path}
                         title={!isExpanded ? item.label : undefined}
                         onClick={() => setIsSidebarOpen(false)}
                         className={`group flex items-center ${
-                          isExpanded ? "px-4 justify-start" : "justify-center"
-                        } py-2 rounded-md text-sm font-medium transition-colors ${
+                          isExpanded ? "px-3 justify-start" : "justify-center"
+                        } py-2 text-sm font-medium rounded-xl transition-all duration-200 mb-1 ${
                           isActive(item.path)
-                            ? "bg-blue-100 text-blue-700"
-                            : "text-gray-700 hover:bg-blue-50"
-                        }`}>
+                            ? "bg-blue-100 text-blue-700 shadow-sm"
+                            : "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+                        }`}
+                      >
                         <svg
                           className={`h-5 w-5 flex-shrink-0 ${
                             isExpanded ? "mr-3" : ""
@@ -325,7 +245,8 @@ const MainLayout = () => {
                           }`}
                           fill="none"
                           stroke="currentColor"
-                          viewBox="0 0 24 24">
+                          viewBox="0 0 24 24"
+                        >
                           {item.icon}
                         </svg>
                         {isExpanded && (
@@ -334,25 +255,128 @@ const MainLayout = () => {
                           </span>
                         )}
                       </Link>
-                    );
-                  })}
+                    ))}
+                  </div>
+
+                  <div
+                    className={`border-t border-gray-300 my-4 ${
+                      !isExpanded && "mx-4"
+                    }`}
+                  />
+
+                  <div className="pb-4">
+                    <Link
+                      to="/app/dashboard"
+                      title={!isExpanded ? "Switch to User View" : undefined}
+                      onClick={() => setIsSidebarOpen(false)}
+                      className={`group flex items-center ${
+                        isExpanded ? "px-3 justify-start" : "justify-center"
+                      } py-2 text-sm font-medium rounded-xl transition-all duration-200 text-gray-700 hover:bg-gray-200 hover:text-gray-900`}
+                    >
+                      <svg
+                        className={`h-5 w-5 flex-shrink-0 ${
+                          isExpanded ? "mr-3" : ""
+                        } text-gray-400 group-hover:text-gray-500`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                        />
+                      </svg>
+                      {isExpanded && (
+                        <span className="whitespace-nowrap">
+                          Switch to User View
+                        </span>
+                      )}
+                    </Link>
+                  </div>
+                </nav>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col">
+                <div className="p-4 bg-white md:rounded-tr-2xl">
+                  {isExpanded ? (
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      Navigation
+                    </h2>
+                  ) : (
+                    <div className="flex justify-center">
+                      <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">N</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* User menu always rendered */}
+                <nav className="flex-1 px-2 flex flex-col gap-2 overflow-y-auto bg-white">
+                  <div className="pt-4 pb-4 space-y-2">
+                    {userMenuItems.map((item) => {
+                      if (item.studentOnly && userRole !== "student")
+                        return null;
+                      if (item.adminOnly && !isAdmin()) return null;
+                      if (item.hideForAdmin && isAdmin()) return null;
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          title={!isExpanded ? item.label : undefined}
+                          onClick={() => setIsSidebarOpen(false)}
+                          className={`group flex items-center ${
+                            isExpanded ? "px-4 justify-start" : "justify-center"
+                          } py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            isActive(item.path)
+                              ? "bg-blue-100 text-blue-700 shadow-sm"
+                              : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                          }`}
+                        >
+                          <svg
+                            className={`h-5 w-5 flex-shrink-0 ${
+                              isExpanded ? "mr-3" : ""
+                            } ${
+                              isActive(item.path)
+                                ? "text-blue-500"
+                                : "text-gray-400 group-hover:text-blue-500"
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            {item.icon}
+                          </svg>
+                          {isExpanded && (
+                            <span className="whitespace-nowrap">
+                              {item.label}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </nav>
               </div>
             )}
           </div>
         )}
 
-        <div className="flex-1 bg-gray-50 md:p-4 p-2 min-w-0 overflow-x-hidden">
+        <div className="flex-1 bg-gray-50 min-w-0 overflow-x-hidden">
           {userRole && (
-            <div className="md:hidden bg-white p-4 mb-4 rounded-lg shadow flex items-center justify-between max-w-full overflow-hidden">
+            <div className="md:hidden bg-white p-4 mb-4 mx-2 rounded-lg shadow flex items-center justify-between max-w-full overflow-hidden">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="text-gray-600 hover:text-gray-900">
+                className="text-gray-600 hover:text-gray-900"
+              >
                 <svg
                   className="w-6 h-6"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -367,7 +391,9 @@ const MainLayout = () => {
               <div></div>
             </div>
           )}
-          <Outlet />
+          <div className="p-4 md:p-6">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

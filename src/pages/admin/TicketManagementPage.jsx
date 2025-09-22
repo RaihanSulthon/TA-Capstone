@@ -411,12 +411,10 @@ const TicketManagementPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 overflow-x-hidden w-full">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 md:mb-6 gap-3">
+    <div className="w-full px-4 md:px-6 py-4 md:py-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl md:text-2xl font-bold truncate">
-            Ticket Management
-          </h1>
+          <h1 className="text-2xl font-bold">Ticket Management</h1>
         </div>
       </div>
 
@@ -429,9 +427,9 @@ const TicketManagementPage = () => {
         />
       )}
 
-      {/* Filters and Search - IMPROVED LAYOUT */}
-      <div className="bg-white p-3 md:p-6 rounded-lg shadow-md mb-4 md:mb-6 overflow-hidden w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-4 items-end">
+      {/* Filters and Search */}
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end">
           <div>
             <label
               htmlFor="status-filter"
@@ -543,70 +541,55 @@ const TicketManagementPage = () => {
           </div>
         </div>
 
-        {/* Reset Button - Separate Row */}
-        <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2">
+        <div className="mt-4 flex justify-end">
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-all hover:scale-105 font-semibold duration-300 hover:shadow-xl"
+            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-all hover:scale-105 font-semibold duration-300 hover:shadow-xl"
           >
             Reset Filter
           </button>
         </div>
       </div>
 
-      {/*Stats Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3 mb-6 md:mb-8 px-1">
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Total Tiket
-          </p>
-          <p className="text-sm md:text-lg font-bold text-blue-600">
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Tiket</p>
+          <p className="text-2xl font-bold text-blue-600">
             {ticketStats.total}
           </p>
         </div>
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Tiket Baru
-          </p>
-          <p className="text-sm md:text-lg font-bold text-blue-600">
-            {ticketStats.new}
-          </p>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Tiket Baru</p>
+          <p className="text-2xl font-bold text-blue-600">{ticketStats.new}</p>
         </div>
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Sedang Diproses
-          </p>
-          <p className="text-lg md:text-lg font-bold text-yellow-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Sedang Diproses</p>
+          <p className="text-2xl font-bold text-yellow-600">
             {ticketStats.inProgress}
           </p>
         </div>
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">Selesai</p>
-          <p className="text-lg md:text-lg font-bold text-green-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Selesai</p>
+          <p className="text-2xl font-bold text-green-600">
             {ticketStats.done}
           </p>
         </div>
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Belum Dibaca
-          </p>
-          <p className="text-lg md:text-lg font-bold text-purple-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Belum Dibaca</p>
+          <p className="text-2xl font-bold text-purple-600">
             {ticketStats.unread}
           </p>
         </div>
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Tiket Dengan Feedback
-          </p>
-          <p className="text-lg md:text-lg font-bold text-indigo-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Tiket Dengan Feedback</p>
+          <p className="text-2xl font-bold text-indigo-600">
             {ticketStats.withFeedback}
           </p>
         </div>
-        <div className="bg-white p-2 md:p-3 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Total Feedback
-          </p>
-          <p className="text-lg md:text-lg font-bold text-indigo-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Feedback</p>
+          <p className="text-2xl font-bold text-indigo-600">
             {ticketStats.totalFeedbacks}
           </p>
         </div>

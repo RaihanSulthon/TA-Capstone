@@ -134,11 +134,11 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 overflow-x-hidden w-full">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+    <div className="w-full px-4 md:px-6 py-4 md:py-6 space-y-6">
+      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
       {/* Admin Info Card */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex items-center mb-4">
           <div className="bg-blue-100 text-blue-800 p-3 rounded-full mr-4">
             <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
@@ -159,20 +159,22 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Admin Actions Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Quick Actions
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
             to="/admin/users"
-            className="flex items-center p-4 bg-blue-50 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-blue-100 hover:shadow-xl">
+            className="flex items-center p-4 bg-blue-50 rounded-lg transition-all duration-300 hover:scale-105 hover:bg-blue-100 hover:shadow-xl"
+          >
             <div className="bg-blue-100 text-blue-800 p-3 rounded-full mr-4">
               <svg
                 className="h-5 w-5"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -190,38 +192,33 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8 px-1">
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Total Users
-          </p>
-          <p className="text-lg md:text-2xl font-bold text-blue-600">
-            {userStats.total}
-          </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Users</p>
+          <p className="text-2xl font-bold text-blue-600">{userStats.total}</p>
         </div>
 
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">Students</p>
-          <p className="text-lg md:text-2xl font-bold text-green-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Students</p>
+          <p className="text-2xl font-bold text-green-600">
             {userStats.students}
           </p>
         </div>
 
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">Admin</p>
-          <p className="text-lg md:text-2xl font-bold text-red-600">
-            {userStats.admins}
-          </p>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Admin</p>
+          <p className="text-2xl font-bold text-red-600">{userStats.admins}</p>
         </div>
       </div>
 
       {/* Recent Users */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 p-4 md:p-6 gap-3">
-          <h3 className="text-lg md:text-xl font-semibold">User Overview</h3>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 p-6 gap-3">
+          <h3 className="text-xl font-semibold">User Overview</h3>
           <Link
             to="/admin/users"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium w-full sm:w-auto text-center sm:text-left">
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium w-full sm:w-auto text-center sm:text-left"
+          >
             View All Users
           </Link>
         </div>
@@ -241,7 +238,8 @@ const AdminDashboardPage = () => {
                         user.role === "admin"
                           ? "bg-red-100 text-red-800"
                           : "bg-green-100 text-green-800"
-                      }`}>
+                      }`}
+                    >
                       {getRoleDisplayName(user.role)}
                     </span>
                   </div>
@@ -268,22 +266,26 @@ const AdminDashboardPage = () => {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Name
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Email
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Role
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Registered
                 </th>
               </tr>
@@ -306,7 +308,8 @@ const AdminDashboardPage = () => {
                           user.role === "admin"
                             ? "bg-red-100 text-red-800"
                             : "bg-green-100 text-green-800"
-                        }`}>
+                        }`}
+                      >
                         {getRoleDisplayName(user.role)}
                       </span>
                     </td>
@@ -319,7 +322,8 @@ const AdminDashboardPage = () => {
                 <tr>
                   <td
                     colSpan="4"
-                    className="px-6 py-4 text-center text-gray-500">
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No recent users found
                   </td>
                 </tr>

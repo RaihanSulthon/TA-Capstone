@@ -194,15 +194,15 @@ const Navbar = () => {
   return (
     <>
       <nav className="bg-white shadow-md">
-        <div className="container mx-auto px-4">
+        <div className="w-full px-4 md:px-6">
           <div className="flex justify-between items-center h-16">
             {/* Updated Logo and App Name with better positioning */}
             <Link to="/" className="flex items-center">
-              <div className="hidden sm:block ">
+              <div className="hidden sm:block">
                 <img
                   src={applogo}
                   alt="App Logo"
-                  className="h-8 w-auto ml-4 hover:scale-105 transition-all duration-300"
+                  className="h-8 w-auto hover:scale-105 transition-all duration-300"
                 />
               </div>
               <span className="text-md ml-2 md:text-xl font-bold text-blue-600">
