@@ -22,6 +22,7 @@ const AdminDashboardPage = () => {
     students: 0,
     admins: 0,
   });
+  const [recentTickets, setRecentTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -82,6 +83,25 @@ const AdminDashboardPage = () => {
           students: studentCount,
           admins: adminCount,
         });
+
+        // Fetch recent tickets
+        const ticketsQuery = query(
+          collection(db, "tickets"),
+          orderBy("createdAt", "desc"),
+          limit(5)
+        );
+
+        const ticketsSnapshot = await getDocs(ticketsQuery);
+        const ticketsData = [];
+
+        ticketsSnapshot.forEach((doc) => {
+          ticketsData.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        setRecentTickets(ticketsData);
       } catch (error) {
         console.error("Error fetching admin data:", error);
       } finally {
@@ -123,6 +143,12 @@ const AdminDashboardPage = () => {
   // Get proper role display name
   const getRoleDisplayName = (role) => {
     return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  // Truncate text helper function
+  const truncateText = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
   if (loading) {
@@ -325,6 +351,142 @@ const AdminDashboardPage = () => {
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     No recent users found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Recent Tickets */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 p-6 gap-3">
+          <h3 className="text-xl font-semibold">Recent Tickets</h3>
+          <Link
+            to="/admin/tickets"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium w-full sm:w-auto text-center sm:text-left"
+          >
+            View All Tickets
+          </Link>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="block md:hidden">
+          <div className="divide-y divide-gray-200">
+            {recentTickets.length > 0 ? (
+              recentTickets.map((ticket) => (
+                <div key={ticket.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium text-gray-900 truncate flex-1 mr-2">
+                      <Link
+                        to={`/admin/tickets/${ticket.id}`}
+                        state={{ from: location.pathname }}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        {truncateText(ticket.judul, 30)}
+                      </Link>
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ${
+                        ticket.status === "closed"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {ticket.status === "closed" ? "Closed" : "Open"}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 truncate">
+                    {ticket.deskripsi}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Created: {formatDate(ticket.createdAt)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-gray-500">
+                No recent tickets found
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Table Layout */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Title
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Description
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Created
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {recentTickets.length > 0 ? (
+                recentTickets.map((ticket) => (
+                  <tr key={ticket.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        <Link
+                          to={`/admin/tickets/${ticket.id}`}
+                          state={{ from: location.pathname }}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          {truncateText(ticket.judul, 30)}
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500 truncate">
+                        {ticket.deskripsi}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          ticket.status === "closed"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {ticket.status === "closed" ? "Closed" : "Open"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(ticket.createdAt)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    No recent tickets found
                   </td>
                 </tr>
               )}

@@ -236,20 +236,38 @@ const TicketDetailPage = () => {
     // Cek apakah ada state yang menyimpan halaman sebelumnya
     if (location.state?.from) {
       navigate(location.state.from);
-    } else {
-      // Coba navigate back jika ada history
-      if (window.history.length > 1) {
-        navigate(-1);
+      return;
+    }
+
+    // Cek referrer URL untuk menentukan halaman yang tepat
+    const currentPath = location.pathname;
+    const isFromFeedback = document.referrer.includes("/feedback");
+
+    // Jika dari halaman feedback, langsung ke ticket management/my-tickets
+    if (isFromFeedback) {
+      if (userRole === "admin") {
+        navigate("/admin/tickets");
+      } else if (userRole === "student") {
+        navigate("/app/my-tickets");
       } else {
-        // Fallback berdasarkan role
-        if (userRole === "admin") {
-          navigate("/admin/tickets");
-        } else if (userRole === "student") {
-          navigate("/app/my-tickets");
-        } else {
-          navigate("/app/dashboard");
-        }
+        navigate("/app/dashboard");
       }
+      return;
+    }
+
+    // Logika default berdasarkan role dan section
+    if (userRole === "admin") {
+      // Jika di admin section, kembali ke admin tickets
+      if (currentPath.startsWith("/admin/")) {
+        navigate("/admin/tickets");
+      } else {
+        // Jika admin mengakses dari user section
+        navigate("/app/my-tickets");
+      }
+    } else if (userRole === "student") {
+      navigate("/app/my-tickets");
+    } else {
+      navigate("/app/dashboard");
     }
   };
 
@@ -428,7 +446,7 @@ const TicketDetailPage = () => {
         "service_2jo7enz", // Ganti dengan Service ID dari EmailJS
         "template_zvywepm", // Template ID
         templateParams,
-        "YaROFPye1dmERQTS9" // Ganti dengan Public Key dari EmailJS
+        "YaROFPYe1dmERQTS9" // Ganti dengan Public Key dari EmailJS
       );
 
       setToast({
@@ -574,7 +592,14 @@ const TicketDetailPage = () => {
   const handleViewFeedback = () => {
     // Mark semua unread feedback sebagai read sebelum navigate
     markFeedbacksAsRead();
-    navigate(`/app/tickets/${ticket.id}/feedback`);
+
+    // Navigate dengan state untuk proper back navigation
+    navigate(`/app/tickets/${ticket.id}/feedback`, {
+      state: {
+        from: location.pathname,
+        returnTo: userRole === "admin" ? "/admin/tickets" : "/app/my-tickets",
+      },
+    });
   };
   const markTicketAsRead = async (ticketData) => {
     try {

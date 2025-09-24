@@ -108,6 +108,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Contacts Route - Also accessible for authenticated users */}
+            <Route
+              path="contacts"
+              element={
+                <ProtectedRoute>
+                  <ContactsPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           {/* Admin Routes */}

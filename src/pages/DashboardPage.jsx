@@ -1,4 +1,3 @@
-// Modified DashboardPage.jsx with truncated email addresses
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
@@ -390,12 +389,16 @@ const DashboardPage = () => {
       )}
 
       {/* Stats Cards - Updated with responsive grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6">
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${
+          userData?.role === "admin" ? "xl:grid-cols-5" : "xl:grid-cols-5"
+        } gap-4 lg:gap-6`}
+      >
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-lg font-bold mb-2">
-                Total Tickets
+                Total Tiket
               </p>
               <p className="text-4xl font-bold">
                 {dashboardStats.totalTickets}
@@ -439,27 +442,25 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {userData?.role === "admin" && (
-          <div className="bg-gradient-to-r from-pink-500 to-rose-600 text-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-pink-100 text-lg font-bold mb-2">
-                  Success Rate
-                </p>
-                <p className="text-4xl font-bold">
-                  {dashboardStats.totalTickets > 0
-                    ? Math.round(
-                        (dashboardStats.resolvedTickets /
-                          dashboardStats.totalTickets) *
-                          100
-                      )
-                    : 0}
-                  %
-                </p>
-              </div>
+        <div className="bg-gradient-to-r from-pink-500 to-rose-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-pink-100 text-lg font-bold mb-2">
+                Success Rate
+              </p>
+              <p className="text-4xl font-bold">
+                {dashboardStats.totalTickets > 0
+                  ? Math.round(
+                      (dashboardStats.resolvedTickets /
+                        dashboardStats.totalTickets) *
+                        100
+                    )
+                  : 0}
+                %
+              </p>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -551,13 +552,13 @@ const DashboardPage = () => {
                   <>
                     <Link
                       to="/admin/tickets"
-                      className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                      className="block w-full hover:bg-white hover:text-blue-600 hover:scale-105 hover:border hover:border-blue-600 transition-all duration-300  text-center bg-blue-600 text-white py-2 px-4 rounded-lg"
                     >
                       Manage Tickets
                     </Link>
                     <Link
                       to="/admin/faq"
-                      className="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200"
+                      className="block w-full hover:bg-white hover:text-green-600 hover:scale-105 hover:border hover:border-green-600 transition-all duration-300  text-center bg-green-600 text-white py-2 px-4 rounded-lg"
                     >
                       Manage FAQs
                     </Link>

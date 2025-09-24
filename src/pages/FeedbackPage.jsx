@@ -6,12 +6,12 @@ import { doc, getDoc } from "firebase/firestore";
 import Toast from "../components/Toast";
 import Button from "../components/forms/Button";
 import FileUpload from "../components/FileUpload";
-import { 
-  addFeedback, 
-  listenToFeedbacks, 
+import {
+  addFeedback,
+  listenToFeedbacks,
   markFeedbackAsRead,
   markMultipleFeedbacksAsRead,
-  formatFileSize 
+  formatFileSize,
 } from "../services/feedbackService";
 import { notifyNewFeedback } from "../services/notificationService";
 
@@ -20,19 +20,19 @@ const FeedbackPage = () => {
   const { currentUser, userRole } = useAuth();
   const { addListener } = useFirestoreListeners();
   const navigate = useNavigate();
-  
+
   // State
   const [ticket, setTicket] = useState(null);
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ message: "", type: "success" });
-  
+
   // Form state
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [sending, setSending] = useState(false);
-  
+
   // Refs
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -40,54 +40,58 @@ const FeedbackPage = () => {
   // Format timestamp - FIXED: Improve date logic
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
-    
+
     try {
       let date;
-      if (typeof timestamp.toDate === 'function') {
+      if (typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
       } else if (timestamp instanceof Date) {
         date = timestamp;
       } else {
         date = new Date(timestamp);
       }
-      
+
       const now = new Date();
-      
+
       // Get today's date at midnight for accurate comparison
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      
+      const messageDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
+
       // Calculate difference in days
       const diffTime = today.getTime() - messageDate.getTime();
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) {
         // Same day - show time only
-        return date.toLocaleTimeString('id-ID', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+        return date.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
         });
       } else if (diffDays === 1) {
         // Yesterday
-        return `Kemarin ${date.toLocaleTimeString('id-ID', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+        return `Kemarin ${date.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
         })}`;
       } else if (diffDays < 7) {
         // Within a week - show day name
-        return date.toLocaleDateString('id-ID', { 
-          weekday: 'long',
-          hour: '2-digit', 
-          minute: '2-digit' 
+        return date.toLocaleDateString("id-ID", {
+          weekday: "long",
+          hour: "2-digit",
+          minute: "2-digit",
         });
       } else {
         // Older than a week - show full date
-        return date.toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
+        return date.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         });
       }
     } catch (e) {
@@ -102,24 +106,31 @@ const FeedbackPage = () => {
       case "new":
         return { className: "bg-blue-100 text-blue-800", label: "Baru" };
       case "in_progress":
-        return { className: "bg-yellow-100 text-yellow-800", label: "Diproses" };
+        return {
+          className: "bg-yellow-100 text-yellow-800",
+          label: "Diproses",
+        };
       case "done":
         return { className: "bg-green-100 text-green-800", label: "Selesai" };
       default:
-        return { className: "bg-gray-100 text-gray-800", label: "Tidak Diketahui" };
+        return {
+          className: "bg-gray-100 text-gray-800",
+          label: "Tidak Diketahui",
+        };
     }
   };
 
   // Check if user can access this feedback page
   const canAccessFeedback = () => {
     if (!ticket || !currentUser) return false;
-    
+
     // Admin can access all feedback
     if (userRole === "admin") return true;
-    
+
     // Student can access feedback for their own tickets
-    if (userRole === "student" && ticket.userId === currentUser.uid) return true;
-    
+    if (userRole === "student" && ticket.userId === currentUser.uid)
+      return true;
+
     return false;
   };
 
@@ -131,7 +142,10 @@ const FeedbackPage = () => {
   // Check if feedback is unread by current user
   const isUnreadByMe = (feedback) => {
     if (!feedback.readBy || !currentUser) return false;
-    return !feedback.readBy[currentUser.uid] && feedback.createdBy !== currentUser.uid;
+    return (
+      !feedback.readBy[currentUser.uid] &&
+      feedback.createdBy !== currentUser.uid
+    );
   };
 
   // Fetch ticket data
@@ -140,7 +154,7 @@ const FeedbackPage = () => {
       try {
         const ticketRef = doc(db, "tickets", ticketId);
         const ticketDoc = await getDoc(ticketRef);
-        
+
         if (ticketDoc.exists()) {
           setTicket({ id: ticketDoc.id, ...ticketDoc.data() });
         } else {
@@ -153,34 +167,36 @@ const FeedbackPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchTicket();
   }, [ticketId]);
 
   // Listen to feedbacks real-time
   useEffect(() => {
     if (!ticketId) return;
-    
+
     const unsubscribe = listenToFeedbacks(ticketId, (newFeedbacks) => {
       setFeedbacks(newFeedbacks);
-      
+
       // Auto-scroll to bottom when new feedback arrives
       setTimeout(scrollToBottom, 100);
-      
+
       // Mark unread feedbacks as read
       if (currentUser) {
-        const unreadFeedbacks = newFeedbacks.filter(feedback => isUnreadByMe(feedback));
+        const unreadFeedbacks = newFeedbacks.filter((feedback) =>
+          isUnreadByMe(feedback)
+        );
         if (unreadFeedbacks.length > 0) {
           markMultipleFeedbacksAsRead(
-            unreadFeedbacks.map(f => f.id), 
+            unreadFeedbacks.map((f) => f.id),
             currentUser.uid
           );
         }
       }
     });
-    
+
     addListener(unsubscribe);
-    
+
     return () => unsubscribe();
   }, [ticketId, currentUser, addListener]);
 
@@ -192,28 +208,29 @@ const FeedbackPage = () => {
   // Handle send feedback
   const handleSendFeedback = async (e) => {
     e.preventDefault();
-    
+
     if (!message.trim() && attachments.length === 0) {
       setToast({
         message: "Silakan masukkan pesan atau lampiran",
-        type: "error"
+        type: "error",
       });
       return;
     }
-    
+
     setSending(true);
-    
+
     try {
       const feedbackData = {
         message: message.trim(),
         createdBy: currentUser.uid,
-        createdByName: currentUser.displayName || currentUser.email || "Unknown",
+        createdByName:
+          currentUser.displayName || currentUser.email || "Unknown",
         createdByRole: userRole,
-        attachments: attachments
+        attachments: attachments,
       };
-      
+
       const result = await addFeedback(ticketId, feedbackData);
-      
+
       if (result.success) {
         // Send notification
         await notifyNewFeedback(
@@ -224,27 +241,27 @@ const FeedbackPage = () => {
           userRole,
           attachments.length > 0
         );
-        
+
         // Reset form
         setMessage("");
         setAttachments([]);
         messageInputRef.current?.focus();
-        
+
         setToast({
           message: "Feedback berhasil dikirim",
-          type: "success"
+          type: "success",
         });
       } else {
         setToast({
           message: result.error || "Gagal mengirim feedback",
-          type: "error"
+          type: "error",
         });
       }
     } catch (error) {
       console.error("Error sending feedback:", error);
       setToast({
         message: "Gagal mengirim feedback. Silakan coba lagi.",
-        type: "error"
+        type: "error",
       });
     } finally {
       setSending(false);
@@ -253,7 +270,15 @@ const FeedbackPage = () => {
 
   // Handle back navigation
   const handleGoBack = () => {
-    navigate(`/app/tickets/${ticketId}`);
+    // Prioritas: state.returnTo > state.from > default route
+    if (location.state?.returnTo) {
+      navigate(location.state.returnTo);
+    } else if (location.state?.from) {
+      navigate(location.state.from);
+    } else {
+      // Fallback ke ticket detail
+      navigate(`/app/tickets/${ticketId}`);
+    }
   };
 
   // Handle files change from FileUpload component
@@ -263,8 +288,8 @@ const FeedbackPage = () => {
 
   // FIXED: Render attachment with proper image click handling
   const renderAttachment = (attachment) => {
-    const isImage = attachment.type.startsWith('image/');
-    
+    const isImage = attachment.type.startsWith("image/");
+
     return (
       <div key={attachment.id} className="inline-block mr-2 mb-2">
         {isImage ? (
@@ -275,7 +300,7 @@ const FeedbackPage = () => {
               className="max-w-xs max-h-48 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => {
                 // FIXED: Open image in new window/tab instead of navigating
-                const newWindow = window.open('', '_blank');
+                const newWindow = window.open("", "_blank");
                 if (newWindow) {
                   newWindow.document.write(`
                     <html>
@@ -316,8 +341,16 @@ const FeedbackPage = () => {
             download={attachment.name}
             className="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg p-3 border"
           >
-            <svg className="h-5 w-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 text-gray-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                clipRule="evenodd"
+              />
             </svg>
             <div>
               <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
@@ -376,24 +409,34 @@ const FeedbackPage = () => {
     <div className="max-w-4xl mx-auto py-8 px-4">
       {/* Toast notification */}
       {toast.message && (
-        <Toast 
+        <Toast
           message={toast.message}
           type={toast.type}
           onClose={() => setToast({ message: "", type: "success" })}
         />
       )}
-      
+
       {/* Header */}
       <div className="bg-white rounded-lg shadow-md mb-6">
         <div className="p-6 border-b">
           <div className="flex items-center mb-4">
-            <button 
+            <button
               onClick={handleGoBack}
               className="mr-3 rounded-full w-10 h-10 flex items-center justify-center border border-blue-300 text-blue-500 bg-white hover:bg-blue-500 hover:text-white transition-all duration-300"
               aria-label="Back to ticket detail"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
             </button>
             <div className="flex-1">
@@ -403,7 +446,9 @@ const FeedbackPage = () => {
               <div className="flex items-center text-sm text-gray-600">
                 <span>#{ticket.id.substring(0, 8)}</span>
                 <span className="mx-2">•</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.className}`}
+                >
                   {statusBadge.label}
                 </span>
               </div>
@@ -418,17 +463,29 @@ const FeedbackPage = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Feedback & Komunikasi ({feedbacks.length})
           </h3>
-          
+
           {/* Messages Container */}
           <div className="h-96 overflow-y-auto border rounded-lg p-4 bg-gray-50 mb-4">
             {feedbacks.length === 0 ? (
               <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
-                  <svg className="h-12 w-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <svg
+                    className="h-12 w-12 mx-auto mb-2 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
                   </svg>
                   <p className="text-sm">Tidak ada feedback untuk tiket ini</p>
-                  <p className="text-xs text-gray-400 mt-1">Mulai percakapan dengan mengirim pesan di bawah</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Mulai percakapan dengan mengirim pesan di bawah
+                  </p>
                 </div>
               </div>
             ) : (
@@ -436,48 +493,66 @@ const FeedbackPage = () => {
                 {feedbacks.map((feedback) => {
                   const isFromMe = feedback.createdBy === currentUser.uid;
                   const isFromAdmin = feedback.createdByRole === "admin";
-                  
+
                   return (
-                    <div key={feedback.id} className={`flex ${isFromMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                        isFromMe 
-                          ? 'bg-blue-500 text-white' 
-                          : isFromAdmin 
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-white border border-gray-200 text-gray-900'
-                      }`}>
+                    <div
+                      key={feedback.id}
+                      className={`flex ${
+                        isFromMe ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
+                          isFromMe
+                            ? "bg-blue-500 text-white"
+                            : isFromAdmin
+                            ? "bg-purple-500 text-white"
+                            : "bg-white border border-gray-200 text-gray-900"
+                        }`}
+                      >
                         {/* Message Header */}
                         <div className="flex items-center justify-between mb-2">
-                          <span className={`text-xs font-medium ${
-                            isFromMe || isFromAdmin ? 'text-white' : 'text-gray-600'
-                          }`}>
-                            {isFromMe ? 'Anda ' : feedback.createdByName}
+                          <span
+                            className={`text-xs font-medium ${
+                              isFromMe || isFromAdmin
+                                ? "text-white"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {isFromMe ? "Anda " : feedback.createdByName}
                             {isFromAdmin && !isFromMe && (
                               <span className="ml-1 bg-white text-purple-500 px-1 rounded text-xs">
                                 Admin
                               </span>
                             )}
                           </span>
-                          <span className={`text-xs ${
-                            isFromMe || isFromAdmin ? 'text-white opacity-75' : 'text-gray-500'
-                          }`}>
+                          <span
+                            className={`text-xs ${
+                              isFromMe || isFromAdmin
+                                ? "text-white opacity-75"
+                                : "text-gray-500"
+                            }`}
+                          >
                             {formatDate(feedback.createdAt)}
                           </span>
                         </div>
-                        
+
                         {/* Message Content */}
                         <p className="text-sm whitespace-pre-wrap break-words">
                           {feedback.message}
                         </p>
-                        
+
                         {/* Attachments */}
-                        {feedback.attachments && feedback.attachments.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-opacity-20">
-                            <div className="space-y-2">
-                              {feedback.attachments.map((attachment) => renderAttachment(attachment))}
+                        {feedback.attachments &&
+                          feedback.attachments.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-opacity-20">
+                              <div className="space-y-2">
+                                {feedback.attachments.map((attachment) =>
+                                  renderAttachment(attachment)
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   );
@@ -495,11 +570,14 @@ const FeedbackPage = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Kirim Feedback
           </h3>
-          
+
           <form onSubmit={handleSendFeedback} className="space-y-4">
             {/* Message Input */}
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Pesan
               </label>
               <textarea
@@ -509,7 +587,11 @@ const FeedbackPage = () => {
                 onChange={(e) => setMessage(e.target.value)}
                 rows="4"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                placeholder={`${userRole === 'admin' ? 'Berikan feedback untuk mahasiswa...' : 'Kirim feedback atau pertanyaan tambahan...'}`}
+                placeholder={`${
+                  userRole === "admin"
+                    ? "Berikan feedback untuk mahasiswa..."
+                    : "Kirim feedback atau pertanyaan tambahan..."
+                }`}
                 disabled={sending}
               />
             </div>
@@ -538,10 +620,12 @@ const FeedbackPage = () => {
               </Button>
               <Button
                 type="submit"
-                disabled={sending || (!message.trim() && attachments.length === 0)}
+                disabled={
+                  sending || (!message.trim() && attachments.length === 0)
+                }
                 className={`${
                   sending || (!message.trim() && attachments.length === 0)
-                    ? "bg-gray-400 cursor-not-allowed" 
+                    ? "bg-gray-400 cursor-not-allowed"
                     : "bg-blue-600 text-white hover:bg-white hover:text-blue-600 border border-blue-600 transition-colors duration-200"
                 }`}
               >
@@ -552,8 +636,18 @@ const FeedbackPage = () => {
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      />
                     </svg>
                     Kirim Feedback
                   </div>
