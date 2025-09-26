@@ -227,8 +227,9 @@ const UserManagementPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 overflow-x-hidden w-full">
-      <h1 className="text-2xl font-bold mb-6">Ticket Statistics</h1>
+    <div className="w-full px-4 md:px-6 py-4 md:py-6 space-y-6">
+      <h1 className="text-2xl font-bold">Ticket Statistics</h1>
+
       {/* Toast notification */}
       {toast.message && (
         <Toast
@@ -237,9 +238,10 @@ const UserManagementPage = () => {
           onClose={() => setToast({ message: "", type: "success" })}
         />
       )}
+
       {/* Filters and Search */}
-      <div className="bg-white p-3 md:p-6 rounded-lg shadow-md mb-4 md:mb-6 overflow-hidden w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 items-end">
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
           <div>
             <label
               htmlFor="search"
@@ -277,19 +279,20 @@ const UserManagementPage = () => {
           </div>
         </div>
 
-        {/* Reset Button - Separate Row */}
-        <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2">
+        <div className="mt-4 flex justify-end">
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md font-semibold hover:scale-105 transition-all duration-300 hover:shadow-xl"
+            className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md font-semibold hover:scale-105 transition-all duration-300 hover:shadow-xl"
           >
             Reset Filter
           </button>
         </div>
-      </div>{" "}
-      {/* Users Table - IMPROVED RESPONSIVE DESIGN */}
-      <h1 className="text-2xl font-bold mb-6">User Statistics</h1>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-full mb-4">
+      </div>
+
+      {/* User Statistics Section */}
+      <h2 className="text-2xl font-bold">User Statistics</h2>
+
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {/* Mobile Card Layout */}
         <div className="block md:hidden">
           <div className="divide-y divide-gray-200">
@@ -729,32 +732,24 @@ const UserManagementPage = () => {
         )}
       </div>
       {/* Stats Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-8 px-1">
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Total Users
-          </p>
-          <p className="text-lg md:text-2xl font-bold text-blue-600">
-            {users.length}
-          </p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Users</p>
+          <p className="text-2xl font-bold text-blue-600">{users.length}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">Students</p>
-          <p className="text-lg md:text-2xl font-bold text-green-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Students</p>
+          <p className="text-2xl font-bold text-green-600">
             {userCounts.students}
           </p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">Admins</p>
-          <p className="text-lg md:text-2xl font-bold text-red-600">
-            {userCounts.admins}
-          </p>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Admins</p>
+          <p className="text-2xl font-bold text-red-600">{userCounts.admins}</p>
         </div>
-        <div className="bg-white p-3 md:p-4 rounded-lg shadow-md min-w-0">
-          <p className="text-xs md:text-sm text-gray-500 truncate">
-            Total Laporan
-          </p>
-          <p className="text-lg md:text-2xl font-bold text-indigo-600">
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500">Total Laporan</p>
+          <p className="text-2xl font-bold text-indigo-600">
             {Object.values(userTicketStats).reduce(
               (total, stat) => total + stat.total,
               0
@@ -762,26 +757,25 @@ const UserManagementPage = () => {
           </p>
         </div>
       </div>
+
       {/* Enhanced Analytics Charts Section */}
       <EnhancedAnalytics
         tickets={tickets}
         users={users}
         showExportButtons={true}
       />
+
       {/* Additional Information */}
-      <div className="mt-4 md:mt-6 bg-white rounded-lg shadow-md p-4 md:p-6">
-        <h3 className="text-base md:text-lg font-medium text-gray-900 mb-3 md:mb-4">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Summary Information
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           <div className="bg-gray-50 p-3 rounded-md">
             <p className="text-gray-600">
-              <span className="font-medium text-xs md:text-sm">
-                Users with Activity:
-              </span>
-              <br className="sm:hidden" />
+              <span className="font-medium">Users with Activity:</span>
+              <br />
               <span className="text-green-600 font-semibold">
-                {" "}
                 {
                   filteredUsers.filter((user) => {
                     const stats = userTicketStats[user.id];
@@ -791,14 +785,11 @@ const UserManagementPage = () => {
               </span>
             </p>
           </div>
-          <div className="bg-gray-50 p-3 rounded-md sm:col-span-2 lg:col-span-1">
+          <div className="bg-gray-50 p-3 rounded-md">
             <p className="text-gray-600">
-              <span className="font-medium text-xs md:text-sm">
-                Total System Tickets:
-              </span>
-              <br className="sm:hidden" />
+              <span className="font-medium">Total System Tickets:</span>
+              <br />
               <span className="text-purple-600 font-semibold">
-                {" "}
                 {tickets.length}
               </span>
             </p>

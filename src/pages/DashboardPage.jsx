@@ -1,4 +1,3 @@
-// Modified DashboardPage.jsx with truncated email addresses
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
@@ -334,7 +333,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
       </div>
@@ -389,13 +388,17 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* Stats Cards - FIXED: Updated with correct status breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Cards - Updated with responsive grid */}
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${
+          userData?.role === "admin" ? "xl:grid-cols-5" : "xl:grid-cols-5"
+        } gap-4 lg:gap-6`}
+      >
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-lg font-bold mb-2">
-                Total Tickets
+                Total Tiket
               </p>
               <p className="text-4xl font-bold">
                 {dashboardStats.totalTickets}
@@ -438,38 +441,31 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Second row of stats for role-specific metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {userData?.role === "admin" && (
-          <>
-            <div className="bg-gradient-to-r from-pink-500 to-rose-600 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-pink-100 text-lg font-bold mb-2">
-                    Success Rate
-                  </p>
-                  <p className="text-4xl font-bold">
-                    {dashboardStats.totalTickets > 0
-                      ? Math.round(
-                          (dashboardStats.resolvedTickets /
-                            dashboardStats.totalTickets) *
-                            100
-                        )
-                      : 0}
-                    %
-                  </p>
-                </div>
-              </div>
+        <div className="bg-gradient-to-r from-pink-500 to-rose-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-pink-100 text-lg font-bold mb-2">
+                Success Rate
+              </p>
+              <p className="text-4xl font-bold">
+                {dashboardStats.totalTickets > 0
+                  ? Math.round(
+                      (dashboardStats.resolvedTickets /
+                        dashboardStats.totalTickets) *
+                        100
+                    )
+                  : 0}
+                %
+              </p>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Profile Card */}
-        <div className="lg:col-span-1">
+        <div className="xl:col-span-1">
           <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
             <div className="flex items-center mb-6">
               <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-full mr-4">
@@ -556,13 +552,13 @@ const DashboardPage = () => {
                   <>
                     <Link
                       to="/admin/tickets"
-                      className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                      className="block w-full hover:bg-white hover:text-blue-600 hover:scale-105 hover:border hover:border-blue-600 transition-all duration-300  text-center bg-blue-600 text-white py-2 px-4 rounded-lg"
                     >
                       Manage Tickets
                     </Link>
                     <Link
                       to="/admin/faq"
-                      className="block w-full text-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200"
+                      className="block w-full hover:bg-white hover:text-green-600 hover:scale-105 hover:border hover:border-green-600 transition-all duration-300  text-center bg-green-600 text-white py-2 px-4 rounded-lg"
                     >
                       Manage FAQs
                     </Link>
@@ -573,8 +569,8 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Recent Activity - FIXED: Now shows proper ticket titles and correct status badges */}
-        <div className="lg:col-span-2">
+        {/* Recent Activity */}
+        <div className="xl:col-span-2">
           <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gray-900">
@@ -601,7 +597,7 @@ const DashboardPage = () => {
                       key={ticket.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
                     >
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-gray-900 truncate">
                           {ticket.judul || "No Subject"}
                         </h4>
@@ -610,7 +606,7 @@ const DashboardPage = () => {
                           {formatTicketDate(ticket.createdAt)}
                         </p>
                       </div>
-                      <div className="ml-4">
+                      <div className="ml-4 flex-shrink-0">
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${statusBadge.className}`}
                         >

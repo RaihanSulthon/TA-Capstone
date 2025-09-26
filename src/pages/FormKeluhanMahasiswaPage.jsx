@@ -642,7 +642,7 @@ const FormKeluhanMahasiswaPage = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-4 md:py-8 px-4">
+    <div className="min-h-screen md:py-8 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         {/* Header Form - Updated Design */}
         <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-6 md:p-8 text-white relative overflow-hidden">
@@ -660,9 +660,8 @@ const FormKeluhanMahasiswaPage = () => {
                 </div>
               </div>
             </div>
-            <p className="text-blue-100 text-base md:text-lg leading-relaxed">
-              Silakan isi formulir di bawah ini untuk menyampaikan keluhan atau
-              laporan Anda.
+            <p className="text-white font-medium md:text-lg leading-relaxed">
+              Silakan isi formulir di bawah ini untuk menyampaikan keluhan atau laporan Anda.
             </p>
           </div>
         </div>

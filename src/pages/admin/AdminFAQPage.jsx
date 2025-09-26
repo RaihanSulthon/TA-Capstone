@@ -757,8 +757,8 @@ const AdminFAQPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold">FAQ Management</h1>
         <Button
           onClick={openAddModal}
@@ -777,10 +777,9 @@ const AdminFAQPage = () => {
         />
       )}
 
-      {/* Filters - Updated category options */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow-md">
         <div className="space-y-4">
-          {/* Search Input */}
           <div>
             <label
               htmlFor="search"
@@ -798,7 +797,6 @@ const AdminFAQPage = () => {
             />
           </div>
 
-          {/* Category Filter - Updated options */}
           <div>
             <label
               htmlFor="category-filter"
@@ -823,7 +821,6 @@ const AdminFAQPage = () => {
             </select>
           </div>
 
-          {/* Status Filter */}
           <div>
             <label
               htmlFor="status-filter"
@@ -843,7 +840,6 @@ const AdminFAQPage = () => {
             </select>
           </div>
 
-          {/* Reset Filter Button */}
           <div className="pt-2">
             <button
               onClick={resetFilters}
@@ -856,7 +852,7 @@ const AdminFAQPage = () => {
       </div>
 
       {/* Stats */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+      <div className="bg-white p-4 rounded-lg shadow-md">
         <p className="text-sm text-gray-600">
           Total: {faqs.length} FAQ | Aktif:{" "}
           {faqs.filter((f) => f.isActive).length} | Non-aktif:{" "}
@@ -864,7 +860,7 @@ const AdminFAQPage = () => {
         </p>
       </div>
 
-      {/* FAQ List - Mobile Card Style like Image 4 */}
+      {/* FAQ List */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {currentFAQs.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
@@ -959,7 +955,7 @@ const AdminFAQPage = () => {
         )}
       </div>
 
-      {/* Add FAQ Modal - Increased size to 2xl */}
+      {/* Modals */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={closeAddModal}
@@ -975,7 +971,6 @@ const AdminFAQPage = () => {
         />
       </Modal>
 
-      {/* Edit FAQ Modal - Increased size to 2xl */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
@@ -991,7 +986,6 @@ const AdminFAQPage = () => {
         />
       </Modal>
 
-      {/* Delete Confirmation Modal - Updated design */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}

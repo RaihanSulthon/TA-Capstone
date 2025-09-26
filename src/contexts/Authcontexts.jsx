@@ -1,7 +1,14 @@
-import { createContext, useState, useEffect, useContext, useCallback, useRef } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import { getCurrentUser, logoutUser } from "../services/authService";
-import {db} from "../firebase-config";
-import {doc, getDoc} from "firebase/firestore";
+import { db } from "../firebase-config";
+import { doc, getDoc } from "firebase/firestore";
 
 // Create context to manage subscription cleanup
 const FirestoreListenersContext = createContext([]);
@@ -12,15 +19,18 @@ export const useFirestoreListeners = () => {
   const [listeners, setListeners] = useContext(FirestoreListenersContext);
 
   // Function to add a new unsubscribe function to the list
-  const addListener = useCallback((unsubscribeFunc) => {
-    setListeners(prevListeners => [...prevListeners, unsubscribeFunc]);
-    return unsubscribeFunc; // Return for convenience
-  }, [setListeners]);
+  const addListener = useCallback(
+    (unsubscribeFunc) => {
+      setListeners((prevListeners) => [...prevListeners, unsubscribeFunc]);
+      return unsubscribeFunc; // Return for convenience
+    },
+    [setListeners]
+  );
 
   // Function to clean up all listeners
   const clearAllListeners = useCallback(() => {
-    listeners.forEach(unsubscribe => {
-      if (typeof unsubscribe === 'function') {
+    listeners.forEach((unsubscribe) => {
+      if (typeof unsubscribe === "function") {
         try {
           unsubscribe();
         } catch (error) {
@@ -42,14 +52,15 @@ export const AuthProvider = ({ children }) => {
   const [initialized, setInitialized] = useState(false);
   const [firestoreListeners, setFirestoreListeners] = useState([]);
   const userDataFetched = useRef(false);
+  const [userData, setUserData] = useState(null); // State to store user data
 
   useEffect(() => {
     const checkUser = async () => {
       try {
         const user = await getCurrentUser();
         setCurrentUser(user);
-        
-        if(!user){
+
+        if (!user) {
           setCheckingRole(false);
           setInitialized(true);
         }
@@ -75,7 +86,9 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const cachedUserData = localStorage.getItem(`userData_${currentUser.uid}`);
+        const cachedUserData = localStorage.getItem(
+          `userData_${currentUser.uid}`
+        );
         if (cachedUserData) {
           const parsedData = JSON.parse(cachedUserData);
           if (parsedData.role) {
@@ -102,7 +115,7 @@ export const AuthProvider = ({ children }) => {
             `userData_${currentUser.uid}`,
             JSON.stringify({ ...cachedData, ...userData })
           );
-          
+
           userDataFetched.current = true;
         }
       } catch (error) {
@@ -124,8 +137,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     // Clear all Firestore listeners before logging out
-    firestoreListeners.forEach(unsubscribe => {
-      if (typeof unsubscribe === 'function') {
+    firestoreListeners.forEach((unsubscribe) => {
+      if (typeof unsubscribe === "function") {
         try {
           unsubscribe();
         } catch (error) {
@@ -148,17 +161,37 @@ export const AuthProvider = ({ children }) => {
     return result;
   }, [currentUser, firestoreListeners]);
 
-  const hasRole = useCallback((requiredRole) => {
-    if (!userRole) return false;
-    if (Array.isArray(requiredRole)) {
-      return requiredRole.includes(userRole);
+  const hasRole = useCallback(
+    (requiredRole) => {
+      if (!userRole) return false;
+      if (Array.isArray(requiredRole)) {
+        return requiredRole.includes(userRole);
+      }
+
+      return userRole === requiredRole;
+    },
+    [userRole]
+  );
+
+  const isAdmin = useCallback(() => userRole === "admin", [userRole]);
+
+  // PERBAIKAN: Tambahkan method untuk refresh user role
+  const refreshUserRole = useCallback(async () => {
+    if (currentUser) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserRole(userData.role);
+          setUserData(userData);
+        }
+      } catch (error) {
+        console.error("Error refreshing user role:", error);
+      }
     }
-    
-    return userRole === requiredRole;
-  }, [userRole]);
+  }, [currentUser]);
 
-  const isAdmin = useCallback(() => userRole === 'admin', [userRole]);
-
+  // Export refreshUserRole dalam context value
   const authValue = {
     currentUser,
     setCurrentUser,
@@ -169,13 +202,20 @@ export const AuthProvider = ({ children }) => {
     checkingRole,
     hasRole,
     isAdmin,
-    initialized
+    initialized,
+    refreshUserRole, // TAMBAHAN
+    firestoreListeners,
+    setFirestoreListeners,
   };
 
   return (
-    <FirestoreListenersContext.Provider value={[firestoreListeners, setFirestoreListeners]}>
+    <FirestoreListenersContext.Provider
+      value={[firestoreListeners, setFirestoreListeners]}
+    >
       <AuthContext.Provider value={authValue}>
-        {!loading && (!checkingRole || initialized) ? children : (
+        {!loading && (!checkingRole || initialized) ? (
+          children
+        ) : (
           <div className="flex justify-center items-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>

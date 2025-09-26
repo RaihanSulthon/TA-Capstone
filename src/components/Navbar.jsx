@@ -193,19 +193,19 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow-md">
-        <div className="container mx-auto px-4">
+      <nav className="bg-gray-100 border-b border-gray-100">
+        <div className="w-full px-4 md:px-6">
           <div className="flex justify-between items-center h-16">
             {/* Updated Logo and App Name with better positioning */}
             <Link to="/" className="flex items-center">
-              <div className="hidden sm:block ">
+              <div className="hidden sm:block">
                 <img
                   src={applogo}
                   alt="App Logo"
-                  className="h-8 w-auto ml-4 hover:scale-105 transition-all duration-300"
+                  className="h-8 w-auto hover:scale-105 transition-all duration-300"
                 />
               </div>
-              <span className="text-md ml-2 md:text-xl font-bold text-blue-600">
+              <span className="text-lg md:text-xl font-bold text-blue-600 pl-4">
                 Tell-Us
               </span>
             </Link>
@@ -216,7 +216,7 @@ const Navbar = () => {
                   {/* Desktop Menu */}
                   <div className="hidden md:flex items-center">
                     <div className="mr-4 flex items-center">
-                      <span className="text-gray-700 mr-2">
+                      <span className="text-gray-700 mr-2 font-bold">
                         Hello, {getUserDisplayName()}
                       </span>
                       {userRole && (
