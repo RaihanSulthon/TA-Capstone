@@ -484,8 +484,7 @@ const StudentTicketsPage = () => {
         <div className="flex-shrink-0">
           <Button
             onClick={() => navigate("/app/submit-ticket")}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-white hover:text-blue-600 border-1 border-blue-600 px-4 py-2 text-sm hover:scale-105 hover:shadow-xl transition-all duration-300"
-          >
+            className="w-full sm:w-auto bg-blue-600 hover:bg-white hover:text-blue-600 border-1 border-blue-600 px-4 py-2 text-sm hover:scale-105 hover:shadow-xl transition-all duration-300">
             Buat Tiket Baru
           </Button>
         </div>
@@ -506,16 +505,14 @@ const StudentTicketsPage = () => {
           <div>
             <label
               htmlFor="status-filter"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+              className="block text-sm font-medium text-gray-700 mb-2">
               Status
             </label>
             <select
               id="status-filter"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            >
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
               <option value="all">Semua Status</option>
               <option value="new">Menunggu</option>
               <option value="in_progress">Sedang Diproses</option>
@@ -526,16 +523,14 @@ const StudentTicketsPage = () => {
           <div>
             <label
               htmlFor="category-filter"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+              className="block text-sm font-medium text-gray-700 mb-2">
               Kategori
             </label>
             <select
               id="category-filter"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            >
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
               <option value="all">Semua Kategori</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -548,8 +543,7 @@ const StudentTicketsPage = () => {
           <div>
             <label
               htmlFor="start-date"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+              className="block text-sm font-medium text-gray-700 mb-2">
               Tanggal Mulai
             </label>
             <input
@@ -564,8 +558,7 @@ const StudentTicketsPage = () => {
           <div>
             <label
               htmlFor="end-date"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+              className="block text-sm font-medium text-gray-700 mb-2">
               Tanggal Akhir
             </label>
             <input
@@ -580,16 +573,14 @@ const StudentTicketsPage = () => {
           <div>
             <label
               htmlFor="read-status-filter"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+              className="block text-sm font-medium text-gray-700 mb-2">
               Status Dibaca
             </label>
             <select
               id="read-status-filter"
               value={filterReadStatus}
               onChange={(e) => setFilterReadStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            >
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
               <option value="all">Semua Tiket</option>
               <option value="read">Sudah Dibaca</option>
               <option value="unread">Belum Dibaca</option>
@@ -599,8 +590,7 @@ const StudentTicketsPage = () => {
           <div>
             <label
               htmlFor="search"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+              className="block text-sm font-medium text-gray-700 mb-2">
               Cari
             </label>
             <input
@@ -618,8 +608,7 @@ const StudentTicketsPage = () => {
         <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2">
           <button
             onClick={resetFilters}
-            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-all duration-300 hover:scale-105 hover:shadow-xl font-semibold"
-          >
+            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-all duration-300 hover:scale-105 hover:shadow-xl font-semibold">
             Reset Filter
           </button>
         </div>
@@ -673,8 +662,7 @@ const StudentTicketsPage = () => {
             className="h-16 w-16 text-gray-400 mx-auto mb-4"
             fill="none"
             stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+            viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -691,8 +679,7 @@ const StudentTicketsPage = () => {
           </p>
           <Button
             onClick={() => navigate("/app/submit-ticket")}
-            className="bg-blue-600 hover:bg-blue-700 hover:scale-105 hover:shadow-xl transition-all duration-300"
-          >
+            className="bg-blue-600 hover:bg-blue-700 hover:scale-105 hover:shadow-xl transition-all duration-300">
             Buat Tiket Baru
           </Button>
         </div>
@@ -729,8 +716,7 @@ const StudentTicketsPage = () => {
                           : isUnread
                           ? "bg-blue-50"
                           : ""
-                      } overflow-hidden`}
-                    >
+                      } overflow-hidden`}>
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0 pr-2">
                           <div className="flex items-center mb-1">
@@ -747,8 +733,7 @@ const StudentTicketsPage = () => {
                         </div>
                         <div className="flex-shrink-0 ml-2">
                           <span
-                            className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${statusBadge.className}`}
-                          >
+                            className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${statusBadge.className}`}>
                             {statusBadge.label}
                           </span>
                         </div>
@@ -760,8 +745,7 @@ const StudentTicketsPage = () => {
                           <span className="text-gray-500 block">Kategori:</span>
                           <div
                             className="font-medium truncate"
-                            title={getCategoryLabel(ticket.kategori)}
-                          >
+                            title={getCategoryLabel(ticket.kategori)}>
                             {getCategoryLabel(ticket.kategori)}
                           </div>
                         </div>
@@ -781,8 +765,7 @@ const StudentTicketsPage = () => {
                               feedbackInfo.unread > 0
                                 ? "bg-orange-100 text-orange-800"
                                 : "bg-purple-100 text-purple-800"
-                            }`}
-                          >
+                            }`}>
                             💬 {feedbackInfo.total} feedback
                             {feedbackInfo.unread > 0
                               ? ` (${feedbackInfo.unread} baru)`
@@ -795,14 +778,12 @@ const StudentTicketsPage = () => {
                       <div className="flex gap-2 w-full">
                         <Button
                           onClick={() => navigate(`/app/tickets/${ticket.id}`)}
-                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs py-2 px-3 min-w-0 hover:scale-105 hover:shadow-xl transition-all duration-300"
-                        >
+                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 text-xs py-2 px-3 min-w-0 hover:scale-105 hover:shadow-xl transition-all duration-300">
                           Detail
                         </Button>
                         <Button
                           onClick={() => openDeleteModal(ticket)}
-                          className="bg-red-600 text-white hover:bg-red-700 text-xs py-2 px-3 flex-shrink-0 hover:scale-105 hover:shadow-xl transition-all duration-300"
-                        >
+                          className="bg-red-600 text-white hover:bg-red-700 text-xs py-2 px-3 flex-shrink-0 hover:scale-105 hover:shadow-xl transition-all duration-300">
                           Hapus
                         </Button>
                       </div>
@@ -818,38 +799,32 @@ const StudentTicketsPage = () => {
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4"
-                  >
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                     ID & Judul
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6"
-                  >
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Kategori
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6"
-                  >
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Status
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6"
-                  >
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Tanggal & Waktu
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6"
-                  >
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                     Feedback
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi
                   </th>
                 </tr>
@@ -867,8 +842,7 @@ const StudentTicketsPage = () => {
                   <tr>
                     <td
                       colSpan="6"
-                      className="px-6 py-4 text-center text-gray-500"
-                    >
+                      className="px-6 py-4 text-center text-gray-500">
                       Tidak ada tiket yang ditemukan
                     </td>
                   </tr>
@@ -888,8 +862,7 @@ const StudentTicketsPage = () => {
                             : isUnread
                             ? "bg-blue-50"
                             : ""
-                        }`}
-                      >
+                        }`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col">
                             <div className="text-xs text-gray-500 mb-1">
@@ -899,13 +872,11 @@ const StudentTicketsPage = () => {
                               {isUnread && (
                                 <span
                                   className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 mr-2"
-                                  title="Belum dibaca"
-                                ></span>
+                                  title="Belum dibaca"></span>
                               )}
                               <span
                                 className="text-sm font-medium text-gray-900 truncate max-w-xs"
-                                title={ticket.judul}
-                              >
+                                title={ticket.judul}>
                                 {truncateText(ticket.judul, 30)}
                               </span>
                             </div>
@@ -918,15 +889,13 @@ const StudentTicketsPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge.className}`}
-                          >
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge.className}`}>
                             {statusBadge.label}
                           </span>
                           {ticket.assignedToName && (
                             <div
                               className="text-xs text-gray-500 mt-1 truncate max-w-[120px]"
-                              title={`Oleh: ${ticket.assignedToName}`}
-                            >
+                              title={`Oleh: ${ticket.assignedToName}`}>
                               Oleh: {truncateText(ticket.assignedToName, 12)}
                             </div>
                           )}
@@ -953,8 +922,7 @@ const StudentTicketsPage = () => {
                                       : "text-purple-600"
                                   }`}
                                   fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
+                                  viewBox="0 0 20 20">
                                   <path
                                     fillRule="evenodd"
                                     d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
@@ -966,8 +934,7 @@ const StudentTicketsPage = () => {
                                     feedbackInfo.unread > 0
                                       ? "font-medium text-orange-600"
                                       : "text-purple-600"
-                                  }`}
-                                >
+                                  }`}>
                                   {feedbackInfo.unread > 0
                                     ? `${feedbackInfo.unread} feedback baru`
                                     : `${feedbackInfo.total} feedback`}
@@ -995,8 +962,7 @@ const StudentTicketsPage = () => {
                                 } else {
                                   return "hover:scale-105 hover:shadow-xl transition-all duration-300";
                                 }
-                              })()}
-                            >
+                              })()}>
                               {(() => {
                                 const feedbackInfo = getFeedbackInfo(ticket.id);
                                 if (feedbackInfo.unread > 0) {
@@ -1010,8 +976,7 @@ const StudentTicketsPage = () => {
                             </Button>
                             <Button
                               onClick={() => openDeleteModal(ticket)}
-                              className="bg-red-600 text-white hover:bg-red-700 hover:scale-105 hover:shadow-xl transition-all duration-300"
-                            >
+                              className="bg-red-600 text-white hover:bg-red-700 hover:scale-105 hover:shadow-xl transition-all duration-300">
                               Hapus
                             </Button>
                           </div>
@@ -1032,8 +997,7 @@ const StudentTicketsPage = () => {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                   Previous
                 </button>
                 <span className="text-sm text-gray-700">
@@ -1042,8 +1006,7 @@ const StudentTicketsPage = () => {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                  className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                   Next
                 </button>
               </div>
@@ -1070,21 +1033,18 @@ const StudentTicketsPage = () => {
                 <div>
                   <nav
                     className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                    aria-label="Pagination"
-                  >
+                    aria-label="Pagination">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="sr-only">Previous</span>
                       <svg
                         className="h-5 w-5"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
-                        aria-hidden="true"
-                      >
+                        aria-hidden="true">
                         <path
                           fillRule="evenodd"
                           d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -1114,8 +1074,7 @@ const StudentTicketsPage = () => {
                             currentPage === pageNumber
                               ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
                               : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                          }`}
-                        >
+                          }`}>
                           {pageNumber}
                         </button>
                       );
@@ -1124,16 +1083,14 @@ const StudentTicketsPage = () => {
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="sr-only">Next</span>
                       <svg
                         className="h-5 w-5"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
-                        aria-hidden="true"
-                      >
+                        aria-hidden="true">
                         <path
                           fillRule="evenodd"
                           d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -1154,8 +1111,7 @@ const StudentTicketsPage = () => {
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         title="Konfirmasi Hapus Tiket"
-        size="sm"
-      >
+        size="sm">
         <div>
           <p className="text-gray-600 mb-4">
             Apakah Anda yakin ingin menghapus tiket ini dari daftar Anda?
@@ -1172,15 +1128,13 @@ const StudentTicketsPage = () => {
             <button
               onClick={closeDeleteModal}
               className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
-              disabled={isDeleting}
-            >
+              disabled={isDeleting}>
               Batal
             </button>
             <button
               onClick={handleDeleteTicket}
               className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded transition-colors"
-              disabled={isDeleting}
-            >
+              disabled={isDeleting}>
               {isDeleting ? "Menghapus..." : "Hapus dari Daftar"}
             </button>
           </div>

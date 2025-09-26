@@ -112,6 +112,15 @@ const NotificationsSystem = () => {
       (snapshot) => {
         const notificationsList = snapshot.docs.map((doc) => {
           const data = doc.data();
+          console.log("Notification doc:", {
+            id: doc.id,
+            recipientId: data.recipientId,
+            type: data.type,
+            title: data.title,
+            message: data.message,
+            read: data.read,
+            createdAt: data.createdAt,
+          });
           return {
             id: doc.id,
             ...data,
