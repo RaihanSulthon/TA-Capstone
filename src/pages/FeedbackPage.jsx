@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useFirestoreListeners } from "../contexts/Authcontexts";
 import { db } from "../firebase-config";
 import { doc, getDoc } from "firebase/firestore";
@@ -20,6 +20,7 @@ const FeedbackPage = () => {
   const { currentUser, userRole } = useAuth();
   const { addListener } = useFirestoreListeners();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // State
   const [ticket, setTicket] = useState(null);
@@ -251,6 +252,11 @@ const FeedbackPage = () => {
           message: "Feedback berhasil dikirim",
           type: "success",
         });
+
+        // PERBAIKAN: Tunggu sebentar sebelum scroll untuk memastikan DOM update
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
       } else {
         setToast({
           message: result.error || "Gagal mengirim feedback",
@@ -268,17 +274,47 @@ const FeedbackPage = () => {
     }
   };
 
-  // Handle back navigation
+  // Handle back navigation - PERBAIKAN
   const handleGoBack = () => {
-    // Prioritas: state.returnTo > state.from > default route
-    if (location.state?.returnTo) {
-      navigate(location.state.returnTo);
-    } else if (location.state?.from) {
-      navigate(location.state.from);
-    } else {
-      // Fallback ke ticket detail
-      navigate(`/app/tickets/${ticketId}`);
+    console.log("FeedbackPage - Going back");
+    console.log("Location state:", location.state);
+
+    // PERBAIKAN: Cleanup state dan pastikan navigation aman
+    setLoading(false);
+    setSending(false);
+    setMessage("");
+    setAttachments([]);
+
+    // Clear any pending timeouts
+    if (window.feedbackTimeout) {
+      clearTimeout(window.feedbackTimeout);
     }
+
+    // Prioritas navigasi:
+    // 1. Gunakan state.from jika ada
+    if (location.state?.from) {
+      navigate(location.state.from, { replace: true });
+      return;
+    }
+
+    // 2. Default ke detail tiket dengan state yang tepat
+    const targetPath = `/app/tickets/${ticketId}`;
+    const navigationState = {
+      from: "/feedback",
+      timestamp: Date.now(),
+    };
+
+    // Tentukan dari mana user seharusnya kembali berdasarkan role
+    if (userRole === "admin") {
+      navigationState.returnTo = "/admin/tickets";
+    } else if (userRole === "student") {
+      navigationState.returnTo = "/app/my-tickets";
+    }
+
+    navigate(targetPath, {
+      replace: true,
+      state: navigationState,
+    });
   };
 
   // Handle files change from FileUpload component

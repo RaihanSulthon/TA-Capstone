@@ -953,7 +953,10 @@ const TicketManagementPage = () => {
                           <Button
                             onClick={() =>
                               navigate(`/app/tickets/${ticket.id}`, {
-                                state: { from: "/admin/tickets" },
+                                state: {
+                                  from: "/admin/tickets",
+                                  userRole: "admin",
+                                },
                               })
                             }
                             className={

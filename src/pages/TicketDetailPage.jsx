@@ -233,40 +233,36 @@ const TicketDetailPage = () => {
   };
 
   const handleGoBack = () => {
-    // Cek apakah ada state yang menyimpan halaman sebelumnya
+
+    // 1. Prioritas pertama: gunakan state 'from' jika ada
     if (location.state?.from) {
+      console.log("Navigating to state.from:", location.state.from);
       navigate(location.state.from);
       return;
     }
 
-    // Cek referrer URL untuk menentukan halaman yang tepat
-    const currentPath = location.pathname;
-    const isFromFeedback = document.referrer.includes("/feedback");
+    // 2. Cek document referrer untuk menentukan asal halaman
+    const referrer = document.referrer;
+    console.log("Document referrer:", referrer);
 
-    // Jika dari halaman feedback, langsung ke ticket management/my-tickets
-    if (isFromFeedback) {
-      if (userRole === "admin") {
-        navigate("/admin/tickets");
-      } else if (userRole === "student") {
-        navigate("/app/my-tickets");
-      } else {
-        navigate("/app/dashboard");
-      }
-      return;
-    }
-
-    // Logika default berdasarkan role dan section
+    // 3. Logika berdasarkan user role dan context
     if (userRole === "admin") {
-      // Jika di admin section, kembali ke admin tickets
-      if (currentPath.startsWith("/admin/")) {
-        navigate("/admin/tickets");
+      // Admin selalu ke ticket management, kecuali ada context khusus
+      if (
+        referrer.includes("/admin/users") ||
+        referrer.includes("/admin/user-detail")
+      ) {
+        // Jika dari user management/detail, kembali ke users
+        navigate("/admin/users");
       } else {
-        // Jika admin mengakses dari user section
-        navigate("/app/my-tickets");
+        // Default admin ke ticket management
+        navigate("/admin/tickets");
       }
     } else if (userRole === "student") {
+      // Student ke halaman tiket mereka
       navigate("/app/my-tickets");
     } else {
+      // Fallback ke dashboard
       navigate("/app/dashboard");
     }
   };
@@ -588,19 +584,37 @@ const TicketDetailPage = () => {
     }
   };
 
-  // Handle view feedback - mark as read when clicked
-  const handleViewFeedback = () => {
-    // Mark semua unread feedback sebagai read sebelum navigate
-    markFeedbacksAsRead();
+  // Handle view feedback - PERBAIKAN
+  const handleViewFeedback = async () => {
+    try {
+      // Mark semua unread feedback sebagai read sebelum navigate
+      await markFeedbacksAsRead();
 
-    // Navigate dengan state untuk proper back navigation
-    navigate(`/app/tickets/${ticket.id}/feedback`, {
-      state: {
-        from: location.pathname,
-        returnTo: userRole === "admin" ? "/admin/tickets" : "/app/my-tickets",
-      },
-    });
+      // PERBAIKAN: Navigate dengan state yang lebih lengkap
+      const currentFrom =
+        location.state?.from ||
+        (userRole === "admin" ? "/admin/tickets" : "/app/my-tickets");
+
+      navigate(`/app/tickets/${ticket.id}/feedback`, {
+        state: {
+          from: location.pathname, // Current ticket detail page
+          originalFrom: currentFrom, // Where user originally came from
+          ticketData: {
+            id: ticket.id,
+            judul: ticket.judul,
+            status: ticket.status,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error navigating to feedback:", error);
+      setToast({
+        message: "Gagal membuka halaman feedback",
+        type: "error",
+      });
+    }
   };
+
   const markTicketAsRead = async (ticketData) => {
     try {
       const ticketRef = doc(db, "tickets", ticketData.id);
@@ -709,6 +723,21 @@ const TicketDetailPage = () => {
       fetchTicket();
     }
   }, [ticketId, addListener, currentUser.uid, userRole]);
+
+  useEffect(() => {
+    // Cleanup function
+    return () => {
+      // Clear any pending operations
+      setIsUpdatingStatus(false);
+      setLoadingAttachment(false);
+      setIsSendingEmail(false);
+
+      // Clear timers
+      if (tokenTimer) {
+        clearTimeout(tokenTimer);
+      }
+    };
+  }, [tokenTimer]);
 
   // Check if user can view ticket
   const canViewTicket = () => {

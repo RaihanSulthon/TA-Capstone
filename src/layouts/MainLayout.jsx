@@ -10,6 +10,21 @@ const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  // PERBAIKAN: Reset state ketika location berubah
+  useEffect(() => {
+    setIsSidebarOpen(false);
+
+    // PERBAIKAN: Clear any pending operations saat navigasi
+    const cleanup = () => {
+      // Clear any global timeouts
+      if (window.feedbackTimeout) {
+        clearTimeout(window.feedbackTimeout);
+      }
+    };
+
+    cleanup();
+  }, [location.pathname]);
+
   // Expanded = hover (desktop) atau dibuka (mobile)
   const isExpanded = isHovered || isSidebarOpen;
 
@@ -24,10 +39,6 @@ const MainLayout = () => {
     if (path.startsWith("/app/tickets/")) return "Detail Tiket";
     return "Dashboard";
   };
-
-  useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [location.pathname]);
 
   // Admin menu
   const adminMenuItems = [

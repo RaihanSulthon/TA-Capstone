@@ -263,7 +263,10 @@ const UserDetailPage = () => {
                         <button
                           onClick={() => {
                             navigate(`/app/tickets/${ticket.id}`, {
-                              state: { from: location.pathname },
+                              state: {
+                                from: location.pathname, // Kembali ke user detail page
+                                userRole: "admin",
+                              },
                             });
                           }}
                           className="hover:scale-105 transition-all hover:shadow-xl duration-300 bg-blue-600 hover:bg-white hover:text-blue-600 hover:border-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium border border-blue-500"
