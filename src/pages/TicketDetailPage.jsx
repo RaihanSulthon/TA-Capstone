@@ -233,23 +233,37 @@ const TicketDetailPage = () => {
   };
 
   const handleGoBack = () => {
-    // Cek apakah ada state yang menyimpan halaman sebelumnya
+
+    // 1. Prioritas pertama: gunakan state 'from' jika ada
     if (location.state?.from) {
+      console.log("Navigating to state.from:", location.state.from);
       navigate(location.state.from);
-    } else {
-      // Coba navigate back jika ada history
-      if (window.history.length > 1) {
-        navigate(-1);
+      return;
+    }
+
+    // 2. Cek document referrer untuk menentukan asal halaman
+    const referrer = document.referrer;
+    console.log("Document referrer:", referrer);
+
+    // 3. Logika berdasarkan user role dan context
+    if (userRole === "admin") {
+      // Admin selalu ke ticket management, kecuali ada context khusus
+      if (
+        referrer.includes("/admin/users") ||
+        referrer.includes("/admin/user-detail")
+      ) {
+        // Jika dari user management/detail, kembali ke users
+        navigate("/admin/users");
       } else {
-        // Fallback berdasarkan role
-        if (userRole === "admin") {
-          navigate("/admin/tickets");
-        } else if (userRole === "student") {
-          navigate("/app/my-tickets");
-        } else {
-          navigate("/app/dashboard");
-        }
+        // Default admin ke ticket management
+        navigate("/admin/tickets");
       }
+    } else if (userRole === "student") {
+      // Student ke halaman tiket mereka
+      navigate("/app/my-tickets");
+    } else {
+      // Fallback ke dashboard
+      navigate("/app/dashboard");
     }
   };
 
@@ -428,7 +442,7 @@ const TicketDetailPage = () => {
         "service_2jo7enz", // Ganti dengan Service ID dari EmailJS
         "template_zvywepm", // Template ID
         templateParams,
-        "YaROFPye1dmERQTS9" // Ganti dengan Public Key dari EmailJS
+        "YaROFPYe1dmERQTS9" // Ganti dengan Public Key dari EmailJS
       );
 
       setToast({
@@ -570,12 +584,37 @@ const TicketDetailPage = () => {
     }
   };
 
-  // Handle view feedback - mark as read when clicked
-  const handleViewFeedback = () => {
-    // Mark semua unread feedback sebagai read sebelum navigate
-    markFeedbacksAsRead();
-    navigate(`/app/tickets/${ticket.id}/feedback`);
+  // Handle view feedback - PERBAIKAN
+  const handleViewFeedback = async () => {
+    try {
+      // Mark semua unread feedback sebagai read sebelum navigate
+      await markFeedbacksAsRead();
+
+      // PERBAIKAN: Navigate dengan state yang lebih lengkap
+      const currentFrom =
+        location.state?.from ||
+        (userRole === "admin" ? "/admin/tickets" : "/app/my-tickets");
+
+      navigate(`/app/tickets/${ticket.id}/feedback`, {
+        state: {
+          from: location.pathname, // Current ticket detail page
+          originalFrom: currentFrom, // Where user originally came from
+          ticketData: {
+            id: ticket.id,
+            judul: ticket.judul,
+            status: ticket.status,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error navigating to feedback:", error);
+      setToast({
+        message: "Gagal membuka halaman feedback",
+        type: "error",
+      });
+    }
   };
+
   const markTicketAsRead = async (ticketData) => {
     try {
       const ticketRef = doc(db, "tickets", ticketData.id);
@@ -684,6 +723,21 @@ const TicketDetailPage = () => {
       fetchTicket();
     }
   }, [ticketId, addListener, currentUser.uid, userRole]);
+
+  useEffect(() => {
+    // Cleanup function
+    return () => {
+      // Clear any pending operations
+      setIsUpdatingStatus(false);
+      setLoadingAttachment(false);
+      setIsSendingEmail(false);
+
+      // Clear timers
+      if (tokenTimer) {
+        clearTimeout(tokenTimer);
+      }
+    };
+  }, [tokenTimer]);
 
   // Check if user can view ticket
   const canViewTicket = () => {
